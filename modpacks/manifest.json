@@ -3,56 +3,132 @@
   "version": "0.1.0",
   "minecraft": {
     "version": "1.21.1",
-    "loader": "fabric"
+    "loader": "neoforge"
   },
   "mods": [
     {
-      "file": "ForgeConfigAPIPort-v21.1.6-1.21.1-Fabric.jar",
-      "sha256": "2e3a8f0e3bda85a7d722720e7ce879cbd9d028d9395c6fc224d329b3c982d9b1"
+      "file": "FarmersDelight-1.21.1-1.3.4.jar",
+      "sha256": "139ad7696462c89c03eea463f805abffa552526c5dadaadae221dd9624cb197c"
     },
     {
-      "file": "balm-fabric-1.21.1-21.0.65.jar",
-      "sha256": "195c4f64ce30d47896b0667ac38fcefe21278b91c9f83b7251329947b5ac1be3"
+      "file": "Mekanism-1.21.1-10.7.19.85.jar",
+      "sha256": "004dbc9f3106f4d192aeaa1ee1190dd16ec9ca8059ed3d093b80034f4c574f43"
     },
     {
-      "file": "c2me-fabric-mc1.21.1-0.4.0-alpha.0.27.jar",
-      "sha256": "f0a488fa26a1d1c7668f644527c470941d41474da2d7d620620da13473509b84"
+      "file": "architectury-13.0.11-neoforge.jar",
+      "sha256": "9cc92f2c09533fc5482c60f993bd891c655a0e32b637037cdcb7c2b23adedeeb"
     },
     {
-      "file": "fabric-api-0.116.17+1.21.1.jar",
-      "sha256": "79ac44b40780acbd884b34c50be1e39af682847e5f5cb3b1fddeeaa768dce800"
+      "file": "ballistix-1.21.1-1.1.1.jar",
+      "sha256": "535bb2ca03d956dfbfcd552725fe62c6a3221b2d35d69a620765a171e9c86ffb"
     },
     {
-      "file": "ferritecore-7.0.3-fabric.jar",
-      "sha256": "98c3ab1d5aab8f14b5d082d3f1a467727fd335f02d124555c94339761c4c18f2"
+      "file": "balm-neoforge-1.21.1-21.0.65.jar",
+      "sha256": "490fa5fcb7ca83a9b5a84e33c2832298db99d189131001b9277a1de7fdc0bf91"
     },
     {
-      "file": "krypton-0.2.8.jar",
-      "sha256": "94f195819b24e5da64effdc9da15cdd84836cc75e8ff0fd098bab6bc2f49e3fe"
+      "file": "better-advanced-tooltips-2101.1.0-build.5.jar",
+      "sha256": "0f76d46f2f18eb67e67c7974170d7b27deb66473396461c8dc50d6949de1449b"
     },
     {
-      "file": "lithium-fabric-0.15.4+mc1.21.1.jar",
-      "sha256": "92329d98c57f5a22091a0adb509fdb1d60113a5602c708b799b13134bad13baa"
+      "file": "create-1.21.1-6.0.10.jar",
+      "sha256": "ef87fe5709f1ba1f5b8bb20a2925b5afb4669e178fd6d8bf10c167759eefe37a"
     },
     {
-      "file": "modernfix-fabric-5.25.1+mc1.21.1.jar",
-      "sha256": "3ce5a9ce75066961b7fa5382692bb1387cc3536cc984b064ab7d70b97f3c674c"
+      "file": "create-aeronautics-bundled-1.21.1-1.3.2.jar",
+      "sha256": "a3f330d4757640f8715d991a43eedb826e4d0e51558d859c843ae6693bd35f1e"
     },
     {
-      "file": "open-parties-and-claims-fabric-1.21.1-0.30.3.jar",
-      "sha256": "965b372056279c618a8a4ea5ac91363284f488e2a942bfe074ba868d9939eafc"
+      "file": "createbigcannons-5.11.7+mc.1.21.1.jar",
+      "sha256": "ea017ab94637032d039899d88404838d173fa0e6286657cae6a6c3af459e87ca"
     },
     {
-      "file": "spark-1.10.109-fabric.jar",
-      "sha256": "fafc121ac53dab1c32e74b7a1cae47d54435ba4cbeeda1180dc96675a7757047"
+      "file": "fancymenu_neoforge_3.9.12_MC_1.21.1.jar",
+      "sha256": "fd0f446c22bb42a0a3ac5cbdcb614abcba5a70f99e2a0cda6556a8efad2859a5"
     },
     {
-      "file": "spuds-shops-1.21.1-1.9.0.jar",
-      "sha256": "02af516111fafccea7ff4876e69b8869727ae8443e91becff8155d2bd80fa73f"
+      "file": "ferritecore-7.0.3-neoforge.jar",
+      "sha256": "d87ea28262715ebff45b8a82d493e6b468e7a4521bc021df5d88302196d030a8"
     },
     {
-      "file": "waystones-fabric-1.21.1-21.1.42.jar",
-      "sha256": "4702e25e3aa813c6e3d420086f9ca7849c5a53b86983e9db7dc0a7859433a38a"
+      "file": "ftb-chunks-neoforge-2101.1.22.jar",
+      "sha256": "4ba1b3352184fa7f6e2aa4bca76edd074867697d62344dfa50dcccdb4dab5217"
+    },
+    {
+      "file": "ftb-library-neoforge-2101.1.35.jar",
+      "sha256": "be7b2bd0b5370a9951624a1d84fd802efecae88d5a0cd24552731f887430599d"
+    },
+    {
+      "file": "ftb-teams-neoforge-2101.1.11.jar",
+      "sha256": "e6bcd670493624e6906df872a9c6af4a33fe6405cac57a32c59cd4cd5838c655"
+    },
+    {
+      "file": "jei-1.21.1-neoforge-19.51.0.418.jar",
+      "sha256": "8bc3936d869e4040a5649c58b7e8be1c78c82a245c0dc07bdd68ab49121a222c"
+    },
+    {
+      "file": "konkrete_neoforge_1.9.9_MC_1.21.jar",
+      "sha256": "791c5538751dd3015ef3a2ce92d98719e1a28a48ebbd817b78506771256654cd"
+    },
+    {
+      "file": "kubejs-create-neoforge-2101.3.1-build.18.jar",
+      "sha256": "9051fd08349850cb9b28845554246ef4f2c976892835a704ee27dcb7c8bfd7a1"
+    },
+    {
+      "file": "kubejs-mekanism-neoforge-2101.1.7-build.18.jar",
+      "sha256": "683ee1c171c02d7fd5eb6424d57b90e8ac22fb2794b1452b4aa5f2ce06fb4a90"
+    },
+    {
+      "file": "kubejs-neoforge-2101.7.2-build.374.jar",
+      "sha256": "2351c858ccaf4eea1f4125a55cd9583a729dee65cfd04c5fbaa702a2ac2fb084"
+    },
+    {
+      "file": "lcompat-1.21-0.1.2a.jar",
+      "sha256": "af72ad83c4661fd0e5bed7b2c1313cb3ea0109bc8ec628e36f289545f247e033"
+    },
+    {
+      "file": "lightmanscurrency-1.21-2.3.0.5.jar",
+      "sha256": "5d610dd9ca42b58039f54c92d3b05cc700e15d40b3d817ecb3ccb661d36dc761"
+    },
+    {
+      "file": "lithium-neoforge-0.15.4+mc1.21.1.jar",
+      "sha256": "488f33216030c1cb0baa33e59de3d657d08d5795a6c2080c8c8bbbc133fc8757"
+    },
+    {
+      "file": "melody_neoforge_1.0.10_MC_1.21.jar",
+      "sha256": "6b973a4564703c531fc0eae09db08b07a38091e0a743c687b8d2049457e84871"
+    },
+    {
+      "file": "modernfix-neoforge-5.27.24+mc1.21.1.jar",
+      "sha256": "e6e9446890f0feb3aab3f6e73ae18cb17575c370f232179fef7baa30e61538fe"
+    },
+    {
+      "file": "railways-0.2.1+neoforge-mc1.21.1.jar",
+      "sha256": "b7636c8b1b0352ed1a130dfe67f8bb574e2fc08803ed1cda4d3ea00505193914"
+    },
+    {
+      "file": "rhino-2101.2.8-build.91.jar",
+      "sha256": "1d53d962aa4dac54bcbb4f998c1845980cf194318f1d6b1580ea6ac15cce5ef3"
+    },
+    {
+      "file": "ritchiesprojectilelib-2.1.2+mc.1.21.1-neoforge.jar",
+      "sha256": "cc509060833736fb650aa4c36b1ce33a7eeeb9ca6e9f8e80a7c951c9e7487b24"
+    },
+    {
+      "file": "sable-neoforge-1.21.1-2.0.5.jar",
+      "sha256": "c8710f85bc780bbf523e6726ceaaf76dd0b8c61479db497b382c6bb34317e7ab"
+    },
+    {
+      "file": "spark-1.10.124-neoforge.jar",
+      "sha256": "647e8a81afbe414dba1df4ba15fd06c5d32d4cb544e68828405e8e074c2e16db"
+    },
+    {
+      "file": "voicechat-neoforge-1.21.1-2.6.22.jar",
+      "sha256": "63116a4d21bd57221482d971dd85822f7c723c210b60411670cdb0aa26873cac"
+    },
+    {
+      "file": "voltaic-1.21.1-1.0.13.jar",
+      "sha256": "8ad851bfa9bf7665da93851e270c7477a03fab3852616bc50918600635b74c75"
     }
   ]
 }

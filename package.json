@@ -7,6 +7,6 @@
     "api:dev": "node --watch launcher/api/index.mjs",
     "app:dev": "npm --prefix launcher/app run tauri dev",
     "app:build": "npm --prefix launcher/app run tauri build",
-    "server:start": "cd server && java -Xmx6G -jar fabric-server-launch.jar nogui"
+    "server:start": "cd server && run.bat nogui"
   }
 }

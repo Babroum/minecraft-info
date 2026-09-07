@@ -1,0 +1,347 @@
+{
+  "Chains": [
+    {
+      "chain": "emeralds",
+      "name": {
+        "translate": "lightmanscurrency.money.chain.emeralds"
+      },
+      "displayType": "lightmanscurrency:number",
+      "displayFormat": {
+        "translate": "lightmanscurrency.money.chain.emeralds.display"
+      },
+      "displayFormatWordy": {
+        "translate": "lightmanscurrency.money.chain.emeralds.display.wordy"
+      },
+      "InputType": "DEFAULT",
+      "CoreChain": [
+        {
+          "Coin": "minecraft:emerald",
+          "baseUnit": true
+        },
+        {
+          "Coin": "minecraft:emerald_block",
+          "exchangeRate": 9
+        }
+      ]
+    },
+    {
+      "chain": "main",
+      "name": {
+        "text": "Dollar"
+      },
+      "displayType": "lightmanscurrency:coin",
+      "InputType": "DEFAULT",
+      "CoreChain": [
+        {
+          "Coin": "kubejs:billet_1",
+          "baseUnit": true,
+          "initial": {
+            "text": "1$"
+          },
+          "plural": {
+            "text": "1$"
+          }
+        },
+        {
+          "Coin": "kubejs:billet_5",
+          "exchangeRate": 5,
+          "initial": {
+            "text": "5$"
+          },
+          "plural": {
+            "text": "5$"
+          }
+        },
+        {
+          "Coin": "kubejs:billet_20",
+          "exchangeRate": 4,
+          "initial": {
+            "text": "20$"
+          },
+          "plural": {
+            "text": "20$"
+          }
+        },
+        {
+          "Coin": "kubejs:billet_100",
+          "exchangeRate": 5,
+          "initial": {
+            "text": "100$"
+          },
+          "plural": {
+            "text": "100$"
+          }
+        }
+      ],
+      "SideChains": [],
+      "ATMData": {
+        "ExchangeButtons": [
+          {
+            "x": 5,
+            "y": 34,
+            "width": 82,
+            "height": 18,
+            "command": "exchangeAllUp",
+            "icons": [
+              {
+                "type": "lightmanscurrency:item",
+                "x": 2,
+                "y": 1,
+                "item": "kubejs:billet_1"
+              },
+              {
+                "type": "lightmanscurrency:small_arrow",
+                "x": 18,
+                "y": 6,
+                "direction": "RIGHT"
+              },
+              {
+                "type": "lightmanscurrency:item",
+                "x": 24,
+                "y": 1,
+                "item": "kubejs:billet_5"
+              },
+              {
+                "type": "lightmanscurrency:small_arrow",
+                "x": 40,
+                "y": 6,
+                "direction": "RIGHT"
+              },
+              {
+                "type": "lightmanscurrency:item",
+                "x": 46,
+                "y": 1,
+                "item": "kubejs:billet_20"
+              },
+              {
+                "type": "lightmanscurrency:small_arrow",
+                "x": 62,
+                "y": 6,
+                "direction": "RIGHT"
+              },
+              {
+                "type": "lightmanscurrency:item",
+                "x": 68,
+                "y": 1,
+                "item": "kubejs:billet_100"
+              }
+            ]
+          },
+          {
+            "x": 89,
+            "y": 34,
+            "width": 82,
+            "height": 18,
+            "command": "exchangeAllDown",
+            "icons": [
+              {
+                "type": "lightmanscurrency:item",
+                "x": 2,
+                "y": 1,
+                "item": "kubejs:billet_100"
+              },
+              {
+                "type": "lightmanscurrency:small_arrow",
+                "x": 18,
+                "y": 6,
+                "direction": "RIGHT"
+              },
+              {
+                "type": "lightmanscurrency:item",
+                "x": 24,
+                "y": 1,
+                "item": "kubejs:billet_20"
+              },
+              {
+                "type": "lightmanscurrency:small_arrow",
+                "x": 40,
+                "y": 6,
+                "direction": "RIGHT"
+              },
+              {
+                "type": "lightmanscurrency:item",
+                "x": 46,
+                "y": 1,
+                "item": "kubejs:billet_5"
+              },
+              {
+                "type": "lightmanscurrency:small_arrow",
+                "x": 62,
+                "y": 6,
+                "direction": "RIGHT"
+              },
+              {
+                "type": "lightmanscurrency:item",
+                "x": 68,
+                "y": 1,
+                "item": "kubejs:billet_1"
+              }
+            ]
+          },
+          {
+            "x": 15,
+            "y": 61,
+            "width": 26,
+            "height": 18,
+            "command": "exchangeDown-kubejs:billet_5",
+            "icons": [
+              {
+                "type": "lightmanscurrency:item",
+                "x": -2,
+                "y": 1,
+                "item": "kubejs:billet_5"
+              },
+              {
+                "type": "lightmanscurrency:small_arrow",
+                "x": 10,
+                "y": 6,
+                "direction": "RIGHT"
+              },
+              {
+                "type": "lightmanscurrency:item",
+                "x": 12,
+                "y": 1,
+                "item": "kubejs:billet_1"
+              }
+            ]
+          },
+          {
+            "x": 15,
+            "y": 88,
+            "width": 26,
+            "height": 18,
+            "command": "exchangeUp-kubejs:billet_1",
+            "icons": [
+              {
+                "type": "lightmanscurrency:item",
+                "x": -2,
+                "y": 1,
+                "item": "kubejs:billet_1"
+              },
+              {
+                "type": "lightmanscurrency:small_arrow",
+                "x": 10,
+                "y": 6,
+                "direction": "RIGHT"
+              },
+              {
+                "type": "lightmanscurrency:item",
+                "x": 12,
+                "y": 1,
+                "item": "kubejs:billet_5"
+              }
+            ]
+          },
+          {
+            "x": 75,
+            "y": 61,
+            "width": 26,
+            "height": 18,
+            "command": "exchangeDown-kubejs:billet_20",
+            "icons": [
+              {
+                "type": "lightmanscurrency:item",
+                "x": -2,
+                "y": 1,
+                "item": "kubejs:billet_20"
+              },
+              {
+                "type": "lightmanscurrency:small_arrow",
+                "x": 10,
+                "y": 6,
+                "direction": "RIGHT"
+              },
+              {
+                "type": "lightmanscurrency:item",
+                "x": 12,
+                "y": 1,
+                "item": "kubejs:billet_5"
+              }
+            ]
+          },
+          {
+            "x": 75,
+            "y": 88,
+            "width": 26,
+            "height": 18,
+            "command": "exchangeUp-kubejs:billet_5",
+            "icons": [
+              {
+                "type": "lightmanscurrency:item",
+                "x": -2,
+                "y": 1,
+                "item": "kubejs:billet_5"
+              },
+              {
+                "type": "lightmanscurrency:small_arrow",
+                "x": 10,
+                "y": 6,
+                "direction": "RIGHT"
+              },
+              {
+                "type": "lightmanscurrency:item",
+                "x": 12,
+                "y": 1,
+                "item": "kubejs:billet_20"
+              }
+            ]
+          },
+          {
+            "x": 135,
+            "y": 61,
+            "width": 26,
+            "height": 18,
+            "command": "exchangeDown-kubejs:billet_100",
+            "icons": [
+              {
+                "type": "lightmanscurrency:item",
+                "x": -2,
+                "y": 1,
+                "item": "kubejs:billet_100"
+              },
+              {
+                "type": "lightmanscurrency:small_arrow",
+                "x": 10,
+                "y": 6,
+                "direction": "RIGHT"
+              },
+              {
+                "type": "lightmanscurrency:item",
+                "x": 12,
+                "y": 1,
+                "item": "kubejs:billet_20"
+              }
+            ]
+          },
+          {
+            "x": 135,
+            "y": 88,
+            "width": 26,
+            "height": 18,
+            "command": "exchangeUp-kubejs:billet_20",
+            "icons": [
+              {
+                "type": "lightmanscurrency:item",
+                "x": -2,
+                "y": 1,
+                "item": "kubejs:billet_20"
+              },
+              {
+                "type": "lightmanscurrency:small_arrow",
+                "x": 10,
+                "y": 6,
+                "direction": "RIGHT"
+              },
+              {
+                "type": "lightmanscurrency:item",
+                "x": 12,
+                "y": 1,
+                "item": "kubejs:billet_100"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

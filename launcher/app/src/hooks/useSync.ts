@@ -144,7 +144,7 @@ export function useSync() {
     [isRunning, isLaunching]
   );
 
-  // Lancer le jeu Minecraft 1.21.1 Fabric
+  // Lancer le jeu Minecraft 1.21.1 NeoForge
   const launchMinecraft = useCallback(
     async (username: string, ramMb: number, customGameDir?: string) => {
       if (isLaunching) return;

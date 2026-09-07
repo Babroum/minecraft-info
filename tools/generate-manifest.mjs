@@ -34,7 +34,7 @@ const manifest = {
     version: "0.1.0",
     minecraft: {
         version: "1.21.1",
-        loader: "fabric"
+        loader: "neoforge"
     },
     mods
 };

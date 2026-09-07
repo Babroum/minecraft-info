@@ -1,0 +1,9 @@
+{
+  "replace": true,
+  "values": [
+    "kubejs:billet_1",
+    "kubejs:billet_5",
+    "kubejs:billet_20",
+    "kubejs:billet_100"
+  ]
+}

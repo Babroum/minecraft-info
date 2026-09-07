@@ -4,7 +4,7 @@
 - `launcher/app` : Application desktop Minecraft (Tauri v2 + React)
 - `launcher/api` : API HTTP pour distribuer le manifest (`/manifest.json`) et les mods (`/mods/*`)
 - `modpacks` : Fichiers `.jar` des mods et `manifest.json` officiel
-- `server` : Serveur Minecraft Fabric 1.21.1
+- `server` : Serveur Minecraft NeoForge 1.21.1
 - `tools` : Scripts utilitaires (`generate-manifest.mjs`)
 
 ---
@@ -18,7 +18,7 @@
 | `npm run api:start` | Démarre l'API de distribution en mode direct |
 | `npm run app:dev` | Lance le Launcher desktop en mode développement |
 | `npm run app:build` | Compile le binaire de production du Launcher |
-| `npm run server:start` | Démarre le serveur Minecraft Fabric (6 Go RAM) |
+| `npm run server:start` | Démarre le serveur Minecraft NeoForge (6 Go RAM) |
 
 ---
 

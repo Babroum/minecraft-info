@@ -98,7 +98,7 @@ export default function App() {
         <div className="mc-subtitle">
           <span>MINECRAFT 1.21.1</span>
           <span>•</span>
-          <span>FABRIC LOADER</span>
+          <span>NEOFORGE 21.1.250</span>
         </div>
       </header>
 
