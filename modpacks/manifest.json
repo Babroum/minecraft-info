@@ -1,0 +1,58 @@
+{
+  "name": "NationGlory",
+  "version": "0.1.0",
+  "minecraft": {
+    "version": "1.21.1",
+    "loader": "fabric"
+  },
+  "mods": [
+    {
+      "file": "ForgeConfigAPIPort-v21.1.6-1.21.1-Fabric.jar",
+      "sha256": "2e3a8f0e3bda85a7d722720e7ce879cbd9d028d9395c6fc224d329b3c982d9b1"
+    },
+    {
+      "file": "balm-fabric-1.21.1-21.0.65.jar",
+      "sha256": "195c4f64ce30d47896b0667ac38fcefe21278b91c9f83b7251329947b5ac1be3"
+    },
+    {
+      "file": "c2me-fabric-mc1.21.1-0.4.0-alpha.0.27.jar",
+      "sha256": "f0a488fa26a1d1c7668f644527c470941d41474da2d7d620620da13473509b84"
+    },
+    {
+      "file": "fabric-api-0.116.17+1.21.1.jar",
+      "sha256": "79ac44b40780acbd884b34c50be1e39af682847e5f5cb3b1fddeeaa768dce800"
+    },
+    {
+      "file": "ferritecore-7.0.3-fabric.jar",
+      "sha256": "98c3ab1d5aab8f14b5d082d3f1a467727fd335f02d124555c94339761c4c18f2"
+    },
+    {
+      "file": "krypton-0.2.8.jar",
+      "sha256": "94f195819b24e5da64effdc9da15cdd84836cc75e8ff0fd098bab6bc2f49e3fe"
+    },
+    {
+      "file": "lithium-fabric-0.15.4+mc1.21.1.jar",
+      "sha256": "92329d98c57f5a22091a0adb509fdb1d60113a5602c708b799b13134bad13baa"
+    },
+    {
+      "file": "modernfix-fabric-5.25.1+mc1.21.1.jar",
+      "sha256": "3ce5a9ce75066961b7fa5382692bb1387cc3536cc984b064ab7d70b97f3c674c"
+    },
+    {
+      "file": "open-parties-and-claims-fabric-1.21.1-0.30.3.jar",
+      "sha256": "965b372056279c618a8a4ea5ac91363284f488e2a942bfe074ba868d9939eafc"
+    },
+    {
+      "file": "spark-1.10.109-fabric.jar",
+      "sha256": "fafc121ac53dab1c32e74b7a1cae47d54435ba4cbeeda1180dc96675a7757047"
+    },
+    {
+      "file": "spuds-shops-1.21.1-1.9.0.jar",
+      "sha256": "02af516111fafccea7ff4876e69b8869727ae8443e91becff8155d2bd80fa73f"
+    },
+    {
+      "file": "waystones-fabric-1.21.1-21.1.42.jar",
+      "sha256": "4702e25e3aa813c6e3d420086f9ca7849c5a53b86983e9db7dc0a7859433a38a"
+    }
+  ]
+}

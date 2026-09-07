@@ -1,0 +1,12 @@
+{
+  "name": "nationglory-project",
+  "private": true,
+  "scripts": {
+    "manifest": "node tools/generate-manifest.mjs",
+    "api:start": "node launcher/api/index.mjs",
+    "api:dev": "node --watch launcher/api/index.mjs",
+    "app:dev": "npm --prefix launcher/app run tauri dev",
+    "app:build": "npm --prefix launcher/app run tauri build",
+    "server:start": "cd server && java -Xmx6G -jar fabric-server-launch.jar nogui"
+  }
+}

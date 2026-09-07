@@ -1,0 +1,10 @@
+{
+  "name": "nationglory-launcher-api",
+  "version": "1.0.0",
+  "description": "API de distribution du modpack et manifest pour le launcher NationGlory",
+  "type": "module",
+  "scripts": {
+    "start": "node index.mjs",
+    "dev": "node --watch index.mjs"
+  }
+}
