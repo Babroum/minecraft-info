@@ -1,6 +1,3 @@
-# Minecraft
-*.jar
-
 # Node
 node_modules/
 dist/
