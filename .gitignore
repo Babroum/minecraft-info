@@ -87,3 +87,5 @@ server/.sable/
 *.temp
 *~
 **/backups/
+**/ftbbackups3/
+scratch/

@@ -38,8 +38,8 @@ StartupEvents.registry('item', event => {
     // -------------------------------------------------------------------------
     
     // Lingot d'Uranium Militaire Enrichi (Composant de haute technologie militaire)
-    event.create('lingot_uranium_militaire')
-        .displayName("Lingot d'Uranium Militaire")
+    event.create('lingot_uranium_enrichie')
+        .displayName("Lingot d'Uranium Enrichie")
         .maxStackSize(64)
         .rarity('epic')
         .fireResistant(true)

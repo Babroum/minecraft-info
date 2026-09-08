@@ -7,12 +7,28 @@
   },
   "mods": [
     {
+      "file": "Controlling-neoforge-1.21.1-19.0.5.jar",
+      "sha256": "cc525fb6b030d9e4d33176983f278919e17b33935e2ca568929bdfa98f2b44a0"
+    },
+    {
       "file": "FarmersDelight-1.21.1-1.3.4.jar",
       "sha256": "139ad7696462c89c03eea463f805abffa552526c5dadaadae221dd9624cb197c"
     },
     {
+      "file": "Jade-1.21.1-NeoForge-15.10.6.jar",
+      "sha256": "276f1f65a20d04f536989c4f311949d770b52c440c23c2b904a08860f3c93810"
+    },
+    {
       "file": "Mekanism-1.21.1-10.7.19.85.jar",
       "sha256": "004dbc9f3106f4d192aeaa1ee1190dd16ec9ca8059ed3d093b80034f4c574f43"
+    },
+    {
+      "file": "Searchables-neoforge-1.21.1-1.0.2.jar",
+      "sha256": "ca193f0c69033d8f709f9e073a7c1ef4ea46714e5c2f94eb23ace12781c6aa68"
+    },
+    {
+      "file": "appleskin-neoforge-mc1.21-3.0.9.jar",
+      "sha256": "38b48dd6231341c9f964ce6e42c57ec866c6cc8f72bec938390a59bafb3922df"
     },
     {
       "file": "architectury-13.0.11-neoforge.jar",
@@ -21,10 +37,6 @@
     {
       "file": "ballistix-1.21.1-1.1.1.jar",
       "sha256": "535bb2ca03d956dfbfcd552725fe62c6a3221b2d35d69a620765a171e9c86ffb"
-    },
-    {
-      "file": "balm-neoforge-1.21.1-21.0.65.jar",
-      "sha256": "490fa5fcb7ca83a9b5a84e33c2832298db99d189131001b9277a1de7fdc0bf91"
     },
     {
       "file": "better-advanced-tooltips-2101.1.0-build.5.jar",
@@ -41,10 +53,6 @@
     {
       "file": "createbigcannons-5.11.7+mc.1.21.1.jar",
       "sha256": "ea017ab94637032d039899d88404838d173fa0e6286657cae6a6c3af459e87ca"
-    },
-    {
-      "file": "fancymenu_neoforge_3.9.12_MC_1.21.1.jar",
-      "sha256": "fd0f446c22bb42a0a3ac5cbdcb614abcba5a70f99e2a0cda6556a8efad2859a5"
     },
     {
       "file": "ferritecore-7.0.3-neoforge.jar",
@@ -91,10 +99,6 @@
       "sha256": "5d610dd9ca42b58039f54c92d3b05cc700e15d40b3d817ecb3ccb661d36dc761"
     },
     {
-      "file": "lithium-neoforge-0.15.4+mc1.21.1.jar",
-      "sha256": "488f33216030c1cb0baa33e59de3d657d08d5795a6c2080c8c8bbbc133fc8757"
-    },
-    {
       "file": "melody_neoforge_1.0.10_MC_1.21.jar",
       "sha256": "6b973a4564703c531fc0eae09db08b07a38091e0a743c687b8d2049457e84871"
     },
@@ -119,8 +123,8 @@
       "sha256": "c8710f85bc780bbf523e6726ceaaf76dd0b8c61479db497b382c6bb34317e7ab"
     },
     {
-      "file": "spark-1.10.124-neoforge.jar",
-      "sha256": "647e8a81afbe414dba1df4ba15fd06c5d32d4cb544e68828405e8e074c2e16db"
+      "file": "sodium-neoforge-0.8.13+mc1.21.1.jar",
+      "sha256": "575d187b15328d7bddd8a9b1bee64333c22c14735f5780ec49eac0cd5503c08d"
     },
     {
       "file": "voicechat-neoforge-1.21.1-2.6.22.jar",
@@ -129,6 +133,111 @@
     {
       "file": "voltaic-1.21.1-1.0.13.jar",
       "sha256": "8ad851bfa9bf7665da93851e270c7477a03fab3852616bc50918600635b74c75"
+    }
+  ],
+  "resourcepacks": [
+    {
+      "file": "NationGlory-Assets.zip",
+      "sha256": "71e8ccda56e3701caa2ae7e821cb9d771df5196338d71b8c21b84d4907892e8f"
+    }
+  ],
+  "datapacks": [],
+  "kubejs": [
+    {
+      "file": "assets/kubejs/models/item/billet_1.json",
+      "sha256": "3403a7e98c518339b89d211c91472e7ccdf341b9e2f756704fbfe07608ca1c89"
+    },
+    {
+      "file": "assets/kubejs/models/item/billet_100.json",
+      "sha256": "135d5294abb4bc90c2a9e39bb7460195d571ac8819f89d6ac3cfa49f770dbf15"
+    },
+    {
+      "file": "assets/kubejs/models/item/billet_20.json",
+      "sha256": "52d822c468e85d1b619ebc58a85fe5ae64666fd39a5495c5dec6fd2edbbde9cd"
+    },
+    {
+      "file": "assets/kubejs/models/item/billet_5.json",
+      "sha256": "6c61167383673e888245a805fa3918229aacf6603aabb267bd63740ba2e7d2ac"
+    },
+    {
+      "file": "assets/kubejs/models/item/lingot_uranium_militaire.json",
+      "sha256": "3d5c9f7aca9c209b7b3641150ad3016be3e1c77618a324723bd8b733e3343b53"
+    },
+    {
+      "file": "assets/kubejs/textures/item/billet_1.png",
+      "sha256": "f2f4fd4bb5395c5609ce91ff501168bbfe3675bb5b74ce5f8b8f5fab2a19b308"
+    },
+    {
+      "file": "assets/kubejs/textures/item/billet_100.png",
+      "sha256": "e60a4693ca7a239deeef132a982a8083c36a617ee2a9ef8a59535aab4ed36439"
+    },
+    {
+      "file": "assets/kubejs/textures/item/billet_20.png",
+      "sha256": "3c7868dea2fd1b6701708cb03bd7a75775ddf550a668d5d2dad5da7a7981279f"
+    },
+    {
+      "file": "assets/kubejs/textures/item/billet_5.png",
+      "sha256": "685cf8a96799bedd33a1dd1ab36bf73eafb6e970468663edaf6be957e3d7945a"
+    },
+    {
+      "file": "assets/kubejs/textures/item/lingot_uranium_militaire.png",
+      "sha256": "4acb3ccbde40a1fdbe919489fdb618c317c606d54efa2d2c8e3c4e0a6aa49b83"
+    },
+    {
+      "file": "data/c/tags/item/coins.json",
+      "sha256": "8c31c5e7903feea6b430dad7e8475840ab0711a642c69361e17e1f09138b005e"
+    },
+    {
+      "file": "data/lightmanscurrency/tags/item/coins.json",
+      "sha256": "8c31c5e7903feea6b430dad7e8475840ab0711a642c69361e17e1f09138b005e"
+    },
+    {
+      "file": "server_scripts/alliance_system.js",
+      "sha256": "0df3baf77dc697cc46ece2b0d6d22daf73434a621220e6bc11af880200f6e696"
+    },
+    {
+      "file": "server_scripts/ftb_helpers.js",
+      "sha256": "8f0189551a4f7f4c6f01c52e74d669322806a19297e14011c8174e7d388fdee5"
+    },
+    {
+      "file": "server_scripts/main.js",
+      "sha256": "2bd394ef37f069bfc82a90e3b70da645c281dfeb109c2a0646e51dbde07cf7b6"
+    },
+    {
+      "file": "server_scripts/military_recipes.js",
+      "sha256": "aa962dae33221d5ba36ffb93a487397d999c2eb102c0b9217685615e1de36ae0"
+    },
+    {
+      "file": "server_scripts/nation_bank.js",
+      "sha256": "0fa5aa15d4049e98f09930e483f03f9058585006ad227cb82cafeada6bde09c9"
+    },
+    {
+      "file": "server_scripts/nation_info.js",
+      "sha256": "22f669a69d1e19ad2b86b7ec555fe3d2794bd6635b11320418a2c8c672620bdb"
+    },
+    {
+      "file": "server_scripts/territory_tax.js",
+      "sha256": "0b22bb9195e27d9d98ecf9d9c674e55831a84d40ce23be42b5086a1814385821"
+    },
+    {
+      "file": "server_scripts/war_admin.js",
+      "sha256": "8cedf1b3144218b3f7cb2f49cfd2a4bc23edd9f9f7ee8009cfee1ef256674fd2"
+    },
+    {
+      "file": "server_scripts/war_claims_hook.js",
+      "sha256": "140a879aee0619fbc3da2c087db85c56005d2d9356ebf6005aea83dce9b0cd7c"
+    },
+    {
+      "file": "server_scripts/war_raidhours.js",
+      "sha256": "b82596fee79aa6af5c6e54450f606b96aa3bfa7bcedbff70a62e82b2ea2ddd95"
+    },
+    {
+      "file": "server_scripts/war_system.js",
+      "sha256": "aeab1bb8ab36f01ea944d6f9020422ffc050ebea35001108af3bfce20823211a"
+    },
+    {
+      "file": "startup_scripts/economy_items.js",
+      "sha256": "2297acc980b2068040f68623087f24a3b805547a1b5f5f160ce2e08b3d0f0350"
     }
   ]
 }

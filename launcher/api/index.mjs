@@ -12,6 +12,9 @@ const HOST = process.env.HOST || "0.0.0.0";
 const ROOT_DIR = path.resolve(__dirname, "../..");
 const MODPACKS_DIR = path.resolve(ROOT_DIR, "modpacks");
 const MODS_DIR = path.resolve(MODPACKS_DIR, "mods");
+const RESOURCEPACKS_DIR = path.resolve(MODPACKS_DIR, "resourcepacks");
+const DATAPACKS_DIR = path.resolve(MODPACKS_DIR, "datapacks");
+const KUBEJS_DIR = path.resolve(ROOT_DIR, "kubejs");
 const MANIFEST_PATH = path.resolve(MODPACKS_DIR, "manifest.json");
 
 function setCorsHeaders(res) {
@@ -91,6 +94,15 @@ const server = http.createServer((req, res) => {
     return streamFile(req, res, MANIFEST_PATH, "application/json; charset=utf-8");
   }
 
+  // 1b. Endpoint Resource Pack
+  if (pathname === "/resourcepack.zip" || pathname === "/resourcepacks/NationGlory-Assets.zip") {
+    const resourcePackPath = path.resolve(ROOT_DIR, "modpacks/resourcepacks/NationGlory-Assets.zip");
+    if (!fs.existsSync(resourcePackPath)) {
+      return sendError(res, 404, "Pack de ressources introuvable.");
+    }
+    return streamFile(req, res, resourcePackPath, "application/zip");
+  }
+
   // 2. Endpoint Statistiques API
   if (pathname === "/info" || pathname === "/api/info" || pathname === "/health") {
     if (!fs.existsSync(MANIFEST_PATH)) {
@@ -148,6 +160,58 @@ const server = http.createServer((req, res) => {
     return streamFile(req, res, modFilePath, "application/java-archive");
   }
 
+  // 4. Distribution des Resource Packs (/resourcepacks/:filename)
+  if (pathname.startsWith("/resourcepacks/")) {
+    const filename = pathname.slice("/resourcepacks/".length);
+    if (!filename || filename.includes("..") || filename.includes("/") || filename.includes("\\")) {
+      return sendError(res, 400, "Nom de fichier invalide");
+    }
+
+    const rpFilePath = path.join(RESOURCEPACKS_DIR, filename);
+    if (!fs.existsSync(rpFilePath)) {
+      return sendError(res, 404, `Resource pack non trouvé: ${filename}`);
+    }
+
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    return streamFile(req, res, rpFilePath, "application/zip");
+  }
+
+  // 5. Distribution des Data Packs (/datapacks/:filename)
+  if (pathname.startsWith("/datapacks/")) {
+    const filename = pathname.slice("/datapacks/".length);
+    if (!filename || filename.includes("..") || filename.includes("/") || filename.includes("\\")) {
+      return sendError(res, 400, "Nom de fichier invalide");
+    }
+
+    const dpFilePath = path.join(DATAPACKS_DIR, filename);
+    if (!fs.existsSync(dpFilePath)) {
+      return sendError(res, 404, `Datapack non trouvé: ${filename}`);
+    }
+
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    return streamFile(req, res, dpFilePath, "application/zip");
+  }
+
+  // 6. Distribution des fichiers KubeJS (/kubejs/*)
+  if (pathname.startsWith("/kubejs/")) {
+    const relPath = pathname.slice("/kubejs/".length);
+    if (!relPath || relPath.includes("..")) {
+      return sendError(res, 400, "Chemin invalide");
+    }
+
+    const kubeFilePath = path.join(KUBEJS_DIR, relPath);
+    if (!fs.existsSync(kubeFilePath)) {
+      return sendError(res, 404, `Fichier KubeJS non trouvé: ${relPath}`);
+    }
+
+    let contentType = "text/plain; charset=utf-8";
+    if (relPath.endsWith(".js")) contentType = "application/javascript; charset=utf-8";
+    else if (relPath.endsWith(".json")) contentType = "application/json; charset=utf-8";
+    else if (relPath.endsWith(".png")) contentType = "image/png";
+
+    return streamFile(req, res, kubeFilePath, contentType);
+  }
+
   // Endpoint d'accueil API
   if (pathname === "/") {
     return sendJson(res, 200, {
@@ -156,7 +220,10 @@ const server = http.createServer((req, res) => {
       endpoints: {
         manifest: "/manifest.json",
         info: "/info",
-        mods: "/mods/:filename"
+        mods: "/mods/:filename",
+        resourcepacks: "/resourcepacks/:filename",
+        datapacks: "/datapacks/:filename",
+        kubejs: "/kubejs/*"
       }
     });
   }

@@ -1,212 +1,164 @@
 // priority: 50
 // =============================================================================
-// NationGlory Server Script - Entretien Territorial et Taxe Bancaire
-// NeoForge 1.21.1 / KubeJS 7 (Rhino Engine)
-// Intégration FTB Chunks, FTB Teams et Lightman's Currency API
+// NationGlory Server Script - Entretien Territorial & Taxe Progressive
 // =============================================================================
 
-// Chargement des classes Java des APIs
-const FTBChunksAPI = Java.loadClass('dev.ftb.mods.ftbchunks.api.FTBChunksAPI')
-const FTBTeamsAPI = Java.loadClass('dev.ftb.mods.ftbteams.api.FTBTeamsAPI')
-const BankAPI = Java.loadClass('io.github.lightman314.lightmanscurrency.api.money.bank.BankAPI')
-const CoinValue = Java.loadClass('io.github.lightman314.lightmanscurrency.api.money.value.builtin.CoinValue')
-// Note: Component est déjà fourni globalement par KubeJS
-
-// Configuration économique géopolitique
-const TAX_CONFIG = {
-    TAX_PER_CHUNK: 5,               // Coût en dollars ($) par chunk réclamé
-    TAX_INTERVAL_TICKS: 72000,      // Prélèvement automatique toutes les heures (72 000 ticks)
-    UNCLAIM_ON_DEBT: true,          // Révocation des claims si solde insuffisant
-    ANNOUNCE_TO_MEMBERS: true       // Envoi de notifications en jeu aux membres connectés
+var TAX_CONFIG = {
+    TAX_INTERVAL_TICKS: 72000,      // Prélèvement toutes les heures (72 000 ticks)
+    UNCLAIM_ON_DEBT: true,          // Révocation des claims en cas de défaut persistant
+    GRACE_PERIOD_MS: 24 * 3600 * 1000 // 24h de grâce avant saisie territoriale
 }
 
 /**
- * Recherche le compte bancaire associé à une équipe FTB Teams
- * 1. Cherche un compte d'équipe dont le nom correspond au nom de la nation
- * 2. Repli : cherche le compte personnel du leader / propriétaire de l'équipe
+ * Calcul de la taxe progressive selon le nombre de chunks
  */
-function resolveTeamBankAccount(team) {
-    try {
-        const bankApi = BankAPI.getApi()
-        const allAccounts = bankApi.GetAllBankAccounts(false) // Comptes côté serveur
-        const teamName = team.getName().getString().toLowerCase().trim()
-        const teamShort = team.getShortName().toLowerCase().trim()
-        const ownerUUID = team.getOwner() ? team.getOwner().toString() : null
-
-        // 1. Recherche par nom d'équipe ou compte dédié
-        for (let i = 0; i < allAccounts.size(); i++) {
-            const acc = allAccounts.get(i)
-            const accName = acc.getName().getString().toLowerCase().trim()
-            if (accName === teamName || accName === teamShort || accName.includes(teamShort)) {
-                return acc
-            }
-        }
-
-        // 2. Repli sur le compte du propriétaire / chef d'État
-        if (ownerUUID) {
-            for (let i = 0; i < allAccounts.size(); i++) {
-                const acc = allAccounts.get(i)
-                const ownerName = acc.getOwnerName()
-                if (ownerName && ownerName.toString() === ownerUUID) {
-                    return acc
-                }
-            }
-        }
-
-        // Si aucun compte spécifique n'est trouvé, renvoyer null
-        return null
-    } catch (e) {
-        console.error('[Taxes] Erreur lors de la résolution du compte bancaire : ' + e)
-        return null
+function calculateProgressiveTax(chunkCount) {
+    if (chunkCount <= 0) return 0
+    var total = 0
+    for (var i = 1; i <= chunkCount; i++) {
+        if (i <= 10) total += 1        // 1$ par chunk pour les 10 premiers
+        else if (i <= 30) total += 3   // 3$ de 11 à 30
+        else if (i <= 60) total += 8   // 8$ de 31 à 60
+        else total += 15               // 15$ au-delà de 60
     }
+    return total
 }
 
 /**
- * Envoie un message formaté à tous les membres connectés d'une équipe
+ * Charge les impayés depuis persistentData
  */
-function notifyTeamMembers(team, message) {
+function loadTaxDebts(server) {
+    if (!server) return {}
     try {
-        const onlinePlayers = team.getOnlineMembers()
-        if (onlinePlayers && !onlinePlayers.isEmpty()) {
-            for (let i = 0; i < onlinePlayers.size(); i++) {
-                const player = onlinePlayers.get(i)
-                player.sendSystemMessage(Component.literal(message))
+        if (server.persistentData) {
+            var raw = server.persistentData.getString('nation_tax_debts')
+            if (raw && raw.length > 0) {
+                var d = JSON.parse(raw)
+                if (d && typeof d === 'object') return d
             }
         }
-    } catch (e) {
-        console.error('[Taxes] Erreur lors de la notification des membres : ' + e)
-    }
+    } catch (e) {}
+    return {}
+}
+
+function saveTaxDebts(server, debts) {
+    if (!server) return
+    try {
+        if (server.persistentData) {
+            server.persistentData.putString('nation_tax_debts', JSON.stringify(debts))
+        }
+    } catch (e) {}
 }
 
 /**
- * Cycle principal de prélèvement de la taxe territoriale
+ * Prélèvement fiscal d'entretien territorial
  */
 function collectTerritoryTaxes(server, commandSource) {
-    console.info('[Taxes] Début du cycle de prélèvement des taxes territoriales...')
-    
-    let totalTaxCollected = 0
-    let totalTeamsProcessed = 0
-    let totalChunksRevoked = 0
+    console.info('[Taxes] Lancement du cycle fiscal territorial...')
+    var totalCollected = 0
+    var teamsProcessed = 0
+    var chunksRevoked = 0
 
     try {
-        const chunksApi = FTBChunksAPI.api()
-        const teamsApi = FTBTeamsAPI.api()
-        const bankApi = BankAPI.getApi()
+        var chunksApi = Java.loadClass('dev.ftb.mods.ftbchunks.api.FTBChunksAPI').api()
+        var teamsApi = Java.loadClass('dev.ftb.mods.ftbteams.api.FTBTeamsAPI').api()
+        if (!chunksApi || !teamsApi) return
 
-        const chunkManager = chunksApi.getManager()
-        const teamManager = teamsApi.getManager()
-        const teams = teamManager.getTeams()
+        var chunkMgr = chunksApi.getManager()
+        var teamMgr = teamsApi.getManager()
+        var teams = teamMgr.getTeams()
+        var debts = loadTaxDebts(server)
+        var now = Date.now()
 
-        const cmdSource = server.createCommandSourceStack()
+        var it = teams.iterator()
+        while (it.hasNext()) {
+            var team = it.next()
+            if (!team || !team.isValid() || !team.isPartyTeam()) continue
 
-        teams.forEach(team => {
-            if (!team.isValid()) return
+            var teamData = chunkMgr.getOrCreateData(team)
+            if (!teamData) continue
 
-            const teamData = chunkManager.getOrCreateData(team)
-            if (!teamData) return
+            var claimedChunks = teamData.getClaimedChunks()
+            if (!claimedChunks || claimedChunks.isEmpty()) continue
 
-            const claimedChunks = teamData.getClaimedChunks()
-            if (!claimedChunks || claimedChunks.isEmpty()) return
+            var chunkCount = claimedChunks.size()
+            var taxDue = calculateProgressiveTax(chunkCount)
+            var teamIdStr = team.getId().toString()
+            teamsProcessed++
 
-            const chunkCount = claimedChunks.size()
-            const totalTax = chunkCount * TAX_CONFIG.TAX_PER_CHUNK
-            totalTeamsProcessed++
+            // Tenter le retrait sur le compte de la nation
+            var paid = false
+            if (typeof withdrawNationMoney === 'function') {
+                paid = withdrawNationMoney(team, null, taxDue)
+            }
 
-            const bankAccount = resolveTeamBankAccount(team)
-            const teamDisplayName = team.getName().getString()
-
-            // Création de la valeur monétaire Lightman's Currency
-            const taxCost = CoinValue.fromNumber('main', totalTax)
-
-            if (bankAccount && bankAccount.getMoneyStorage().containsValue(taxCost)) {
-                // Prélèvement réussi
-                bankApi.BankWithdrawFromServer(bankAccount, taxCost, false)
-                totalTaxCollected += totalTax
-
-                if (TAX_CONFIG.ANNOUNCE_TO_MEMBERS) {
-                    notifyTeamMembers(
-                        team,
-                        `§2[FINANCES D'ÉTAT] §aTaxe d'entretien territorial prélevée : §e${totalTax}$ §apour §e${chunkCount} §achunk(s).`
-                    )
-                }
-                console.info(`[Taxes] ${teamDisplayName} : ${totalTax}$ prélevés avec succès pour ${chunkCount} chunks.`)
+            if (paid) {
+                totalCollected += taxDue
+                delete debts[teamIdStr]
+                notifyTeam(team, 'Impôts', 'Taxe d\'entretien territorial acquittée : §e' + taxDue + '$ §fpour §e' + chunkCount + ' §fchunks.', '§a')
             } else {
-                // Solde insuffisant ou compte introuvable : Alerte et révocation des claims
-                const currentBalance = bankAccount ? bankAccount.getMoneyStorage().getCoreValue() : 0
+                // Défaut de paiement
+                if (!debts[teamIdStr]) {
+                    debts[teamIdStr] = { firstFailedAt: now, chunkCount: chunkCount, taxDue: taxDue }
+                    notifyTeam(team, 'Impôts', '§c⚠ Trésor insuffisant pour payer l\'entretien territorial (' + taxDue + '$ dus pour ' + chunkCount + ' chunks). Délai de grâce de 24h engagé !', '§c')
+                } else {
+                    var debtAge = now - debts[teamIdStr].firstFailedAt
+                    if (debtAge >= TAX_CONFIG.GRACE_PERIOD_MS && TAX_CONFIG.UNCLAIM_ON_DEBT) {
+                        // Saisie de 20% des chunks les plus vulnérables
+                        var unclaimQuota = Math.max(1, Math.ceil(chunkCount * 0.2))
+                        var revokedNow = 0
+                        var chunkIt = claimedChunks.iterator()
+                        var cmdSrc = server.createCommandSourceStack()
 
-                notifyTeamMembers(
-                    team,
-                    `§4[ALERTE TRÉSORERIE NATIONALE] §cSolde bancaire insuffisant ! Requis: §e${totalTax}$§c. L'État ne peut financer l'entretien territorial.`
-                )
+                        while (chunkIt.hasNext() && revokedNow < unclaimQuota) {
+                            var ch = chunkIt.next()
+                            ch.unclaim(cmdSrc, false)
+                            revokedNow++
+                        }
 
-                if (TAX_CONFIG.UNCLAIM_ON_DEBT) {
-                    // Calcul du nombre de chunks que l'équipe peut se payer
-                    const affordableChunks = Math.floor(currentBalance / TAX_CONFIG.TAX_CONFIG_PER_CHUNK || 0)
-                    const chunksToRevoke = chunkCount - affordableChunks
-                    let revokedCount = 0
-
-                    const chunkIterator = claimedChunks.iterator()
-                    while (chunkIterator.hasNext() && revokedCount < chunksToRevoke) {
-                        const chunk = chunkIterator.next()
-                        // Révocation du claim via l'API FTB Chunks
-                        chunk.unclaim(cmdSource, false)
-                        revokedCount++
+                        chunksRevoked += revokedNow
+                        notifyTeam(team, 'Saisie', '§4' + revokedNow + ' chunk(s) saisis et libérés pour défaut de paiement prolongé !', '§4')
+                        debts[teamIdStr].firstFailedAt = now // Réinitialiser le cycle de saisie
+                    } else {
+                        var remainingH = Math.max(0, Math.ceil((TAX_CONFIG.GRACE_PERIOD_MS - debtAge) / (3600 * 1000)))
+                        notifyTeam(team, 'Alerte Fiscale', 'Défaut de paiement persistant ! Il reste ' + remainingH + 'h avant la saisie de vos chunks.', '§c')
                     }
-
-                    totalChunksRevoked += revokedCount
-
-                    notifyTeamMembers(
-                        team,
-                        `§c[DÉFENSE NATIONALE] §4${revokedCount} §cchunk(s) territoriaux ont été révoqués et ouverts au pillage pour défaut de paiement !`
-                    )
-
-                    console.warn(`[Taxes] ${teamDisplayName} : ${revokedCount} chunks révoqués pour défaut de paiement de taxe.`)
                 }
             }
-        })
-
-        const summary = `§6[Trésor Fédéral] §aPrélèvement terminé : §e${totalTaxCollected}$ §acollectés sur §e${totalTeamsProcessed} §anations. §c(${totalChunksRevoked} chunks révoqués).`
-        console.info(`[Taxes] ${summary}`)
-
-        if (commandSource) {
-            commandSource.sendSuccess(() => Component.literal(summary), true)
         }
 
-    } catch (err) {
-        console.error('[Taxes] Erreur critique lors du cycle fiscal territorial : ' + err)
+        saveTaxDebts(server, debts)
+        var summary = 'Prélèvement territorial terminé : ' + totalCollected + '$ collectés sur ' + teamsProcessed + ' nation(s). (' + chunksRevoked + ' chunks saisis).'
+        console.info('[Taxes] ' + summary)
+
         if (commandSource) {
-            commandSource.sendFailure(Component.literal('§cErreur lors du prélèvement des taxes : ' + err))
+            sendMsg(commandSource.player, 'Impôts', summary, '§a')
         }
+    } catch (e) {
+        console.error('[Taxes] Erreur cycle territorial : ' + e)
     }
 }
 
 // -----------------------------------------------------------------------------
-// 1. Commande Admin : /prelever_taxes
+// COMMANDE ADMIN /prelever_taxes & INTERVALLE AUTO
 // -----------------------------------------------------------------------------
-ServerEvents.commandRegistry(event => {
-    const { commands: Commands } = event
-
+ServerEvents.commandRegistry(function(event) {
+    var Commands = event.commands
     event.register(
         Commands.literal('prelever_taxes')
-            .requires(source => source.hasPermission(2)) // Réservé aux OPs / Admins
-            .executes(ctx => {
-                const server = ctx.source.server
-                ctx.source.sendSuccess(() => Component.literal("§e[Impôts] Lancement forcé du prélèvement des taxes..."), false)
-                collectTerritoryTaxes(server, ctx.source)
+            .requires(function(source) { return source.hasPermission(2) })
+            .executes(function(ctx) {
+                collectTerritoryTaxes(ctx.source.server, ctx.source)
                 return 1
             })
     )
 })
 
-// -----------------------------------------------------------------------------
-// 2. Tâche Périodique (Tick de Serveur)
-// -----------------------------------------------------------------------------
-let taxTimer = 0
-
-ServerEvents.tick(event => {
-    taxTimer++
-    if (taxTimer >= TAX_CONFIG.TAX_INTERVAL_TICKS) {
-        taxTimer = 0
+var territoryTaxTimer = 0
+ServerEvents.tick(function(event) {
+    territoryTaxTimer++
+    if (territoryTaxTimer >= TAX_CONFIG.TAX_INTERVAL_TICKS) {
+        territoryTaxTimer = 0
         collectTerritoryTaxes(event.server, null)
     }
 })

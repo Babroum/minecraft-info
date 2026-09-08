@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "manifest": "node tools/generate-manifest.mjs",
+    "sync:kubejs": "node tools/sync-kubejs.mjs",
     "api:start": "node launcher/api/index.mjs",
     "api:dev": "node --watch launcher/api/index.mjs",
     "app:dev": "npm --prefix launcher/app run tauri dev",

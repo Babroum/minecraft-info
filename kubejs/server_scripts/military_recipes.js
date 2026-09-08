@@ -52,7 +52,22 @@ ServerEvents.recipes(event => {
     })
 
     // -------------------------------------------------------------------------
-    // 2. Réingénierie : Missiles Stratégiques Ballistix
+    // 2. Interdiction des machines de minage intensif (Protection Anti-Lag)
+    // -------------------------------------------------------------------------
+    
+    // Suppression du Digital Miner (Mekanism) et de la foreuse mécanique (Create)
+    event.remove({ output: 'mekanism:digital_miner' })
+    event.remove({ output: 'create:mechanical_drill' })
+
+    // -------------------------------------------------------------------------
+    // 2b. Désactivation de l'ancienne monnaie Lightman's Currency (Pièces/Coins)
+    // -------------------------------------------------------------------------
+    event.remove({ output: /lightmanscurrency:coin_/ })
+    event.remove({ output: /lightmanscurrency:coinpile_/ })
+    event.remove({ output: /lightmanscurrency:coinblock_/ })
+
+    // -------------------------------------------------------------------------
+    // 3. Réingénierie : Missiles Stratégiques Ballistix
     // -------------------------------------------------------------------------
 
     // Missile Tier 1 (Tactique courte portée)
@@ -76,7 +91,7 @@ ServerEvents.recipes(event => {
         'RMR',
         'ECE'
     ], {
-        U: 'kubejs:lingot_uranium_militaire',
+        U: 'kubejs:lingot_uranium_enrichie',
         R: 'mekanism:alloy_reinforced',
         M: 'ballistix:missiletier1',
         C: 'mekanism:advanced_control_circuit',
@@ -90,7 +105,7 @@ ServerEvents.recipes(event => {
         'AMA',
         'CPC'
     ], {
-        U: 'kubejs:lingot_uranium_militaire',
+        U: 'kubejs:lingot_uranium_enrichie',
         A: 'mekanism:alloy_atomic',
         M: 'ballistix:missiletier2',
         C: 'mekanism:elite_control_circuit',
@@ -109,7 +124,7 @@ ServerEvents.recipes(event => {
     ], {
         A: 'mekanism:alloy_reinforced',
         C: 'mekanism:elite_control_circuit',
-        U: 'kubejs:lingot_uranium_militaire',
+        U: 'kubejs:lingot_uranium_enrichie',
         X: 'mekanism:steel_casing'
     })
 
@@ -121,7 +136,7 @@ ServerEvents.recipes(event => {
     ], {
         A: 'mekanism:alloy_atomic',
         C: 'mekanism:ultimate_control_circuit',
-        U: 'kubejs:lingot_uranium_militaire',
+        U: 'kubejs:lingot_uranium_enrichie',
         X: 'minecraft:nether_star'
     })
 
@@ -160,7 +175,7 @@ ServerEvents.recipes(event => {
     ], {
         P: 'create:precision_mechanism',
         A: 'mekanism:alloy_infused',
-        U: 'kubejs:lingot_uranium_militaire',
+        U: 'kubejs:lingot_uranium_enrichie',
         S: 'createbigcannons:solid_shot'
     })
 
@@ -171,7 +186,7 @@ ServerEvents.recipes(event => {
         ' S '
     ], {
         S: 'mekanism:ingot_steel',
-        U: 'kubejs:lingot_uranium_militaire'
+        U: 'kubejs:lingot_uranium_enrichie'
     })
 
     // Obus Shrapnel Avancé

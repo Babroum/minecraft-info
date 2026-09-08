@@ -144,11 +144,11 @@ maxSolarNeutronActivatorRate = 64
 	#Maximum radius in blocks that the Digital Miner can reach. Increasing this may have negative effects on stability and memory usage. We strongly recommend you leave this at the default value.
 	# Default: 32
 	# Range: > 1
-	maxRadius = 32
+	maxRadius = 8
 	#Number of ticks required to mine a single block with a Digital Miner (without any upgrades).
 	# Default: 80
 	# Range: > 1
-	ticksPerMine = 80
+	ticksPerMine = 200
 	#Allows dragging items from recipe viewers into the target slot of Digital Miner filters. This allows selecting specific blocks without having to acquire an instance of the block first.
 	easyMinerFilters = false
 
