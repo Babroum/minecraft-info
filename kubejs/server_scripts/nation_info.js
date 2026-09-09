@@ -18,10 +18,10 @@ function showNationOverview(player) {
     var rank = getPlayerTeamRank(team, player)
     var rankLabel = (rank === 'owner') ? '§6Leader' : ((rank === 'officer') ? '§bMinistre' : '§7Citoyen')
 
-    var activeWars = getTeamActiveWars(server, team.getId())
+    var activeWars = (typeof getTeamActiveWars === 'function') ? getTeamActiveWars(server, team.getId()) : []
     var warStatus = activeWars.length > 0 ? ('§cEN GUERRE (' + activeWars.length + ' front(s))') : '§aEn Paix'
 
-    var bankAccount = getOrCreateNationBank(team, player)
+    var bankAccount = (typeof getOrCreateNationBank === 'function') ? getOrCreateNationBank(team, player) : null
     var balanceText = '0$'
     try {
         if (bankAccount && bankAccount.getBalanceText) balanceText = bankAccount.getBalanceText().getString()
@@ -29,7 +29,7 @@ function showNationOverview(player) {
 
     sendMsg(player, 'Nation', '§6' + teamName + ' §7| Rang : ' + rankLabel + ' §7| Statut : ' + warStatus, '§6')
     sendMsg(player, 'Trésor', 'Solde National : §a' + balanceText, '§2')
-    sendMsg(player, 'Raccourcis', '§f/nation deposer §7| §f/nation retirer §7| §f/ally list §7| §f/war list', '§7')
+    sendMsg(player, 'Raccourcis', '§f/nation home §7| §f/nation sethome §7| §f/nation tax §7| §f/ally list', '§7')
     return 1
 }
 
@@ -39,6 +39,7 @@ ServerEvents.commandRegistry(function(event) {
 
     event.register(
         Commands.literal('nation')
+            // Banque et trésor
             .then(Commands.literal('banque').executes(function(ctx) {
                 var player = ctx.source.player
                 if (!player) return 0
@@ -73,11 +74,133 @@ ServerEvents.commandRegistry(function(event) {
                     })
                 )
             )
+            // Fiscalité territoriale
+            .then(Commands.literal('tax').executes(function(ctx) {
+                return (typeof showNationTaxOverview === 'function') ? showNationTaxOverview(ctx.source.player) : 0
+            }))
+            .then(Commands.literal('impots').executes(function(ctx) {
+                return (typeof showNationTaxOverview === 'function') ? showNationTaxOverview(ctx.source.player) : 0
+            }))
+            // Homes & Téléportation
+            .then(Commands.literal('home').executes(function(ctx) {
+                try {
+                    return (typeof teleportToNationHome === 'function') ? teleportToNationHome(ctx.source.player) : 0
+                } catch (err) {
+                    console.error('[Command] /nation home : ' + err)
+                    if (ctx.source.player) sendMsg(ctx.source.player, 'Erreur', 'Impossible d\'exécuter /nation home : ' + err, '§c')
+                    return 0
+                }
+            }))
+            .then(Commands.literal('sethome').executes(function(ctx) {
+                try {
+                    var player = ctx.source.player
+                    var team = getPlayerNationTeam(player)
+                    return (typeof setNationHome === 'function') ? setNationHome(team, player) : 0
+                } catch (err) {
+                    console.error('[Command] /nation sethome : ' + err)
+                    if (ctx.source.player) sendMsg(ctx.source.player, 'Erreur', 'Impossible de poser le Home : ' + err, '§c')
+                    return 0
+                }
+            }))
+            .then(Commands.literal('delhome').executes(function(ctx) {
+                try {
+                    var player = ctx.source.player
+                    var team = getPlayerNationTeam(player)
+                    return (typeof deleteNationHome === 'function') ? deleteNationHome(team, player) : 0
+                } catch (err) {
+                    console.error('[Command] /nation delhome : ' + err)
+                    if (ctx.source.player) sendMsg(ctx.source.player, 'Erreur', 'Erreur : ' + err, '§c')
+                    return 0
+                }
+            }))
+            // Ambassade pour les alliés
+            .then(Commands.literal('setallyhome').executes(function(ctx) {
+                try {
+                    var player = ctx.source.player
+                    var team = getPlayerNationTeam(player)
+                    return (typeof setNationAllyHome === 'function') ? setNationAllyHome(team, player) : 0
+                } catch (err) {
+                    console.error('[Command] /nation setallyhome : ' + err)
+                    if (ctx.source.player) sendMsg(ctx.source.player, 'Erreur', 'Erreur : ' + err, '§c')
+                    return 0
+                }
+            }))
+            .then(Commands.literal('delallyhome').executes(function(ctx) {
+                try {
+                    var player = ctx.source.player
+                    var team = getPlayerNationTeam(player)
+                    return (typeof deleteNationAllyHome === 'function') ? deleteNationAllyHome(team, player) : 0
+                } catch (err) {
+                    console.error('[Command] /nation delallyhome : ' + err)
+                    if (ctx.source.player) sendMsg(ctx.source.player, 'Erreur', 'Erreur : ' + err, '§c')
+                    return 0
+                }
+            }))
+            // Syntaxes composées /nation set ...
+            .then(Commands.literal('set')
+                .then(Commands.literal('home').executes(function(ctx) {
+                    try {
+                        var player = ctx.source.player
+                        var team = getPlayerNationTeam(player)
+                        return (typeof setNationHome === 'function') ? setNationHome(team, player) : 0
+                    } catch (err) {
+                        console.error('[Command] /nation set home : ' + err)
+                        if (ctx.source.player) sendMsg(ctx.source.player, 'Erreur', 'Erreur : ' + err, '§c')
+                        return 0
+                    }
+                }))
+                .then(Commands.literal('ally')
+                    .then(Commands.literal('home').executes(function(ctx) {
+                        try {
+                            var player = ctx.source.player
+                            var team = getPlayerNationTeam(player)
+                            return (typeof setNationAllyHome === 'function') ? setNationAllyHome(team, player) : 0
+                        } catch (err) {
+                            console.error('[Command] /nation set ally home : ' + err)
+                            if (ctx.source.player) sendMsg(ctx.source.player, 'Erreur', 'Erreur : ' + err, '§c')
+                            return 0
+                        }
+                    }))
+                )
+                .then(Commands.literal('allyhome').executes(function(ctx) {
+                    try {
+                        var player = ctx.source.player
+                        var team = getPlayerNationTeam(player)
+                        return (typeof setNationAllyHome === 'function') ? setNationAllyHome(team, player) : 0
+                    } catch (err) {
+                        console.error('[Command] /nation set allyhome : ' + err)
+                        if (ctx.source.player) sendMsg(ctx.source.player, 'Erreur', 'Erreur : ' + err, '§c')
+                        return 0
+                    }
+                }))
+            )
+            // Visiter l'ambassade d'un allié via /nation allyhome <nation>
+            .then(Commands.literal('allyhome')
+                .then(Commands.argument('nation', StringArgumentType.string())
+                    .executes(function(ctx) {
+                        try {
+                            return (typeof teleportToAllyHome === 'function') ? teleportToAllyHome(ctx.source.player, StringArgumentType.getString(ctx, 'nation')) : 0
+                        } catch (err) {
+                            console.error('[Command] /nation allyhome : ' + err)
+                            if (ctx.source.player) sendMsg(ctx.source.player, 'Erreur', 'Erreur : ' + err, '§c')
+                            return 0
+                        }
+                    })
+                )
+            )
+            // Vue d'ensemble
             .then(Commands.literal('info').executes(function(ctx) {
                 return showNationOverview(ctx.source.player)
             }))
             .executes(function(ctx) {
                 return showNationOverview(ctx.source.player)
             })
+    )
+
+    // Raccourci direct /nationhome
+    event.register(
+        Commands.literal('nationhome').executes(function(ctx) {
+            return (typeof teleportToNationHome === 'function') ? teleportToNationHome(ctx.source.player) : 0
+        })
     )
 })

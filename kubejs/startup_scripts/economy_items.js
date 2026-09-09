@@ -8,7 +8,7 @@ StartupEvents.registry('item', event => {
     // -------------------------------------------------------------------------
     // 1. Déclaration des Coupures de Billets de Banque (Chaîne Monétaire d'État)
     // -------------------------------------------------------------------------
-    
+
     // Billet de 1$ (Unité monétaire de base)
     event.create('billet_1')
         .displayName('Billet de 1$')
@@ -36,10 +36,10 @@ StartupEvents.registry('item', event => {
     // -------------------------------------------------------------------------
     // 2. Matériau Géopolitique Stratégique
     // -------------------------------------------------------------------------
-    
+
     // Lingot d'Uranium Militaire Enrichi (Composant de haute technologie militaire)
-    event.create('lingot_uranium_enrichie')
-        .displayName("Lingot d'Uranium Enrichie")
+    event.create('lingot_uranium_militaire')
+        .displayName("Lingot d'Uranium Militaire")
         .maxStackSize(64)
         .rarity('epic')
         .fireResistant(true)

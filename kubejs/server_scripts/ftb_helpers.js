@@ -4,17 +4,12 @@
 // =============================================================================
 
 /**
- * Persistance JSON ultra-robuste sur disque (Java NIO)
+ * Persistance JSON native KubeJS (JsonIO)
  */
 function readJsonData(filename) {
     try {
-        var path = java.nio.file.Paths.get('kubejs/data/' + filename)
-        if (java.nio.file.Files.exists(path)) {
-            var content = java.nio.file.Files.readString(path)
-            if (content && content.trim().length > 0) {
-                return JSON.parse(content)
-            }
-        }
+        var data = JsonIO.read('kubejs/data/' + filename)
+        if (data) return data
     } catch (e) {
         console.error('[Storage] Erreur lecture ' + filename + ' : ' + e)
     }
@@ -23,12 +18,7 @@ function readJsonData(filename) {
 
 function writeJsonData(filename, data) {
     try {
-        var dir = java.nio.file.Paths.get('kubejs/data')
-        if (!java.nio.file.Files.exists(dir)) {
-            java.nio.file.Files.createDirectories(dir)
-        }
-        var path = dir.resolve(filename)
-        java.nio.file.Files.writeString(path, JSON.stringify(data, null, 2))
+        JsonIO.write('kubejs/data/' + filename, data)
     } catch (e) {
         console.error('[Storage] Erreur ecriture ' + filename + ' : ' + e)
     }
@@ -48,7 +38,7 @@ function getPlayerNationTeam(player) {
         try {
             if (player.getUUID) playerUUID = player.getUUID()
             else if (player.uuid) playerUUID = player.uuid
-            else if (player.getStringUuid) playerUUID = java.util.UUID.fromString(player.getStringUuid())
+            else if (player.getStringUuid) playerUUID = UUID.fromString(player.getStringUuid())
         } catch (ue) {}
 
         if (!playerUUID) return null
@@ -107,7 +97,7 @@ function getPlayerUUID(player) {
     try {
         if (player.getUUID) return player.getUUID()
         if (player.uuid) return player.uuid
-        if (player.getStringUuid) return java.util.UUID.fromString(player.getStringUuid())
+        if (player.getStringUuid) return UUID.fromString(player.getStringUuid())
     } catch (e) {}
     return null
 }
@@ -211,7 +201,7 @@ function getTeamById(server, teamIdStr) {
 
         // 1. Essai par getTeamByID
         try {
-            var uuid = java.util.UUID.fromString(str)
+            var uuid = UUID.fromString(str)
             var opt = mgr.getTeamByID(uuid)
             if (opt && opt.isPresent()) return opt.get()
         } catch (ue) {}
@@ -296,11 +286,14 @@ function notifyTeam(team, prefix, text, colorCode) {
     if (!team) return
     try {
         var online = team.getOnlineMembers()
-        if (online && !online.isEmpty()) {
-            for (var i = 0; i < online.size(); i++) {
-                var p = online.get(i)
+        if (online) {
+            var it = online.iterator()
+            while (it.hasNext()) {
+                var p = it.next()
                 sendMsg(p, prefix, text, colorCode)
             }
         }
-    } catch (e) {}
+    } catch (e) {
+        console.error('[FTB] Erreur notifyTeam: ' + e)
+    }
 }

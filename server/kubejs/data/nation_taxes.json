@@ -1,0 +1,9 @@
+{
+	"013804ba-9ee1-45ee-81ca-1f19228e6e80": {
+		"active_minutes": 8,
+		"in_debt": false,
+		"debt_active_minutes": 0,
+		"last_cycle_paid_at": 1788960824881,
+		"last_tax_amount": 0
+	}
+}

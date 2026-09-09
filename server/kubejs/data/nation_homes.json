@@ -1,0 +1,24 @@
+{
+	"013804ba-9ee1-45ee-81ca-1f19228e6e80": {
+		"home": {
+			"dim": "minecraft:overworld",
+			"x": -19.5,
+			"y": 96,
+			"z": 186.8,
+			"yaw": -21.9,
+			"pitch": 26.7,
+			"setBy": "croksie",
+			"setAt": 1788961278957
+		},
+		"ally_home": {
+			"dim": "minecraft:overworld",
+			"x": -16.1,
+			"y": 97,
+			"z": 188.1,
+			"yaw": -168.6,
+			"pitch": 40.8,
+			"setBy": "croksie",
+			"setAt": 1788961300476
+		}
+	}
+}

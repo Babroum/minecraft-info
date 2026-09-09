@@ -298,7 +298,7 @@ function handleCallToArmsResponse(player, warId, accept) {
         return 1
     } else {
         // Refus : Rupture immédiate de l'alliance pour défection
-        breakAlliance(server, java.util.UUID.fromString(call.callingTeamId), team.getId(), 'defection')
+        breakAlliance(server, UUID.fromString(call.callingTeamId), team.getId(), 'defection')
         return 1
     }
 }
@@ -323,7 +323,7 @@ function checkCallsToArmsExpiration(server) {
         var item = pendingCallsToArms[aId]
         delete pendingCallsToArms[aId]
         // Expiration = refus automatique et rupture
-        breakAlliance(server, java.util.UUID.fromString(item.callingTeamId), java.util.UUID.fromString(aId), 'defection')
+        breakAlliance(server, UUID.fromString(item.callingTeamId), UUID.fromString(aId), 'defection')
     }
 }
 
@@ -387,8 +387,34 @@ ServerEvents.commandRegistry(function(event) {
             .then(Commands.literal('list').executes(function(ctx) {
                 return listAlliances(ctx.source.player)
             }))
+            // Téléportation vers l'Ambassade d'une nation alliée (/ally home <nation>)
+            .then(Commands.literal('home')
+                .then(Commands.argument('nation', StringArgumentType.string())
+                    .executes(function(ctx) {
+                        return (typeof teleportToAllyHome === 'function') ? teleportToAllyHome(ctx.source.player, StringArgumentType.getString(ctx, 'nation')) : 0
+                    })
+                )
+            )
+            // Téléportation inversée demandée (/ally <nom_alliée> home)
+            .then(Commands.argument('targetNation', StringArgumentType.string())
+                .then(Commands.literal('home')
+                    .executes(function(ctx) {
+                        return (typeof teleportToAllyHome === 'function') ? teleportToAllyHome(ctx.source.player, StringArgumentType.getString(ctx, 'targetNation')) : 0
+                    })
+                )
+            )
             .executes(function(ctx) {
                 return listAlliances(ctx.source.player)
             })
+    )
+
+    // Raccourci direct pratique: /allyhome <nom_alliée>
+    event.register(
+        Commands.literal('allyhome')
+            .then(Commands.argument('nation', StringArgumentType.string())
+                .executes(function(ctx) {
+                    return (typeof teleportToAllyHome === 'function') ? teleportToAllyHome(ctx.source.player, StringArgumentType.getString(ctx, 'nation')) : 0
+                })
+            )
     )
 })
