@@ -17,7 +17,7 @@
 	
 	# Enables backups to run automatically
 	# Default: true
-	auto: false
+	auto: true
 	
 	# Backup frequency in minutes.
 	# 5 - backups every 5 minutes
@@ -72,7 +72,7 @@
 	
 	# Maximum total size that is allowed in backups folder. Older backups will be deleted to free space for newer ones.
 	# Default: "50 GB"
-	max_total_size: "50 GB"
+	max_total_size: "20 GB"
 	
 	# If true, only player with permission level >= 2 (or SSP integrated server owners) will be notified on-screen about backup progress
 	# Default: false

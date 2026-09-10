@@ -31,10 +31,17 @@ const NEOFORGE_MODULE_JARS: &[&str] = &[
 ];
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct LaunchPayload {
     pub username: String,
+    #[serde(alias = "ram_mb")]
     pub ram_mb: Option<u32>,
+    #[serde(alias = "custom_game_dir")]
     pub custom_game_dir: Option<String>,
+    #[serde(alias = "custom_mods_url")]
+    pub custom_mods_url: Option<String>,
+    #[serde(alias = "auth_token")]
+    pub auth_token: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -241,16 +248,21 @@ pub async fn launch_minecraft_game(
     app: AppHandle,
     payload: LaunchPayload,
 ) -> Result<String, String> {
+    // Vérification du token d'authentification avant le lancement
+    let username = if let Some(token) = payload.auth_token.as_deref().filter(|t| !t.trim().is_empty()) {
+        let verify_result = crate::auth::verify_token(token, payload.custom_mods_url.as_deref()).await?;
+        verify_result
+            .username
+            .ok_or_else(|| "Token valide mais pseudo manquant dans la réponse.".to_string())?
+    } else {
+        return Err("Vous devez être connecté pour lancer le jeu.".to_string());
+    };
+
     let client = Client::builder()
         .user_agent("ServerLauncher/0.1.0")
+        .danger_accept_invalid_certs(true)
         .build()
         .map_err(|e| e.to_string())?;
-
-    let username = if payload.username.trim().is_empty() {
-        "Player".to_string()
-    } else {
-        payload.username.trim().to_string()
-    };
     let ram_mb = payload.ram_mb.unwrap_or(4096);
 
     // Résolution des dossiers

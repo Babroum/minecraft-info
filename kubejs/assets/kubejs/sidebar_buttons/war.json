@@ -1,0 +1,8 @@
+{
+  "icon": "item:minecraft:iron_sword",
+  "sort_index": 520,
+  "loading_screen": false,
+  "click": [
+    "command:/war"
+  ]
+}

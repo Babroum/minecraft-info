@@ -1,15 +1,15 @@
 // priority: 50
 // =============================================================================
-// NationGlory Server Script - Verrouillage Industriel et Militaire
+// Third World Server Script - Verrouillage Industriel, Militaire et Équilibrage
 // NeoForge 1.21.1 / KubeJS 7
 // =============================================================================
 
 ServerEvents.recipes(event => {
-    // -------------------------------------------------------------------------
-    // 1. Suppression des recettes militaires basiques (Ballistix & Big Cannons)
-    // -------------------------------------------------------------------------
 
-    // Suppression des recettes de base des missiles et ogives Ballistix
+    // =========================================================================
+    // 1. SUPPRESSION DES RECETTES MILITAIRES BASIQUES (BALLISTIX & BIG CANNONS)
+    // =========================================================================
+
     const ballistixToRemove = [
         'ballistix:missile_tier1_electro',
         'ballistix:missile_tier1_noelectro',
@@ -30,12 +30,8 @@ ServerEvents.recipes(event => {
         'ballistix:explosive_emp_electro',
         'ballistix:explosive_emp_noelectro'
     ]
+    ballistixToRemove.forEach(recipeId => event.remove({ id: recipeId }))
 
-    ballistixToRemove.forEach(recipeId => {
-        event.remove({ id: recipeId })
-    })
-
-    // Suppression des obus lourds et culasses de Create Big Cannons
     const bigCannonsToRemove = [
         'createbigcannons:he_shell',
         'createbigcannons:shrapnel_shell',
@@ -46,30 +42,44 @@ ServerEvents.recipes(event => {
         'createbigcannons:steel_sliding_breechblock',
         'createbigcannons:nethersteel_screw_lock'
     ]
+    bigCannonsToRemove.forEach(recipeId => event.remove({ id: recipeId }))
 
-    bigCannonsToRemove.forEach(recipeId => {
-        event.remove({ id: recipeId })
-    })
 
-    // -------------------------------------------------------------------------
-    // 2. Interdiction des machines de minage intensif (Protection Anti-Lag)
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // 2. SUPPRESSION DES ITEMS SURPUISSANTS / CHEATÉS & MINAGE INTENSIF
+    // =========================================================================
 
-    // Suppression du Digital Miner (Mekanism) et de la foreuse mécanique (Create)
+    // 2a. Minage intensif anti-lag
     event.remove({ output: 'mekanism:digital_miner' })
     event.remove({ output: 'create:mechanical_drill' })
 
-    // -------------------------------------------------------------------------
-    // 2b. Désactivation de l'ancienne monnaie Lightman's Currency (Pièces/Coins)
-    // -------------------------------------------------------------------------
+    // 2b. Équipements "Godmode" & Outils abusifs Mekanism (Suppression totale)
+    event.remove({ output: 'mekanism:atomic_disassembler' })
+    event.remove({ output: 'mekanism:meka_tool' })
+    event.remove({ output: 'mekanism:mekasuit_helmet' })
+    event.remove({ output: 'mekanism:mekasuit_bodyarmor' })
+    event.remove({ output: 'mekanism:mekasuit_pants' })
+    event.remove({ output: 'mekanism:mekasuit_boots' })
+    event.remove({ output: 'mekanism:free_runners' })
+    event.remove({ output: 'mekanism:free_runners_armored' })
+
+    // 2c. Jetpacks Mekanism (Interdiction de vol pour forcer véhicules et trains)
+    event.remove({ output: 'mekanism:jetpack' })
+    event.remove({ output: 'mekanism:jetpack_armored' })
+
+    // 2d. Désactivation de l'ancienne monnaie Lightman's Currency (Pièces/Coins)
     event.remove({ output: /lightmanscurrency:coin_/ })
     event.remove({ output: /lightmanscurrency:coinpile_/ })
     event.remove({ output: /lightmanscurrency:coinblock_/ })
 
-    // -------------------------------------------------------------------------
-    // 2c. Suppression des crafts basiques de Point Blank (Imprimante & Armes majeures)
-    // -------------------------------------------------------------------------
+    // 2e. Suppression des crafts de base bon marché de Point Blank
     event.remove({ id: 'pointblank:printer' })
+    event.remove({ id: 'pointblank:gunmetal_mesh' })
+    event.remove({ output: 'pointblank:gunmetal_mesh' })
+    event.remove({ id: 'pointblank:gunmetal_ingot_from_blasting_gunmetal_mesh' })
+    event.remove({ id: 'pointblank:gunmetal_ingot_from_smelting_gunmetal_mesh' })
+    event.remove({ id: 'pointblank:guninternals' })
+    event.remove({ output: 'pointblank:guninternals' })
     event.remove({ id: 'pointblank:ak47' })
     event.remove({ id: 'pointblank:m4a1' })
     event.remove({ id: 'pointblank:hk416' })
@@ -79,40 +89,525 @@ ServerEvents.recipes(event => {
     event.remove({ id: 'pointblank:at4' })
     event.remove({ id: 'pointblank:javelin' })
 
-    // -------------------------------------------------------------------------
-    // 3. Réingénierie : Missiles Stratégiques Ballistix
-    // -------------------------------------------------------------------------
 
-    // Missile Tier 1 (Tactique courte portée)
-    // Exige précision Create + électronique de base Mekanism
+    // =========================================================================
+    // 3. MATIÈRES PREMIÈRES MILITAIRES POINT BLANK (GUNMETAL & INTERNALS)
+    // =========================================================================
+
+    // Lingot de Gunmetal : Véritable alliage industriel lourd (Acier + Laiton + Poudre)
+    event.shaped('pointblank:gunmetal_ingot', [
+        ' S ',
+        ' P ',
+        ' B '
+    ], {
+        S: 'mekanism:ingot_steel',
+        P: 'minecraft:gunpowder',
+        B: 'create:brass_sheet'
+    })
+
+    // Alternative compacteur Create chauffé pour Gunmetal
+    event.custom({
+        type: 'create:compacting',
+        ingredients: [
+            { item: 'mekanism:ingot_steel' },
+            { item: 'create:brass_ingot' },
+            { item: 'minecraft:gunpowder', count: 2 }
+        ],
+        results: [{ id: 'pointblank:gunmetal_ingot', count: 1 }],
+        heat_requirement: 'heated'
+    })
+
+    // Pièces internes d'armes (Guninternals) : Usinage séquentiel de haute précision Create
+    event.custom({
+        type: 'create:sequenced_assembly',
+        ingredient: { item: 'pointblank:gunmetal_ingot' },
+        transitional_item: { id: 'pointblank:gunmetal_ingot' },
+        sequence: [
+            {
+                type: 'create:deploying',
+                ingredients: [
+                    { item: 'pointblank:gunmetal_ingot' },
+                    { item: 'create:precision_mechanism' }
+                ],
+                results: [{ id: 'pointblank:gunmetal_ingot' }]
+            },
+            {
+                type: 'create:deploying',
+                ingredients: [
+                    { item: 'pointblank:gunmetal_ingot' },
+                    { item: 'mekanism:alloy_infused' }
+                ],
+                results: [{ id: 'pointblank:gunmetal_ingot' }]
+            },
+            {
+                type: 'create:pressing',
+                ingredients: [{ item: 'pointblank:gunmetal_ingot' }],
+                results: [{ id: 'pointblank:gunmetal_ingot' }]
+            }
+        ],
+        results: [{ id: 'pointblank:guninternals', count: 1 }],
+        loops: 2
+    })
+
+    // Craft d'appoint pour Guninternals
+    event.shaped('pointblank:guninternals', [
+        ' G ',
+        'MPM',
+        ' G '
+    ], {
+        G: 'pointblank:gunmetal_ingot',
+        M: 'mekanism:alloy_infused',
+        P: 'create:precision_mechanism'
+    })
+
+
+    // =========================================================================
+    // 4. RÉINGÉNIERIE : IMPRIMANTE 3D ET RECETTES DE L'IMPRIMANTE POINT BLANK
+    // =========================================================================
+
+    // Imprimante 3D Militaire (Station CNC lourde - Nécessite investissement industriel majeur)
+    event.shaped('pointblank:printer', [
+        'EME',
+        'CDC',
+        'SAS'
+    ], {
+        E: 'mekanism:elite_control_circuit',
+        M: 'create:precision_mechanism',
+        C: 'kubejs:plaque_composite_balistique',
+        D: 'create:deployer',
+        S: 'pointblank:gunmetal_ingot',
+        A: 'mekanism:steel_casing'
+    })
+
+    // Configuration directe des recettes dans l'interface de l'Imprimante 3D Point Blank
+    const printerGuns = [
+        // --- 1. SNIPERS LOURDS ANTI-MATÉRIEL & TIREURS D'ÉLITE (.50 BMG) ---
+        {
+            id: 'pointblank:gm6lynx',
+            ingredients: [
+                { count: 2, item: 'kubejs:lingot_uranium_militaire' },
+                { count: 2, item: 'kubejs:plaque_composite_balistique' },
+                { count: 1, item: 'mekanism:elite_control_circuit' },
+                { count: 2, item: 'create:precision_mechanism' },
+                { count: 25, item: 'pointblank:gunmetal_ingot' },
+                { count: 8, item: 'pointblank:guninternals' }
+            ]
+        },
+        {
+            id: 'pointblank:ballista',
+            ingredients: [
+                { count: 2, item: 'kubejs:lingot_uranium_militaire' },
+                { count: 2, item: 'kubejs:plaque_composite_balistique' },
+                { count: 1, item: 'mekanism:advanced_control_circuit' },
+                { count: 2, item: 'create:precision_mechanism' },
+                { count: 20, item: 'pointblank:gunmetal_ingot' },
+                { count: 6, item: 'pointblank:guninternals' }
+            ]
+        },
+        {
+            id: 'pointblank:c14',
+            ingredients: [
+                { count: 1, item: 'kubejs:lingot_uranium_militaire' },
+                { count: 2, item: 'mekanism:alloy_reinforced' },
+                { count: 1, item: 'mekanism:advanced_control_circuit' },
+                { count: 20, item: 'pointblank:gunmetal_ingot' },
+                { count: 6, item: 'pointblank:guninternals' }
+            ]
+        },
+        {
+            id: 'pointblank:l96a1',
+            ingredients: [
+                { count: 1, item: 'kubejs:lingot_uranium_militaire' },
+                { count: 1, item: 'kubejs:plaque_composite_balistique' },
+                { count: 2, item: 'create:precision_mechanism' },
+                { count: 18, item: 'pointblank:gunmetal_ingot' },
+                { count: 6, item: 'pointblank:guninternals' }
+            ]
+        },
+        {
+            id: 'pointblank:wa2000',
+            ingredients: [
+                { count: 1, item: 'kubejs:lingot_uranium_militaire' },
+                { count: 2, item: 'create:precision_mechanism' },
+                { count: 1, item: 'mekanism:advanced_control_circuit' },
+                { count: 20, item: 'pointblank:gunmetal_ingot' },
+                { count: 6, item: 'pointblank:guninternals' }
+            ]
+        },
+
+        // --- 2. MITRAILLEUSES LOURDES & GATLINGS ---
+        {
+            id: 'pointblank:m134minigun',
+            ingredients: [
+                { count: 4, item: 'kubejs:lingot_uranium_militaire' },
+                { count: 4, item: 'kubejs:plaque_composite_balistique' },
+                { count: 2, item: 'mekanism:elite_control_circuit' },
+                { count: 4, item: 'create:precision_mechanism' },
+                { count: 1, item: 'create:rotation_speed_controller' },
+                { count: 35, item: 'pointblank:gunmetal_ingot' },
+                { count: 12, item: 'pointblank:guninternals' }
+            ]
+        },
+        {
+            id: 'pointblank:m249',
+            ingredients: [
+                { count: 1, item: 'kubejs:lingot_uranium_militaire' },
+                { count: 2, item: 'kubejs:plaque_composite_balistique' },
+                { count: 1, item: 'mekanism:elite_control_circuit' },
+                { count: 2, item: 'create:precision_mechanism' },
+                { count: 25, item: 'pointblank:gunmetal_ingot' },
+                { count: 8, item: 'pointblank:guninternals' }
+            ]
+        },
+        {
+            id: 'pointblank:mk48',
+            ingredients: [
+                { count: 1, item: 'kubejs:lingot_uranium_militaire' },
+                { count: 2, item: 'kubejs:plaque_composite_balistique' },
+                { count: 1, item: 'mekanism:elite_control_circuit' },
+                { count: 2, item: 'create:precision_mechanism' },
+                { count: 28, item: 'pointblank:gunmetal_ingot' },
+                { count: 8, item: 'pointblank:guninternals' }
+            ]
+        },
+        {
+            id: 'pointblank:lamg',
+            ingredients: [
+                { count: 1, item: 'kubejs:lingot_uranium_militaire' },
+                { count: 2, item: 'kubejs:plaque_composite_balistique' },
+                { count: 1, item: 'mekanism:advanced_control_circuit' },
+                { count: 25, item: 'pointblank:gunmetal_ingot' },
+                { count: 6, item: 'pointblank:guninternals' }
+            ]
+        },
+
+        // --- 3. LANCE-ROQUETTES, CANONS & MISSILES GUIDÉS ---
+        {
+            id: 'pointblank:javelin',
+            ingredients: [
+                { count: 2, item: 'kubejs:lingot_uranium_militaire' },
+                { count: 1, item: 'ballistix:missiletier2' },
+                { count: 2, item: 'mekanism:elite_control_circuit' },
+                { count: 2, item: 'create:precision_mechanism' },
+                { count: 25, item: 'pointblank:gunmetal_ingot' },
+                { count: 8, item: 'pointblank:guninternals' }
+            ]
+        },
+        {
+            id: 'pointblank:at4',
+            ingredients: [
+                { count: 1, item: 'kubejs:lingot_uranium_militaire' },
+                { count: 1, item: 'ballistix:missiletier1' },
+                { count: 1, item: 'mekanism:advanced_control_circuit' },
+                { count: 20, item: 'pointblank:gunmetal_ingot' },
+                { count: 6, item: 'pointblank:guninternals' }
+            ]
+        },
+        {
+            id: 'pointblank:smaw',
+            ingredients: [
+                { count: 1, item: 'kubejs:lingot_uranium_militaire' },
+                { count: 1, item: 'ballistix:missiletier1' },
+                { count: 1, item: 'mekanism:advanced_control_circuit' },
+                { count: 20, item: 'pointblank:gunmetal_ingot' },
+                { count: 6, item: 'pointblank:guninternals' }
+            ]
+        },
+        {
+            id: 'pointblank:m32mgl',
+            ingredients: [
+                { count: 1, item: 'kubejs:lingot_uranium_militaire' },
+                { count: 2, item: 'kubejs:plaque_composite_balistique' },
+                { count: 2, item: 'create:precision_mechanism' },
+                { count: 25, item: 'pointblank:gunmetal_ingot' },
+                { count: 8, item: 'pointblank:guninternals' }
+            ]
+        },
+        {
+            id: 'pointblank:at4_rocket',
+            ingredients: [
+                { count: 1, item: 'ballistix:thermobaric' },
+                { count: 4, item: 'pointblank:gunmetal_ingot' },
+                { count: 2, item: 'minecraft:gunpowder' }
+            ]
+        },
+        {
+            id: 'pointblank:javelin_rocket',
+            ingredients: [
+                { count: 1, item: 'ballistix:missiletier1' },
+                { count: 1, item: 'kubejs:lingot_uranium_militaire' },
+                { count: 1, item: 'mekanism:advanced_control_circuit' }
+            ]
+        },
+        {
+            id: 'pointblank:smaw_rocket',
+            ingredients: [
+                { count: 2, item: 'minecraft:tnt' },
+                { count: 4, item: 'pointblank:gunmetal_ingot' },
+                { count: 2, item: 'mekanism:ingot_steel' }
+            ]
+        },
+
+        // --- 4. FUSILS AUTOMATIQUES LOURDS, SHOTGUNS & ARMES SPÉCIALES ---
+        {
+            id: 'pointblank:aa12',
+            ingredients: [
+                { count: 1, item: 'kubejs:lingot_uranium_militaire' },
+                { count: 2, item: 'kubejs:plaque_composite_balistique' },
+                { count: 1, item: 'mekanism:advanced_control_circuit' },
+                { count: 2, item: 'create:precision_mechanism' },
+                { count: 30, item: 'pointblank:gunmetal_ingot' },
+                { count: 8, item: 'pointblank:guninternals' }
+            ]
+        },
+        {
+            id: 'pointblank:xm29',
+            ingredients: [
+                { count: 2, item: 'kubejs:lingot_uranium_militaire' },
+                { count: 2, item: 'mekanism:elite_control_circuit' },
+                { count: 2, item: 'create:precision_mechanism' },
+                { count: 28, item: 'pointblank:gunmetal_ingot' },
+                { count: 8, item: 'pointblank:guninternals' }
+            ]
+        },
+        {
+            id: 'pointblank:vector',
+            ingredients: [
+                { count: 1, item: 'kubejs:lingot_uranium_militaire' },
+                { count: 2, item: 'mekanism:alloy_infused' },
+                { count: 1, item: 'create:precision_mechanism' },
+                { count: 20, item: 'pointblank:gunmetal_ingot' },
+                { count: 6, item: 'pointblank:guninternals' }
+            ]
+        },
+        {
+            id: 'pointblank:xm7',
+            ingredients: [
+                { count: 1, item: 'kubejs:lingot_uranium_militaire' },
+                { count: 1, item: 'mekanism:alloy_reinforced' },
+                { count: 1, item: 'mekanism:advanced_control_circuit' },
+                { count: 2, item: 'create:precision_mechanism' },
+                { count: 22, item: 'pointblank:gunmetal_ingot' },
+                { count: 6, item: 'pointblank:guninternals' }
+            ]
+        },
+        {
+            id: 'pointblank:spear',
+            ingredients: [
+                { count: 1, item: 'kubejs:lingot_uranium_militaire' },
+                { count: 1, item: 'mekanism:alloy_reinforced' },
+                { count: 1, item: 'mekanism:advanced_control_circuit' },
+                { count: 2, item: 'create:precision_mechanism' },
+                { count: 22, item: 'pointblank:gunmetal_ingot' },
+                { count: 6, item: 'pointblank:guninternals' }
+            ]
+        },
+        {
+            id: 'pointblank:spearblack',
+            ingredients: [
+                { count: 1, item: 'kubejs:lingot_uranium_militaire' },
+                { count: 1, item: 'mekanism:alloy_reinforced' },
+                { count: 1, item: 'mekanism:advanced_control_circuit' },
+                { count: 2, item: 'create:precision_mechanism' },
+                { count: 22, item: 'pointblank:gunmetal_ingot' },
+                { count: 6, item: 'pointblank:guninternals' }
+            ]
+        },
+
+        // --- 5. FUSILS D'ASSAUT POPULAIRES (AK47, M4A1, HK416, SCAR-L) ---
+        {
+            id: 'pointblank:ak47',
+            ingredients: [
+                { count: 18, item: 'pointblank:gunmetal_ingot' },
+                { count: 6, item: 'pointblank:guninternals' },
+                { count: 1, item: 'create:precision_mechanism' },
+                { count: 1, item: 'mekanism:advanced_control_circuit' },
+                { count: 6, item: 'mekanism:ingot_steel' },
+                { count: 4, item: 'minecraft:oak_planks' }
+            ]
+        },
+        {
+            id: 'pointblank:m4a1',
+            ingredients: [
+                { count: 20, item: 'pointblank:gunmetal_ingot' },
+                { count: 6, item: 'pointblank:guninternals' },
+                { count: 1, item: 'create:precision_mechanism' },
+                { count: 1, item: 'mekanism:advanced_control_circuit' },
+                { count: 2, item: 'mekanism:alloy_infused' },
+                { count: 4, item: 'mekanism:ingot_steel' }
+            ]
+        },
+        {
+            id: 'pointblank:hk416',
+            ingredients: [
+                { count: 22, item: 'pointblank:gunmetal_ingot' },
+                { count: 6, item: 'pointblank:guninternals' },
+                { count: 2, item: 'create:precision_mechanism' },
+                { count: 1, item: 'mekanism:advanced_control_circuit' },
+                { count: 2, item: 'mekanism:alloy_reinforced' }
+            ]
+        },
+        {
+            id: 'pointblank:scarl',
+            ingredients: [
+                { count: 22, item: 'pointblank:gunmetal_ingot' },
+                { count: 6, item: 'pointblank:guninternals' },
+                { count: 2, item: 'create:precision_mechanism' },
+                { count: 1, item: 'mekanism:advanced_control_circuit' },
+                { count: 2, item: 'mekanism:alloy_reinforced' }
+            ]
+        },
+        {
+            id: 'pointblank:scarl_iss',
+            ingredients: [
+                { count: 22, item: 'pointblank:gunmetal_ingot' },
+                { count: 6, item: 'pointblank:guninternals' },
+                { count: 2, item: 'create:precision_mechanism' },
+                { count: 1, item: 'mekanism:advanced_control_circuit' },
+                { count: 2, item: 'mekanism:alloy_reinforced' }
+            ]
+        }
+    ]
+
+    printerGuns.forEach(g => {
+        event.remove({ id: g.id })
+        event.custom({
+            type: 'pointblank:default',
+            ingredients: g.ingredients,
+            result: {
+                item: g.id
+            }
+        })
+    })
+
+
+    // =========================================================================
+    // 5. USINAGE DES MUNITIONS POINT BLANK (RENDEMENTS RÉDUITS & COÛT EN PLOMB)
+    // =========================================================================
+
+    // 9mm (Pistolets & SMG légers) - 8 cartouches
+    event.shaped('8x pointblank:ammo9mm', [
+        ' L ',
+        ' P ',
+        ' B '
+    ], {
+        L: 'mekanism:ingot_lead',
+        P: 'minecraft:gunpowder',
+        B: 'create:brass_sheet'
+    })
+
+    // .45 ACP - 8 cartouches
+    event.shaped('8x pointblank:ammo45acp', [
+        ' L ',
+        ' P ',
+        ' S '
+    ], {
+        L: 'mekanism:ingot_lead',
+        P: 'minecraft:gunpowder',
+        S: 'mekanism:ingot_steel'
+    })
+
+    // 5.56x45mm (Fusils d'assaut standard : M4, HK416, AUG...) - 8 cartouches
+    event.shaped('8x pointblank:ammo556', [
+        ' N ',
+        ' P ',
+        ' B '
+    ], {
+        N: 'mekanism:ingot_lead',
+        P: 'minecraft:gunpowder',
+        B: 'create:brass_sheet'
+    })
+
+    // 7.62x39mm (Fusils d'assaut lourds : AK-47...) - 8 cartouches
+    event.shaped('8x pointblank:ammo762', [
+        ' L ',
+        ' P ',
+        ' S '
+    ], {
+        L: 'mekanism:ingot_lead',
+        P: 'minecraft:gunpowder',
+        S: 'mekanism:ingot_steel'
+    })
+
+    // 7.62x51mm NATO (Fusils de combat lourd : SCAR, G3, M14...) - 6 cartouches
+    event.shaped('6x pointblank:ammo762x51', [
+        ' L ',
+        'APA',
+        ' B '
+    ], {
+        L: 'mekanism:ingot_lead',
+        A: 'mekanism:alloy_infused',
+        P: 'minecraft:gunpowder',
+        B: 'create:brass_sheet'
+    })
+
+    // .338 Lapua Magnum (Snipers de précision) - 4 cartouches
+    event.shaped('4x pointblank:ammo338lapua', [
+        ' L ',
+        'RPR',
+        ' S '
+    ], {
+        L: 'mekanism:ingot_lead',
+        R: 'mekanism:alloy_reinforced',
+        P: 'minecraft:gunpowder',
+        S: 'mekanism:ingot_steel'
+    })
+
+    // .50 BMG (Munition perforante anti-matériel lourd) - 2 cartouches
+    event.shaped('2x pointblank:ammo50bmg', [
+        ' U ',
+        'APA',
+        ' S '
+    ], {
+        U: 'kubejs:lingot_uranium_militaire',
+        A: 'mekanism:alloy_atomic',
+        P: 'minecraft:gunpowder',
+        S: 'mekanism:ingot_steel'
+    })
+
+    // 12 Gauge (Fusils à pompe) - 6 cartouches
+    event.shaped('6x pointblank:ammo12gauge', [
+        ' L ',
+        ' P ',
+        ' C '
+    ], {
+        L: 'mekanism:ingot_lead',
+        P: 'minecraft:gunpowder',
+        C: 'minecraft:copper_ingot'
+    })
+
+
+    // =========================================================================
+    // 6. RÉINGÉNIERIE : MISSILES STRATÉGIQUES & OGIVES BALLISTIX
+    // =========================================================================
+
+    // Missile Tier 1 (Tactique courte portée - Exige réservoir de propulsion)
     event.shaped('ballistix:missiletier1', [
         ' P ',
         'ACA',
-        'SGS'
+        'STS'
     ], {
         P: 'create:precision_mechanism',
         A: 'mekanism:alloy_infused',
         C: 'mekanism:basic_control_circuit',
         S: 'mekanism:ingot_steel',
-        G: 'minecraft:gunpowder'
+        T: 'create:fluid_tank'
     })
 
-    // Missile Tier 2 (Portée intermédiaire)
-    // Intègre le premier niveau d'enrichissement militaire
+    // Missile Tier 2 (Portée intermédiaire - Enrichissement atomique)
     event.shaped('ballistix:missiletier2', [
         ' U ',
         'RMR',
-        'ECE'
+        'TCT'
     ], {
         U: 'kubejs:lingot_uranium_militaire',
         R: 'mekanism:alloy_reinforced',
         M: 'ballistix:missiletier1',
-        C: 'mekanism:advanced_control_circuit',
-        E: 'create:electron_tube'
+        T: 'create:fluid_tank',
+        C: 'mekanism:advanced_control_circuit'
     })
 
-    // Missile Tier 3 (Intercontinental ICBM)
-    // Complexe militaro-industriel complet
+    // Missile Tier 3 (Intercontinental ICBM - Haute technologie géopolitique)
     event.shaped('ballistix:missiletier3', [
         ' U ',
         'AMA',
@@ -125,32 +620,28 @@ ServerEvents.recipes(event => {
         P: 'create:precision_mechanism'
     })
 
-    // -------------------------------------------------------------------------
-    // 3. Réingénierie : Ogives de Destruction Massive Ballistix
-    // -------------------------------------------------------------------------
-
-    // Ogive Nucléaire (Enrichissement militaire massif)
+    // Ogive Nucléaire (Arme de dissuasion massive - Coût atomique réel : 6 lingots d'uranium militaire)
     event.shaped('ballistix:nuclear', [
-        'ACA',
-        'UXU',
-        'ACA'
+        'UUU',
+        'AXA',
+        'UCU'
     ], {
-        A: 'mekanism:alloy_reinforced',
-        C: 'mekanism:elite_control_circuit',
         U: 'kubejs:lingot_uranium_militaire',
-        X: 'mekanism:steel_casing'
+        A: 'mekanism:alloy_reinforced',
+        X: 'mekanism:steel_casing',
+        C: 'mekanism:elite_control_circuit'
     })
 
-    // Ogive Antimatière (Ultime technologie géopolitique)
+    // Ogive Antimatière (Ultime technologie géopolitique - 6 lingots d'uranium + Étoile du Nether)
     event.shaped('ballistix:antimatter', [
-        'ACA',
-        'UXU',
-        'ACA'
+        'UUU',
+        'AXA',
+        'UCU'
     ], {
-        A: 'mekanism:alloy_atomic',
-        C: 'mekanism:ultimate_control_circuit',
         U: 'kubejs:lingot_uranium_militaire',
-        X: 'minecraft:nether_star'
+        A: 'mekanism:alloy_atomic',
+        X: 'minecraft:nether_star',
+        C: 'mekanism:ultimate_control_circuit'
     })
 
     // Ogive Thermobarique (Pression mécanique Create + circuits avancés)
@@ -176,9 +667,10 @@ ServerEvents.recipes(event => {
         X: 'mekanism:steel_casing'
     })
 
-    // -------------------------------------------------------------------------
-    // 4. Réingénierie : Artillerie Lourde Create Big Cannons
-    // -------------------------------------------------------------------------
+
+    // =========================================================================
+    // 7. ARTILLERIE LOURDE CREATE BIG CANNONS
+    // =========================================================================
 
     // Obus Explosif Lourd (HE Shell - Haute performance)
     event.shaped('createbigcannons:he_shell', [
@@ -235,190 +727,11 @@ ServerEvents.recipes(event => {
         P: 'create:precision_mechanism'
     })
 
-    // -------------------------------------------------------------------------
-    // 5. Réingénierie : Imprimante 3D et Armes Point Blank Industrielles
-    // -------------------------------------------------------------------------
 
-    // Imprimante 3D Militaire (Nécessite châssis Mekanism + déployeur Create)
-    event.shaped('pointblank:printer', [
-        'CMC',
-        'PDP',
-        'SAS'
-    ], {
-        C: 'mekanism:advanced_control_circuit',
-        M: 'create:precision_mechanism',
-        P: 'pointblank:gunmetal_ingot',
-        D: 'create:deployer',
-        S: 'mekanism:ingot_steel',
-        A: 'mekanism:steel_casing'
-    })
+    // =========================================================================
+    // 8. CHAÎNE DE RAFFINAGE LOURD : LINGOT D'URANIUM MILITAIRE
+    // =========================================================================
 
-    // AK-47 Réingéniéré (Industrie lourde fiable)
-    event.shaped('pointblank:ak47', [
-        '  M',
-        'SPS',
-        'W S'
-    ], {
-        S: 'mekanism:ingot_steel',
-        P: 'create:precision_mechanism',
-        M: 'pointblank:gunmetal_ingot',
-        W: 'minecraft:oak_planks'
-    })
-
-    // M4A1 Réingéniéré (Technologie occidentale de précision)
-    event.shaped('pointblank:m4a1', [
-        '  M',
-        'CPC',
-        'S P'
-    ], {
-        S: 'mekanism:ingot_steel',
-        P: 'create:precision_mechanism',
-        C: 'mekanism:basic_control_circuit',
-        M: 'pointblank:gunmetal_ingot'
-    })
-
-    // HK416 Réingéniéré (Haute fiabilité)
-    event.shaped('pointblank:hk416', [
-        '  M',
-        'APA',
-        'S C'
-    ], {
-        S: 'mekanism:ingot_steel',
-        A: 'mekanism:alloy_infused',
-        P: 'create:precision_mechanism',
-        C: 'mekanism:advanced_control_circuit',
-        M: 'pointblank:gunmetal_ingot'
-    })
-
-    // GM6 Lynx (.50 BMG Sniper Anti-Matériel Lourd)
-    event.shaped('pointblank:gm6lynx', [
-        ' UA',
-        'CPC',
-        'S S'
-    ], {
-        U: 'kubejs:lingot_uranium_militaire',
-        A: 'mekanism:alloy_reinforced',
-        C: 'mekanism:advanced_control_circuit',
-        P: 'create:precision_mechanism',
-        S: 'mekanism:ingot_steel'
-    })
-
-    // M134 Minigun (Gatling d'appui à saturation)
-    event.shaped('pointblank:m134minigun', [
-        ' S ',
-        'CPC',
-        'SMS'
-    ], {
-        S: 'mekanism:ingot_steel',
-        P: 'create:precision_mechanism',
-        C: 'mekanism:elite_control_circuit',
-        M: 'pointblank:gunmetal_ingot'
-    })
-
-    // -------------------------------------------------------------------------
-    // 6. Usinage Industriel des Munitions Point Blank
-    // -------------------------------------------------------------------------
-
-    // 9mm (Pistolets & SMG légers) - 16 cartouches
-    event.shaped('16x pointblank:ammo9mm', [
-        ' L ',
-        ' P ',
-        ' B '
-    ], {
-        L: 'mekanism:ingot_lead',
-        P: 'minecraft:gunpowder',
-        B: 'create:brass_sheet'
-    })
-
-    // .45 ACP - 16 cartouches
-    event.shaped('16x pointblank:ammo45acp', [
-        ' L ',
-        ' P ',
-        ' S '
-    ], {
-        L: 'mekanism:ingot_lead',
-        P: 'minecraft:gunpowder',
-        S: 'mekanism:ingot_steel'
-    })
-
-    // 5.56x45mm (Fusils d'assaut standard : M4, HK416, AUG...) - 16 cartouches
-    event.shaped('16x pointblank:ammo556', [
-        ' N ',
-        ' P ',
-        ' B '
-    ], {
-        N: 'mekanism:nugget_steel',
-        P: 'minecraft:gunpowder',
-        B: 'create:brass_sheet'
-    })
-
-    // 7.62x39mm (Fusils d'assaut lourds : AK-47...) - 16 cartouches
-    event.shaped('16x pointblank:ammo762', [
-        ' S ',
-        ' P ',
-        ' B '
-    ], {
-        S: 'mekanism:ingot_steel',
-        P: 'minecraft:gunpowder',
-        B: 'create:brass_sheet'
-    })
-
-    // 7.62x51mm NATO (Fusils de combat lourd : SCAR, G3, M14...) - 12 cartouches
-    event.shaped('12x pointblank:ammo762x51', [
-        ' S ',
-        'APA',
-        ' B '
-    ], {
-        S: 'mekanism:ingot_steel',
-        A: 'mekanism:alloy_infused',
-        P: 'minecraft:gunpowder',
-        B: 'create:brass_sheet'
-    })
-
-    // .338 Lapua Magnum (Snipers de haute précision) - 8 cartouches
-    event.shaped('8x pointblank:ammo338lapua', [
-        ' S ',
-        'RPR',
-        ' S '
-    ], {
-        S: 'mekanism:ingot_steel',
-        R: 'mekanism:alloy_reinforced',
-        P: 'minecraft:gunpowder'
-    })
-
-    // .50 BMG (Munition perforante anti-matériel avec noyau en Uranium Militaire !) - 4 cartouches
-    event.shaped('4x pointblank:ammo50bmg', [
-        ' U ',
-        'APA',
-        ' S '
-    ], {
-        U: 'kubejs:lingot_uranium_militaire',
-        A: 'mekanism:alloy_atomic',
-        P: 'minecraft:gunpowder',
-        S: 'mekanism:ingot_steel'
-    })
-
-    // 12 Gauge (Fusils à pompe : M870, SPAS12...) - 12 cartouches
-    event.shaped('12x pointblank:ammo12gauge', [
-        ' S ',
-        ' P ',
-        ' C '
-    ], {
-        S: 'mekanism:nugget_lead',
-        P: 'minecraft:gunpowder',
-        C: 'minecraft:copper_ingot'
-    })
-
-    // -------------------------------------------------------------------------
-    // 7. Chaîne de Raffinage Lourd : Lingot d'Uranium Militaire
-    // -------------------------------------------------------------------------
-
-    // Assemblage séquentiel lourd Create :
-    // Support : Plaque / Lingot d'Acier Mekanism
-    // Étape 1 : Déploiement de Yellow Cake Uranium (enrichi depuis l'uranium brut Mekanism)
-    // Étape 2 : Déploiement d'Alliage Atomique Mekanism
-    // Étape 3 : Pressage mécanique lourd
-    // 3 boucles complètes requises (consommation industrielle massive)
     event.custom({
         type: 'create:sequenced_assembly',
         ingredient: { item: 'mekanism:ingot_steel' },
@@ -450,20 +763,61 @@ ServerEvents.recipes(event => {
         loops: 3
     })
 
-    // -------------------------------------------------------------------------
-    // 8. Plaques de Blindage et Armures Supérieures au Diamant
-    // -------------------------------------------------------------------------
 
-    // Plaque Composite Balistique (Kevlar/Cuir traité + Acier trempé pressé)
+    // =========================================================================
+    // 9. PLAQUES DE BLINDAGE ET ARMURES
+    // =========================================================================
+
+    // Plaque Composite Balistique : Assemblage séquentiel Create (Acier + Cuir + Alliage Renforcé + Gunmetal)
+    event.custom({
+        type: 'create:sequenced_assembly',
+        ingredient: { item: 'mekanism:ingot_steel' },
+        transitional_item: { id: 'mekanism:ingot_steel' },
+        sequence: [
+            {
+                type: 'create:deploying',
+                ingredients: [
+                    { item: 'mekanism:ingot_steel' },
+                    { item: 'minecraft:leather' }
+                ],
+                results: [{ id: 'mekanism:ingot_steel' }]
+            },
+            {
+                type: 'create:deploying',
+                ingredients: [
+                    { item: 'mekanism:ingot_steel' },
+                    { item: 'mekanism:alloy_reinforced' }
+                ],
+                results: [{ id: 'mekanism:ingot_steel' }]
+            },
+            {
+                type: 'create:deploying',
+                ingredients: [
+                    { item: 'mekanism:ingot_steel' },
+                    { item: 'pointblank:gunmetal_ingot' }
+                ],
+                results: [{ id: 'mekanism:ingot_steel' }]
+            },
+            {
+                type: 'create:pressing',
+                ingredients: [{ item: 'mekanism:ingot_steel' }],
+                results: [{ id: 'mekanism:ingot_steel' }]
+            }
+        ],
+        results: [{ id: 'kubejs:plaque_composite_balistique', count: 1 }],
+        loops: 2
+    })
+
+    // Craft d'appoint pour Plaque Composite Balistique
     event.shaped('kubejs:plaque_composite_balistique', [
-        'SIS',
+        'SGS',
         'LAL',
-        'SIS'
+        'SGS'
     ], {
         S: 'mekanism:ingot_steel',
-        I: 'minecraft:iron_ingot',
+        G: 'pointblank:gunmetal_ingot',
         L: 'minecraft:leather',
-        A: 'mekanism:alloy_infused'
+        A: 'mekanism:alloy_reinforced'
     })
 
     // Plaque d'Uranium Blindé (Uranium militaire + Acier + Alliage atomique)
@@ -477,7 +831,7 @@ ServerEvents.recipes(event => {
         S: 'mekanism:ingot_steel'
     })
 
-    // --- Set 1 : Armure Tactique Composite (Supérieure au Diamant : Armure 24, Toughness 14) ---
+    // --- Set 1 : Armure Tactique Composite (Armure 24, Toughness 14) ---
     event.shaped('kubejs:composite_helmet', [
         'PPP',
         'P P'
@@ -508,7 +862,7 @@ ServerEvents.recipes(event => {
         P: 'kubejs:plaque_composite_balistique'
     })
 
-    // --- Set 2 : Exo-Armure Juggernaut en Uranium Blindé (Ultime : Armure 30, Toughness 20, KB 80%) ---
+    // --- Set 2 : Exo-Armure Juggernaut en Uranium Blindé (Armure 30, Toughness 20, KB 80%) ---
     event.shaped('kubejs:uranium_juggernaut_helmet', [
         'UPU',
         'UHU',

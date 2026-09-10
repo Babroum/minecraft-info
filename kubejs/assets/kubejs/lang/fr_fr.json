@@ -1,0 +1,14 @@
+{
+  "item.kubejs.billet_1": "Billet de 1 Robert Coin",
+  "item.kubejs.billet_5": "Billet de 5 Robert Coins",
+  "item.kubejs.billet_20": "Billet de 20 Robert Coins",
+  "item.kubejs.billet_100": "Billet de 100 Robert Coins",
+  "sidebar_button.kubejs.onu_market": "Bourse & Marché de l'ONU",
+  "sidebar_button.kubejs.onu_market.tooltip": "Accéder aux cours et à l'économie du serveur",
+  "sidebar_button.kubejs.nation": "Nation & Banque",
+  "sidebar_button.kubejs.nation.tooltip": "Tableau de bord de votre nation et trésorerie",
+  "sidebar_button.kubejs.war": "Registre de Guerre & Sièges",
+  "sidebar_button.kubejs.war.tooltip": "Consulter les conflits et assauts en cours",
+  "sidebar_button.kubejs.onu_contract": "Marchés Publics de l'ONU",
+  "sidebar_button.kubejs.onu_contract.tooltip": "Consulter l'approvisionnement mondial actif"
+}

@@ -1,6 +1,6 @@
 // priority: 50
 // =============================================================================
-// NationGlory Server Script - Pénalité de Poids de l'Exo-Armure en Uranium
+// Third World Server Script - Pénalité de Poids de l'Exo-Armure en Uranium
 // NeoForge 1.21.1 / KubeJS 7
 // =============================================================================
 
@@ -35,13 +35,27 @@ ServerEvents.tick(function(event) {
             var speedAttr = player.getAttribute(Attributes.MOVEMENT_SPEED)
             if (!speedAttr) continue
 
+            var safeRemove = function(mod) {
+                try {
+                    speedAttr['removeModifier(net.minecraft.resources.ResourceLocation)'](EXO_WEIGHT_ID)
+                } catch (e1) {
+                    try {
+                        if (mod) speedAttr['removeModifier(net.minecraft.world.entity.ai.attributes.AttributeModifier)'](mod)
+                    } catch (e2) {
+                        try {
+                            speedAttr.removeModifier(EXO_WEIGHT_ID)
+                        } catch (e3) {}
+                    }
+                }
+            }
+
             if (count > 0) {
                 // Pénalité proportionnelle : 2.5% par pièce = 10% pour l'armure complète
                 var penalty = -0.025 * count
                 var currentMod = speedAttr.getModifier(EXO_WEIGHT_ID)
                 if (currentMod) {
                     if (Math.abs(currentMod.amount() - penalty) > 0.001) {
-                        speedAttr.removeModifier(currentMod)
+                        safeRemove(currentMod)
                         speedAttr.addTransientModifier(new AttributeModifier(EXO_WEIGHT_ID, penalty, Operation.ADD_MULTIPLIED_BASE))
                     }
                 } else {
@@ -50,7 +64,7 @@ ServerEvents.tick(function(event) {
             } else {
                 var existingMod = speedAttr.getModifier(EXO_WEIGHT_ID)
                 if (existingMod) {
-                    speedAttr.removeModifier(existingMod)
+                    safeRemove(existingMod)
                 }
             }
         } catch (e) {

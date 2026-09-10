@@ -1,6 +1,8 @@
+import https from "node:https";
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -17,9 +19,104 @@ const DATAPACKS_DIR = path.resolve(MODPACKS_DIR, "datapacks");
 const KUBEJS_DIR = path.resolve(ROOT_DIR, "kubejs");
 const MANIFEST_PATH = path.resolve(MODPACKS_DIR, "manifest.json");
 
+// --- Auth storage ---
+const ACCOUNTS_PATH = path.resolve(__dirname, "accounts.json");
+const SESSIONS_PATH = path.resolve(__dirname, "sessions.json");
+const SCRYPT_KEYLEN = 64;
+const SCRYPT_COST = 16384;
+const TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+
+function loadSessions() {
+  if (!fs.existsSync(SESSIONS_PATH)) {
+    return new Map();
+  }
+  try {
+    const raw = JSON.parse(fs.readFileSync(SESSIONS_PATH, "utf-8"));
+    const map = new Map();
+    const now = Date.now();
+    for (const [token, session] of Object.entries(raw)) {
+      if (session && session.expiresAt > now) {
+        map.set(token, session);
+      }
+    }
+    return map;
+  } catch {
+    return new Map();
+  }
+}
+
+function saveSessions(map) {
+  try {
+    const obj = Object.fromEntries(map);
+    fs.writeFileSync(SESSIONS_PATH, JSON.stringify(obj, null, 2), "utf-8");
+  } catch (e) {
+    console.error("Erreur sauvegarde sessions:", e);
+  }
+}
+
+const sessions = loadSessions();
+
+function loadAccounts() {
+  if (!fs.existsSync(ACCOUNTS_PATH)) {
+    return { players: {} };
+  }
+  try {
+    return JSON.parse(fs.readFileSync(ACCOUNTS_PATH, "utf-8"));
+  } catch {
+    return { players: {} };
+  }
+}
+
+function saveAccounts(accounts) {
+  fs.writeFileSync(ACCOUNTS_PATH, JSON.stringify(accounts, null, 2), "utf-8");
+}
+
+function hashPassword(password, salt) {
+  return crypto.scryptSync(password, salt, SCRYPT_KEYLEN, { N: SCRYPT_COST }).toString("hex");
+}
+
+function generateToken() {
+  return crypto.randomUUID();
+}
+
+function createSession(username) {
+  const token = generateToken();
+  sessions.set(token, {
+    username,
+    expiresAt: Date.now() + TOKEN_TTL_MS,
+  });
+  saveSessions(sessions);
+  return token;
+}
+
+function verifySession(token) {
+  const session = sessions.get(token);
+  if (!session) return null;
+  if (Date.now() > session.expiresAt) {
+    sessions.delete(token);
+    saveSessions(sessions);
+    return null;
+  }
+  return session;
+}
+
+// Cleanup expired sessions every 10 minutes
+setInterval(() => {
+  const now = Date.now();
+  let changed = false;
+  for (const [token, session] of sessions) {
+    if (now > session.expiresAt) {
+      sessions.delete(token);
+      changed = true;
+    }
+  }
+  if (changed) saveSessions(sessions);
+}, 10 * 60 * 1000);
+
+// --- CORS & helpers ---
 function setCorsHeaders(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET, HEAD, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Range, Content-Type, Authorization");
   res.setHeader("Access-Control-Expose-Headers", "Content-Range, Content-Length, Accept-Ranges");
 }
@@ -32,6 +129,21 @@ function sendJson(res, statusCode, data) {
 
 function sendError(res, statusCode, message) {
   sendJson(res, statusCode, { error: message, code: statusCode });
+}
+
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    req.on("data", (chunk) => (body += chunk));
+    req.on("end", () => {
+      try {
+        resolve(JSON.parse(body));
+      } catch {
+        reject(new Error("JSON invalide"));
+      }
+    });
+    req.on("error", reject);
+  });
 }
 
 function streamFile(req, res, filePath, contentType) {
@@ -71,7 +183,8 @@ function streamFile(req, res, filePath, contentType) {
   });
 }
 
-const server = http.createServer((req, res) => {
+// --- Request handler ---
+async function handleRequest(req, res) {
   setCorsHeaders(res);
 
   if (req.method === "OPTIONS") {
@@ -79,12 +192,108 @@ const server = http.createServer((req, res) => {
     return res.end();
   }
 
+  const parsedUrl = new URL(req.url, `https://${req.headers.host || "localhost"}`);
+  let pathname = decodeURIComponent(parsedUrl.pathname);
+
+  // ===== AUTH ENDPOINTS =====
+
+  // POST /auth/register
+  if (pathname === "/auth/register" && req.method === "POST") {
+    try {
+      const { username, password } = await readBody(req);
+
+      if (!username || typeof username !== "string" || username.trim().length < 3 || username.trim().length > 16) {
+        return sendError(res, 400, "Le pseudo doit faire entre 3 et 16 caractères.");
+      }
+      if (!password || typeof password !== "string" || password.length < 4) {
+        return sendError(res, 400, "Le mot de passe doit faire au moins 4 caractères.");
+      }
+
+      // Only allow valid Minecraft-style usernames
+      const cleanUsername = username.trim();
+      if (!/^[a-zA-Z0-9_]+$/.test(cleanUsername)) {
+        return sendError(res, 400, "Le pseudo ne peut contenir que des lettres, chiffres et underscores.");
+      }
+
+      const accounts = loadAccounts();
+      // Case-insensitive check
+      const existingKey = Object.keys(accounts.players).find(
+        (k) => k.toLowerCase() === cleanUsername.toLowerCase()
+      );
+      if (existingKey) {
+        return sendError(res, 409, "Ce pseudo est déjà pris.");
+      }
+
+      const salt = crypto.randomBytes(32).toString("hex");
+      const passwordHash = hashPassword(password, salt);
+
+      accounts.players[cleanUsername] = {
+        passwordHash,
+        salt,
+        createdAt: new Date().toISOString(),
+      };
+      saveAccounts(accounts);
+
+      const token = createSession(cleanUsername);
+      return sendJson(res, 201, { success: true, username: cleanUsername, token });
+    } catch (e) {
+      return sendError(res, 400, e.message || "Requête invalide");
+    }
+  }
+
+  // POST /auth/login
+  if (pathname === "/auth/login" && req.method === "POST") {
+    try {
+      const { username, password } = await readBody(req);
+
+      if (!username || !password) {
+        return sendError(res, 400, "Pseudo et mot de passe requis.");
+      }
+
+      const accounts = loadAccounts();
+      // Case-insensitive lookup, but return the original case
+      const matchedKey = Object.keys(accounts.players).find(
+        (k) => k.toLowerCase() === username.trim().toLowerCase()
+      );
+
+      if (!matchedKey) {
+        return sendError(res, 401, "Pseudo ou mot de passe incorrect.");
+      }
+
+      const account = accounts.players[matchedKey];
+      const attemptHash = hashPassword(password, account.salt);
+
+      if (attemptHash !== account.passwordHash) {
+        return sendError(res, 401, "Pseudo ou mot de passe incorrect.");
+      }
+
+      const token = createSession(matchedKey);
+      return sendJson(res, 200, { success: true, username: matchedKey, token });
+    } catch (e) {
+      return sendError(res, 400, e.message || "Requête invalide");
+    }
+  }
+
+  // GET /auth/verify?token=...
+  if (pathname === "/auth/verify" && req.method === "GET") {
+    const token = parsedUrl.searchParams.get("token");
+    if (!token) {
+      return sendError(res, 400, "Token manquant.");
+    }
+
+    const session = verifySession(token);
+    if (!session) {
+      return sendError(res, 401, "Token invalide ou expiré.");
+    }
+
+    return sendJson(res, 200, { valid: true, username: session.username });
+  }
+
+  // ===== EXISTING ENDPOINTS =====
+
   if (req.method !== "GET" && req.method !== "HEAD") {
     return sendError(res, 405, "Méthode non autorisée");
   }
-
-  const parsedUrl = new URL(req.url, `http://${req.headers.host || "localhost"}`);
-  let pathname = decodeURIComponent(parsedUrl.pathname);
 
   // 1. Endpoint Manifest JSON
   if (pathname === "/manifest.json") {
@@ -95,8 +304,8 @@ const server = http.createServer((req, res) => {
   }
 
   // 1b. Endpoint Resource Pack
-  if (pathname === "/resourcepack.zip" || pathname === "/resourcepacks/NationGlory-Assets.zip") {
-    const resourcePackPath = path.resolve(ROOT_DIR, "modpacks/resourcepacks/NationGlory-Assets.zip");
+  if (pathname === "/resourcepack.zip" || pathname === "/resourcepacks/ThirdWorld-Assets.zip") {
+    const resourcePackPath = path.resolve(ROOT_DIR, "modpacks/resourcepacks/ThirdWorld-Assets.zip");
     if (!fs.existsSync(resourcePackPath)) {
       return sendError(res, 404, "Pack de ressources introuvable.");
     }
@@ -215,27 +424,64 @@ const server = http.createServer((req, res) => {
   // Endpoint d'accueil API
   if (pathname === "/") {
     return sendJson(res, 200, {
-      service: "NationGlory Launcher API",
+      service: "Third World Launcher API",
       status: "online",
+      protocol: "HTTPS",
       endpoints: {
         manifest: "/manifest.json",
         info: "/info",
         mods: "/mods/:filename",
         resourcepacks: "/resourcepacks/:filename",
         datapacks: "/datapacks/:filename",
-        kubejs: "/kubejs/*"
+        kubejs: "/kubejs/*",
+        auth: {
+          register: "POST /auth/register",
+          login: "POST /auth/login",
+          verify: "GET /auth/verify?token=...",
+        }
       }
     });
   }
 
   return sendError(res, 404, "Endpoint non trouvé");
-});
+}
 
-server.listen(PORT, HOST, () => {
-  console.log(`\n=================================================`);
-  console.log(`🚀 API NationGlory active ! (port ${PORT})`);
-  console.log(`📦 Manifest : http://localhost:${PORT}/manifest.json`);
-  console.log(`📊 Info     : http://localhost:${PORT}/info`);
-  console.log(`📂 Modpacks : ${MODPACKS_DIR}`);
-  console.log(`=================================================\n`);
-});
+// --- HTTPS Server ---
+const certsDir = path.resolve(__dirname, "certs");
+const keyPath = path.join(certsDir, "key.pem");
+const certPath = path.join(certsDir, "cert.pem");
+
+if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
+  const sslOptions = {
+    key: fs.readFileSync(keyPath),
+    cert: fs.readFileSync(certPath),
+  };
+
+  const server = https.createServer(sslOptions, handleRequest);
+
+  server.listen(PORT, HOST, () => {
+    console.log(`\n=================================================`);
+    console.log(`🔒 API Third World HTTPS active ! (port ${PORT})`);
+    console.log(`📦 Manifest : https://localhost:${PORT}/manifest.json`);
+    console.log(`📊 Info     : https://localhost:${PORT}/info`);
+    console.log(`🔑 Auth     : https://localhost:${PORT}/auth/...`);
+    console.log(`📂 Modpacks : ${MODPACKS_DIR}`);
+    console.log(`=================================================\n`);
+  });
+} else {
+  console.warn(`⚠️  Certificats SSL non trouvés dans ${certsDir}`);
+  console.warn(`   Démarrage en HTTP (non sécurisé) en attendant...`);
+  console.warn(`   Générez les certificats avec: npm run api:gen-certs\n`);
+
+  const server = http.createServer(handleRequest);
+
+  server.listen(PORT, HOST, () => {
+    console.log(`\n=================================================`);
+    console.log(`🚀 API Third World HTTP active ! (port ${PORT})`);
+    console.log(`📦 Manifest : http://localhost:${PORT}/manifest.json`);
+    console.log(`📊 Info     : http://localhost:${PORT}/info`);
+    console.log(`🔑 Auth     : http://localhost:${PORT}/auth/...`);
+    console.log(`📂 Modpacks : ${MODPACKS_DIR}`);
+    console.log(`=================================================\n`);
+  });
+}

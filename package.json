@@ -1,11 +1,12 @@
 {
-  "name": "nationglory-project",
+  "name": "third-world-project",
   "private": true,
   "scripts": {
     "manifest": "node tools/generate-manifest.mjs",
     "sync:kubejs": "node tools/sync-kubejs.mjs",
     "api:start": "node launcher/api/index.mjs",
     "api:dev": "node --watch launcher/api/index.mjs",
+    "api:gen-certs": "node launcher/api/gen-certs.mjs",
     "app:dev": "npm --prefix launcher/app run tauri dev",
     "app:build": "npm --prefix launcher/app run tauri build",
     "server:start": "cd server && run.bat nogui"

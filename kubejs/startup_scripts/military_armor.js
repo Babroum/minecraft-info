@@ -1,6 +1,6 @@
 // priority: 90
 // =============================================================================
-// NationGlory KubeJS Startup Script - Armures Tactiques et Matériaux de Blindage
+// Third World KubeJS Startup Script - Armures Tactiques et Matériaux de Blindage
 // Version NeoForge 1.21.1 / KubeJS 7
 // =============================================================================
 

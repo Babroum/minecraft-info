@@ -7,13 +7,13 @@ pack_dir = "modpacks/resourcepacks"
 os.makedirs(pack_dir, exist_ok=True)
 os.makedirs("server/resourcepacks", exist_ok=True)
 
-zip_path = os.path.join(pack_dir, "NationGlory-Assets.zip")
-server_zip_path = os.path.join("server/resourcepacks", "NationGlory-Assets.zip")
+zip_path = os.path.join(pack_dir, "ThirdWorld-Assets.zip")
+server_zip_path = os.path.join("server/resourcepacks", "ThirdWorld-Assets.zip")
 
 mcmeta = """{
   "pack": {
     "pack_format": 34,
-    "description": "NationGlory - Devises et Ressources Strategiques"
+    "description": "Third World - Devises et Ressources Strategiques"
   }
 }"""
 

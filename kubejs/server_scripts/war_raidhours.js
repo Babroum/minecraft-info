@@ -1,6 +1,6 @@
 // priority: 55
 // =============================================================================
-// NationGlory Server Script - Contrôleur des Horaires de Siège (Raid Hours)
+// Third World Server Script - Contrôleur des Horaires de Siège (Raid Hours)
 // =============================================================================
 
 var RAID_CONFIG = {

@@ -1,6 +1,6 @@
 // priority: 50
 // =============================================================================
-// NationGlory Server Script - Banque Nationale & Intégration Lightman's Currency
+// Third World Server Script - Banque Nationale & Intégration Lightman's Currency
 // =============================================================================
 
 /**
@@ -153,7 +153,11 @@ function depositNationMoneyDirect(team, amount) {
 
         var CoinValue = Java.loadClass('io.github.lightman314.lightmanscurrency.api.money.value.builtin.CoinValue')
         var val = CoinValue.fromNumber('lightmanscurrency:coins', amount)
-        bankAccount.depositCoins(val)
+        if (bankAccount.depositMoney) {
+            bankAccount.depositMoney(val)
+        } else if (bankAccount.depositCoins) {
+            bankAccount.depositCoins(val)
+        }
         return true
     } catch (e) {
         console.error('[Banque] Erreur depositNationMoneyDirect : ' + e)
@@ -192,7 +196,7 @@ function handleNationDeposit(player, amountStr) {
         var mainHandItem = player.getMainHandItem()
         var val = NOTE_VALUES[mainHandItem.getId()]
         if (!val) {
-            sendMsg(player, 'Banque', 'Vous ne tenez aucun billet en main (1$, 5$, 20$ ou 100$). Tapez /nation deposer all', '§e')
+            sendMsg(player, 'Banque', 'Vous ne tenez aucun billet en main (1 R, 5 R, 20 R ou 100 R). Tapez /nation deposer all', '§e')
             return 0
         }
         var count = mainHandItem.getCount()
@@ -233,7 +237,7 @@ function handleNationDeposit(player, amountStr) {
         }
 
         if (availableTotal < targetAmount) {
-            sendMsg(player, 'Banque', 'Fonds insuffisants. Vous possédez ' + availableTotal + '$ sur vous.', '§c')
+            sendMsg(player, 'Banque', 'Fonds insuffisants. Vous possédez ' + availableTotal + ' R sur vous.', '§c')
             return 0
         }
 
@@ -255,12 +259,12 @@ function handleNationDeposit(player, amountStr) {
     }
 
     depositNationMoneyDirect(team, totalDeposited)
-    var newBalance = '0$'
+    var newBalance = '0 R'
     try {
         if (bankAccount.getBalanceText) newBalance = bankAccount.getBalanceText().getString()
     } catch (e) {}
 
-    sendMsg(player, 'Banque', 'Dépôt réussi de §e' + totalDeposited + '$ §fsur le Trésor de §6' + team.getName().getString() + '§f. (Nouveau solde: §a' + newBalance + '§f)', '§a')
+    sendMsg(player, 'Banque', 'Dépôt réussi de §e' + totalDeposited + ' R §fsur le Trésor de §6' + team.getName().getString() + '§f. (Nouveau solde: §a' + newBalance + '§f)', '§a')
     return 1
 }
 
@@ -288,7 +292,7 @@ function handleNationWithdraw(player, amountStr) {
 
     var success = withdrawNationMoney(team, player, targetAmount)
     if (!success) {
-        sendMsg(player, 'Banque', 'Solde du Trésor insuffisant pour retirer ' + targetAmount + '$.', '§c')
+        sendMsg(player, 'Banque', 'Solde du Trésor insuffisant pour retirer ' + targetAmount + ' R.', '§c')
         return 0
     }
 
@@ -307,7 +311,7 @@ function handleNationWithdraw(player, amountStr) {
     if (n5 > 0) player.give(Item.of('kubejs:billet_5', n5))
     if (n1 > 0) player.give(Item.of('kubejs:billet_1', n1))
 
-    sendMsg(player, 'Banque', 'Retrait réussi de §e' + targetAmount + '$ §fen billets depuis le Trésor national.', '§a')
+    sendMsg(player, 'Banque', 'Retrait réussi de §e' + targetAmount + ' R §fen billets depuis le Trésor national.', '§a')
     return 1
 }
 
@@ -336,4 +340,22 @@ ServerEvents.commandRegistry(function(event) {
                 })
             )
     )
+})
+
+NetworkEvents.dataReceived('action_nation_bank', function(event) {
+    try {
+        var player = event.player || event.getEntity()
+        if (!player) return
+        var data = event.data || event.getData()
+        var raw = data.getString ? data.getString('json') : String(data.get('json'))
+        if (!raw) return
+        var action = JSON.parse(raw)
+        if (action.action === 'deposit_held') {
+            handleNationDeposit(player, 'held')
+        } else if (action.action === 'deposit_all') {
+            handleNationDeposit(player, 'all')
+        } else if (action.action === 'withdraw') {
+            handleNationWithdraw(player, String(action.amount))
+        }
+    } catch (e) {}
 })

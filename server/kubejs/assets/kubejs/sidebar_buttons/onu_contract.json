@@ -1,0 +1,8 @@
+{
+  "icon": "item:minecraft:writable_book",
+  "sort_index": 530,
+  "loading_screen": false,
+  "click": [
+    "command:/onu contrat"
+  ]
+}

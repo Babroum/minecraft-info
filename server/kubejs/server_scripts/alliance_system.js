@@ -1,6 +1,6 @@
 // priority: 60
 // =============================================================================
-// NationGlory Server Script - Système d'Alliances Géopolitiques & Appel aux Armes
+// Third World Server Script - Système d'Alliances Géopolitiques & Appel aux Armes
 // =============================================================================
 
 var ALLIANCE_TIMEOUT_MS = 15 * 60 * 1000 // 15 minutes pour répondre à l'appel aux armes

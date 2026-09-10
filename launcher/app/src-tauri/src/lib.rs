@@ -1,6 +1,8 @@
+mod auth;
 mod launch;
 mod sync;
 
+use auth::AuthResponse;
 use launch::LaunchPayload;
 use sync::{get_config, LauncherConfig, SyncSummary};
 
@@ -29,6 +31,32 @@ async fn launch_minecraft(
     launch::launch_minecraft_game(app, payload).await
 }
 
+#[tauri::command]
+async fn auth_register(
+    username: String,
+    password: String,
+    custom_mods_url: Option<String>,
+) -> Result<AuthResponse, String> {
+    auth::register(&username, &password, custom_mods_url.as_deref()).await
+}
+
+#[tauri::command]
+async fn auth_login(
+    username: String,
+    password: String,
+    custom_mods_url: Option<String>,
+) -> Result<AuthResponse, String> {
+    auth::login(&username, &password, custom_mods_url.as_deref()).await
+}
+
+#[tauri::command]
+async fn auth_verify(
+    token: String,
+    custom_mods_url: Option<String>,
+) -> Result<auth::VerifyResponse, String> {
+    auth::verify_token(&token, custom_mods_url.as_deref()).await
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     dotenvy::dotenv().ok();
@@ -38,7 +66,10 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_launcher_config,
             start_synchronization,
-            launch_minecraft
+            launch_minecraft,
+            auth_register,
+            auth_login,
+            auth_verify
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

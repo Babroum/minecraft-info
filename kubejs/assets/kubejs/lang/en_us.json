@@ -1,0 +1,14 @@
+{
+  "item.kubejs.billet_1": "1 Robert Coin Note",
+  "item.kubejs.billet_5": "5 Robert Coins Note",
+  "item.kubejs.billet_20": "20 Robert Coins Note",
+  "item.kubejs.billet_100": "100 Robert Coins Note",
+  "sidebar_button.kubejs.onu_market": "UN Global Market",
+  "sidebar_button.kubejs.onu_market.tooltip": "Access server exchange and stock prices",
+  "sidebar_button.kubejs.nation": "Nation & Bank",
+  "sidebar_button.kubejs.nation.tooltip": "Nation dashboard and treasury",
+  "sidebar_button.kubejs.war": "War & Siege Registry",
+  "sidebar_button.kubejs.war.tooltip": "View active military conflicts",
+  "sidebar_button.kubejs.onu_contract": "UN Public Contracts",
+  "sidebar_button.kubejs.onu_contract.tooltip": "View active global procurement contract"
+}

@@ -1,6 +1,6 @@
 // priority: 40
 // =============================================================================
-// NationGlory Server Script - Panneau Central /nation (Ergonomie Sobre)
+// Third World Server Script - Panneau Central /nation (Ergonomie Sobre)
 // =============================================================================
 
 function showNationOverview(player) {
@@ -11,6 +11,7 @@ function showNationOverview(player) {
     if (!team) {
         sendMsg(player, 'Nation', 'Statut : Citoyen Indépendant (sans nation).', '§e')
         sendMsg(player, 'Aide', 'Appuyez sur §eO §fpour fonder/rejoindre une nation, et §eM §fpour la carte des chunks.', '§7')
+        player.sendData('open_nation_dashboard', { json: JSON.stringify({ hasNation: false }) })
         return 1
     }
 
@@ -22,7 +23,7 @@ function showNationOverview(player) {
     var warStatus = activeWars.length > 0 ? ('§cEN GUERRE (' + activeWars.length + ' front(s))') : '§aEn Paix'
 
     var bankAccount = (typeof getOrCreateNationBank === 'function') ? getOrCreateNationBank(team, player) : null
-    var balanceText = '0$'
+    var balanceText = '0 R'
     try {
         if (bankAccount && bankAccount.getBalanceText) balanceText = bankAccount.getBalanceText().getString()
     } catch (e) {}
@@ -30,8 +31,61 @@ function showNationOverview(player) {
     sendMsg(player, 'Nation', '§6' + teamName + ' §7| Rang : ' + rankLabel + ' §7| Statut : ' + warStatus, '§6')
     sendMsg(player, 'Trésor', 'Solde National : §a' + balanceText, '§2')
     sendMsg(player, 'Raccourcis', '§f/nation home §7| §f/nation sethome §7| §f/nation tax §7| §f/ally list', '§7')
+
+    try {
+        var membersList = []
+        var memUuids = team.getMembers()
+        if (memUuids) {
+            var itM = memUuids.iterator()
+            while (itM.hasNext()) {
+                var u = itM.next()
+                var pOnline = server.getPlayerList().getPlayer(u)
+                var pName = pOnline ? pOnline.getName().getString() : u.toString().substring(0, 8)
+                var mRank = 'Citoyen'
+                if (team.getOwner && team.getOwner().equals(u)) mRank = 'Leader'
+                else if (team.getOfficers && team.getOfficers().contains(u)) mRank = 'Ministre'
+                membersList.push({
+                    name: pName,
+                    rank: mRank,
+                    online: pOnline !== null
+                })
+            }
+        }
+        var nationPayload = {
+            hasNation: true,
+            nationName: teamName,
+            rank: rankLabel,
+            isOfficer: (rank === 'owner' || rank === 'officer'),
+            bankBalance: balanceText,
+            warStatus: warStatus,
+            chunkCount: 0,
+            members: membersList
+        }
+        player.sendData('open_nation_dashboard', { json: JSON.stringify(nationPayload) })
+    } catch (ne) {
+        console.error('[Nation Info] Erreur payload open_nation_dashboard: ' + ne)
+    }
+
     return 1
 }
+
+NetworkEvents.dataReceived('action_nation', function(event) {
+    try {
+        var player = event.player || event.getEntity()
+        if (!player) return
+        var data = event.data || event.getData()
+        var raw = data.getString ? data.getString('json') : String(data.get('json'))
+        if (!raw) return
+        var action = JSON.parse(raw)
+        if (action.action === 'home') {
+            var fnHome = (typeof handleNationHomeTeleport === 'function') ? handleNationHomeTeleport : null
+            if (fnHome) fnHome(player, false)
+        } else if (action.action === 'sethome') {
+            var fnSet = (typeof handleNationSetHome === 'function') ? handleNationSetHome : null
+            if (fnSet) fnSet(player, false)
+        }
+    } catch (e) {}
+})
 
 ServerEvents.commandRegistry(function(event) {
     var Commands = event.commands
@@ -49,7 +103,7 @@ ServerEvents.commandRegistry(function(event) {
                     return 0
                 }
                 var bankAccount = getOrCreateNationBank(team, player)
-                var balance = '0$'
+                var balance = '0 R'
                 try {
                     if (bankAccount && bankAccount.getBalanceText) balance = bankAccount.getBalanceText().getString()
                 } catch (e) {}
@@ -197,10 +251,22 @@ ServerEvents.commandRegistry(function(event) {
             })
     )
 
-    // Raccourci direct /nationhome
+    // Raccourcis directs /nationhome, /home et /sethome
     event.register(
         Commands.literal('nationhome').executes(function(ctx) {
             return (typeof teleportToNationHome === 'function') ? teleportToNationHome(ctx.source.player) : 0
+        })
+    )
+    event.register(
+        Commands.literal('home').executes(function(ctx) {
+            return (typeof teleportToNationHome === 'function') ? teleportToNationHome(ctx.source.player) : 0
+        })
+    )
+    event.register(
+        Commands.literal('sethome').executes(function(ctx) {
+            var player = ctx.source.player
+            var team = getPlayerNationTeam(player)
+            return (typeof setNationHome === 'function') ? setNationHome(team, player) : 0
         })
     )
 })

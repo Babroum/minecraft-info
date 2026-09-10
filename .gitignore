@@ -89,3 +89,10 @@ server/.sable/
 **/backups/
 **/ftbbackups3/
 scratch/
+
+# ==========================================
+# Launcher API Secrets
+# ==========================================
+launcher/api/certs/
+launcher/api/accounts.json
+launcher/api/sessions.json

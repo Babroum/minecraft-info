@@ -1,4 +1,4 @@
-# Mémo Projet NationGlory
+# Mémo Projet Third World
 
 ## 📁 Architecture des dossiers
 - `launcher/app` : Application desktop Minecraft (Tauri v2 + React)

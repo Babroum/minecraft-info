@@ -27,7 +27,7 @@
     {
       "chain": "main",
       "name": {
-        "text": "Dollar"
+        "text": "Robert Coins"
       },
       "displayType": "lightmanscurrency:coin",
       "InputType": "DEFAULT",
@@ -36,40 +36,40 @@
           "Coin": "kubejs:billet_1",
           "baseUnit": true,
           "initial": {
-            "text": "1$"
+            "text": "1 R"
           },
           "plural": {
-            "text": "1$"
+            "text": "1 R"
           }
         },
         {
           "Coin": "kubejs:billet_5",
           "exchangeRate": 5,
           "initial": {
-            "text": "5$"
+            "text": "5 R"
           },
           "plural": {
-            "text": "5$"
+            "text": "5 R"
           }
         },
         {
           "Coin": "kubejs:billet_20",
           "exchangeRate": 4,
           "initial": {
-            "text": "20$"
+            "text": "20 R"
           },
           "plural": {
-            "text": "20$"
+            "text": "20 R"
           }
         },
         {
           "Coin": "kubejs:billet_100",
           "exchangeRate": 5,
           "initial": {
-            "text": "100$"
+            "text": "100 R"
           },
           "plural": {
-            "text": "100$"
+            "text": "100 R"
           }
         }
       ],

@@ -44,6 +44,26 @@ export interface LaunchStatusPayload {
   progress: number;
 }
 
+// --- Auth types ---
+export interface AuthResponse {
+  success?: boolean;
+  username?: string;
+  token?: string;
+  error?: string;
+}
+
+export interface VerifyResponse {
+  valid?: boolean;
+  username?: string;
+  error?: string;
+}
+
+export interface AuthState {
+  isLoggedIn: boolean;
+  username: string | null;
+  token: string | null;
+}
+
 export function useSync() {
   const [config, setConfig] = useState<LauncherConfig | null>(null);
   const [status, setStatus] = useState<SyncStatusPayload>({
@@ -66,6 +86,19 @@ export function useSync() {
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState<SyncSummary | null>(null);
 
+  // --- Auth state ---
+  const [auth, setAuth] = useState<AuthState>(() => {
+    const savedToken = localStorage.getItem("mc_auth_token");
+    const savedUsername = localStorage.getItem("mc_auth_username");
+    return {
+      isLoggedIn: false, // Will be verified on mount
+      username: savedUsername,
+      token: savedToken,
+    };
+  });
+  const [authLoading, setAuthLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
+
   // Charger la configuration effective au démarrage
   const loadConfig = useCallback(async (customUrl?: string, customDir?: string) => {
     try {
@@ -81,8 +114,113 @@ export function useSync() {
     }
   }, []);
 
+  // --- Auth functions ---
+  const verifyToken = useCallback(async (token: string, customUrl?: string): Promise<boolean> => {
+    try {
+      const result = await invoke<VerifyResponse>("auth_verify", {
+        token,
+        customModsUrl: customUrl || null,
+      });
+      if (result.valid && result.username) {
+        setAuth({
+          isLoggedIn: true,
+          username: result.username,
+          token,
+        });
+        localStorage.setItem("mc_auth_token", token);
+        localStorage.setItem("mc_auth_username", result.username);
+        return true;
+      }
+    } catch {
+      // Token invalid or expired
+    }
+    setAuth({ isLoggedIn: false, username: null, token: null });
+    localStorage.removeItem("mc_auth_token");
+    localStorage.removeItem("mc_auth_username");
+    return false;
+  }, []);
+
+  const loginAccount = useCallback(async (username: string, password: string, customUrl?: string): Promise<boolean> => {
+    setAuthError(null);
+    setAuthLoading(true);
+    try {
+      const result = await invoke<AuthResponse>("auth_login", {
+        username,
+        password,
+        customModsUrl: customUrl || null,
+      });
+      if (result.success && result.token && result.username) {
+        setAuth({
+          isLoggedIn: true,
+          username: result.username,
+          token: result.token,
+        });
+        localStorage.setItem("mc_auth_token", result.token);
+        localStorage.setItem("mc_auth_username", result.username);
+        setAuthLoading(false);
+        return true;
+      }
+      setAuthError("Réponse inattendue du serveur.");
+      setAuthLoading(false);
+      return false;
+    } catch (err: unknown) {
+      const errorMsg = typeof err === "string" ? err : "Erreur de connexion.";
+      setAuthError(errorMsg);
+      setAuthLoading(false);
+      return false;
+    }
+  }, []);
+
+  const registerAccount = useCallback(async (username: string, password: string, customUrl?: string): Promise<boolean> => {
+    setAuthError(null);
+    setAuthLoading(true);
+    try {
+      const result = await invoke<AuthResponse>("auth_register", {
+        username,
+        password,
+        customModsUrl: customUrl || null,
+      });
+      if (result.success && result.token && result.username) {
+        setAuth({
+          isLoggedIn: true,
+          username: result.username,
+          token: result.token,
+        });
+        localStorage.setItem("mc_auth_token", result.token);
+        localStorage.setItem("mc_auth_username", result.username);
+        setAuthLoading(false);
+        return true;
+      }
+      setAuthError("Réponse inattendue du serveur.");
+      setAuthLoading(false);
+      return false;
+    } catch (err: unknown) {
+      const errorMsg = typeof err === "string" ? err : "Erreur d'inscription.";
+      setAuthError(errorMsg);
+      setAuthLoading(false);
+      return false;
+    }
+  }, []);
+
+  const logout = useCallback(() => {
+    setAuth({ isLoggedIn: false, username: null, token: null });
+    localStorage.removeItem("mc_auth_token");
+    localStorage.removeItem("mc_auth_username");
+    setAuthError(null);
+  }, []);
+
   useEffect(() => {
-    loadConfig();
+    const savedModsUrl = localStorage.getItem("mc_mods_url") || undefined;
+    const savedGameDir = localStorage.getItem("mc_game_dir") || undefined;
+    loadConfig(savedModsUrl, savedGameDir);
+
+    // Verify existing token on startup
+    const savedToken = localStorage.getItem("mc_auth_token");
+    if (savedToken) {
+      verifyToken(savedToken, savedModsUrl).finally(() => setAuthLoading(false));
+    } else {
+      setAuthLoading(false);
+    }
 
     // Écouter les événements de progression de synchronisation
     const unlistenSyncPromise = listen<SyncStatusPayload>("sync-status", (event) => {
@@ -101,7 +239,7 @@ export function useSync() {
       unlistenSyncPromise.then((u) => u());
       unlistenLaunchPromise.then((u) => u());
     };
-  }, [loadConfig]);
+  }, [loadConfig, verifyToken]);
 
   // Démarrer la synchronisation complète
   const startSync = useCallback(
@@ -144,10 +282,14 @@ export function useSync() {
     [isRunning, isLaunching]
   );
 
-  // Lancer le jeu Minecraft 1.21.1 NeoForge
+  // Lancer le jeu Minecraft 1.21.1 NeoForge (avec auth token)
   const launchMinecraft = useCallback(
-    async (username: string, ramMb: number, customGameDir?: string) => {
+    async (ramMb: number, customGameDir?: string, customModsUrl?: string) => {
       if (isLaunching) return;
+      if (!auth.isLoggedIn || !auth.token || !auth.username) {
+        setError("Vous devez être connecté pour lancer le jeu.");
+        return;
+      }
 
       setIsLaunching(true);
       setError(null);
@@ -160,9 +302,11 @@ export function useSync() {
       try {
         const result = await invoke<string>("launch_minecraft", {
           payload: {
-            username,
+            username: auth.username,
             ramMb,
             customGameDir: customGameDir || null,
+            customModsUrl: customModsUrl || null,
+            authToken: auth.token,
           },
         });
         console.log("Minecraft lancé :", result);
@@ -175,11 +319,22 @@ export function useSync() {
           progress: 0,
         });
         setIsGameRunning(false);
+
+        // Si le token a été invalidé ou rejeté côté serveur, déconnecter pour réinviter l'utilisateur
+        if (
+          errorMsg.toLowerCase().includes("invalide") ||
+          errorMsg.toLowerCase().includes("expiré") ||
+          errorMsg.toLowerCase().includes("connecté")
+        ) {
+          setAuth({ isLoggedIn: false, username: null, token: null });
+          localStorage.removeItem("mc_auth_token");
+          localStorage.removeItem("mc_auth_username");
+        }
       } finally {
         setIsLaunching(false);
       }
     },
-    [isLaunching]
+    [isLaunching, auth]
   );
 
   return {
@@ -194,5 +349,14 @@ export function useSync() {
     summary,
     startSync,
     launchMinecraft,
+    // Auth
+    auth,
+    authLoading,
+    authError,
+    loginAccount,
+    registerAccount,
+    verifyToken,
+    logout,
+    setAuthError,
   };
 }

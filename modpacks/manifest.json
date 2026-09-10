@@ -1,5 +1,5 @@
 {
-  "name": "NationGlory",
+  "name": "Third World",
   "version": "0.1.0",
   "minecraft": {
     "version": "1.21.1",
@@ -149,16 +149,28 @@
     {
       "file": "voltaic-1.21.1-1.0.13.jar",
       "sha256": "8ad851bfa9bf7665da93851e270c7477a03fab3852616bc50918600635b74c75"
+    },
+    {
+      "file": "worldedit-mod-7.3.8.jar",
+      "sha256": "5e7752c97876d87411e3760bcc573cc431f43c453722e6959fa7fe54db1b01ca"
     }
   ],
   "resourcepacks": [
     {
-      "file": "NationGlory-Assets.zip",
-      "sha256": "71e8ccda56e3701caa2ae7e821cb9d771df5196338d71b8c21b84d4907892e8f"
+      "file": "ThirdWorld-Assets.zip",
+      "sha256": "d02a47c8c8df5441ce48103eb82b92c1891810c78a48365f62cb6829a46f8f88"
     }
   ],
   "datapacks": [],
   "kubejs": [
+    {
+      "file": "assets/kubejs/lang/en_us.json",
+      "sha256": "23b53211e25c4c969c05890b879c51003a995361dd9c55555fd827b0566616e2"
+    },
+    {
+      "file": "assets/kubejs/lang/fr_fr.json",
+      "sha256": "15274e60be71b22736a927acab53b8ab4507c8e0239d198cfd39d9a22c455440"
+    },
     {
       "file": "assets/kubejs/models/item/billet_1.json",
       "sha256": "3403a7e98c518339b89d211c91472e7ccdf341b9e2f756704fbfe07608ca1c89"
@@ -220,36 +232,52 @@
       "sha256": "97b632db145d725c2ee78f5fd8cdf4bdd8a15e2feec0fa7bd6917e96ad6e9a77"
     },
     {
+      "file": "assets/kubejs/sidebar_buttons/nation.json",
+      "sha256": "bf3adcd22fadbfb92da54ad096e733acad79fbd964eba12f7cc6ebd419c59bad"
+    },
+    {
+      "file": "assets/kubejs/sidebar_buttons/onu_contract.json",
+      "sha256": "9062275fd06ad77345b14567a5e72b3439b277dcdad342f4c84eb57d1f6922bc"
+    },
+    {
+      "file": "assets/kubejs/sidebar_buttons/onu_market.json",
+      "sha256": "7cfccb7d6fb52096d26ff73c8c683d573f356b4af92de64d7415e1feaabae547"
+    },
+    {
+      "file": "assets/kubejs/sidebar_buttons/war.json",
+      "sha256": "8f1061e4949feeae49ab0dea6410e541b076a76c68b9298aa140058467a7bd3b"
+    },
+    {
       "file": "assets/kubejs/textures/item/billet_1.png",
-      "sha256": "f2f4fd4bb5395c5609ce91ff501168bbfe3675bb5b74ce5f8b8f5fab2a19b308"
+      "sha256": "f287b1ab7bfdabd3c48aa86ee673049bb95b3ac40006dc43f205092ef10df8cb"
     },
     {
       "file": "assets/kubejs/textures/item/billet_100.png",
-      "sha256": "e60a4693ca7a239deeef132a982a8083c36a617ee2a9ef8a59535aab4ed36439"
+      "sha256": "958d5b88e8f8d6557370f4a851e8d20de737b8f32cb398f01bbbbbde6cdd2f01"
     },
     {
       "file": "assets/kubejs/textures/item/billet_20.png",
-      "sha256": "3c7868dea2fd1b6701708cb03bd7a75775ddf550a668d5d2dad5da7a7981279f"
+      "sha256": "56bd0e71cae74402e473cf1822c8e8aa7eb33289a480d10749c6b9a386a7afa2"
     },
     {
       "file": "assets/kubejs/textures/item/billet_5.png",
-      "sha256": "685cf8a96799bedd33a1dd1ab36bf73eafb6e970468663edaf6be957e3d7945a"
+      "sha256": "51beb274ad1272313f0691c5678fc3c55c5a31c317a8475349f21286157e003b"
     },
     {
       "file": "assets/kubejs/textures/item/composite_boots.png",
-      "sha256": "6fd95adff3d48c95d3e5108f33bc6772d32b3bba709847fb018c7363efcfe894"
+      "sha256": "ee8dabd8964b42cac38bfbee1deee17818f57626149b45123656c33c41c2ad49"
     },
     {
       "file": "assets/kubejs/textures/item/composite_chestplate.png",
-      "sha256": "3f2bb6edb8e5e489297af346098456f2049f93a79412275ea95b1ef3cc85b9da"
+      "sha256": "ec68014e59b8ca8dfa078141917fd497df95d377e3acba05b34a086387b427a1"
     },
     {
       "file": "assets/kubejs/textures/item/composite_helmet.png",
-      "sha256": "3b8a577b71714e4c45e0b9f07e19d2c776e41abf1f4fc9e7084ffad2158f4cce"
+      "sha256": "0bf7669ac8312e54b9bf4dbe6765b0c4c4d303a6a476160f5393205420ab554a"
     },
     {
       "file": "assets/kubejs/textures/item/composite_leggings.png",
-      "sha256": "9d52a088a50835d0c2201ab909c140847bdd81b1633fd68560ab5524b0e45ce0"
+      "sha256": "40712c83dc3e7f2bd73257bf324e64fced4ed29bbcff3e6bf1c22de937606e90"
     },
     {
       "file": "assets/kubejs/textures/item/lingot_uranium_militaire.png",
@@ -265,103 +293,143 @@
     },
     {
       "file": "assets/kubejs/textures/item/uranium_juggernaut_boots.png",
-      "sha256": "341525b5213744671bb48e2e6b326a75f95080d26982adeb41d2a7be0beee384"
+      "sha256": "7391951d1cdccd60790b2aa7f875813df9b3ee7d0ee77dbd6e5c81a9f1bdd4e4"
     },
     {
       "file": "assets/kubejs/textures/item/uranium_juggernaut_chestplate.png",
-      "sha256": "4bb8bddb6b4e9c3dce2ba6a3a86d5f5f46bd52dced4ee6af8a4e88468253deda"
+      "sha256": "6c44479afcbb179b84de5a11d26fd576e2412bae4467565544bfde42254e1ea1"
     },
     {
       "file": "assets/kubejs/textures/item/uranium_juggernaut_helmet.png",
-      "sha256": "dcfe4aa4a1a5432c2e87d7cc647c4d5db24c9d642e8b8afaa6b89aece6c28c71"
+      "sha256": "3586ddb1913fde1a7821c7c27dbed27d2179a29b99eb72edd5d33b224936741d"
     },
     {
       "file": "assets/kubejs/textures/item/uranium_juggernaut_leggings.png",
-      "sha256": "4a1b1b4fccedf6d0e95f47ab87b3c5a66dc4ceeeae3dafab2a6880886807f89e"
+      "sha256": "1155b34cc9539829f6c000e7f33e2e2aa2a3158f888a01a46afd21b7f2935c10"
     },
     {
       "file": "assets/kubejs/textures/models/armor/composite_layer_1.png",
-      "sha256": "90ef4ecaec440338f4d1a312277d4305656a7486269810d1be3e2e63f78fff6c"
+      "sha256": "c3a4d46432cf75a6db7ea45d265578783e6d8705855ec749602ca114dacdde7f"
     },
     {
       "file": "assets/kubejs/textures/models/armor/composite_layer_2.png",
-      "sha256": "e18280be73c640ad41938191740335a254d7b01e3c998ecb649419ee63b9f199"
+      "sha256": "0ec10c22e2951da0e0bd19d2cc792276463b5d26f30ab7723fedabaa1595f3f3"
     },
     {
       "file": "assets/kubejs/textures/models/armor/uranium_juggernaut_layer_1.png",
-      "sha256": "39af9dea563c823a5c958589f3554e44e092b87faf0b697582bd6bad21740d9b"
+      "sha256": "5bd15f179ee18af115e6d1058302137ebd62d913fd8abd4fb289bef3d5d93c85"
     },
     {
       "file": "assets/kubejs/textures/models/armor/uranium_juggernaut_layer_2.png",
-      "sha256": "b611f7c34f541d86c688757cd44b50205c0f2a55d41c487a5c5fc8645827911c"
+      "sha256": "0408b74ef1b408af2c54ab62d78fdbde05fdf5765faf2ad2896bf791f510c86d"
+    },
+    {
+      "file": "client_scripts/ftb_ui.js",
+      "sha256": "50a69b4a86f016a336ebb024719ae6f91696046679670994529a8d9fbba2f6f1"
+    },
+    {
+      "file": "data/active_onu_contract.json",
+      "sha256": "d1dfe9640cdb83efdaa3d0c6ebfa2da952e9823738edfdb8b0820f69bbeff7e4"
     },
     {
       "file": "data/c/tags/item/coins.json",
-      "sha256": "821f36febee21ea825720a717d9272a46d3c61b7d92885857e7685d4e4faee13"
+      "sha256": "8c31c5e7903feea6b430dad7e8475840ab0711a642c69361e17e1f09138b005e"
     },
     {
       "file": "data/lightmanscurrency/tags/item/coins.json",
-      "sha256": "821f36febee21ea825720a717d9272a46d3c61b7d92885857e7685d4e4faee13"
+      "sha256": "8c31c5e7903feea6b430dad7e8475840ab0711a642c69361e17e1f09138b005e"
+    },
+    {
+      "file": "data/nation_homes.json",
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+    },
+    {
+      "file": "data/onu_market_data.json",
+      "sha256": "8537dfcded87e9b6c816abb4da4a758d42041f332c834efa96ad83404bd1d71a"
     },
     {
       "file": "server_scripts/alliance_system.js",
-      "sha256": "396468a976ad686e6713221f8dae424a5dbb132e0978ef39fd95124bd94f9b53"
+      "sha256": "371cda86a210f7edc35d4e01cc0b2d92efec15fa68c5f9faa2e275c2d0dd489b"
+    },
+    {
+      "file": "server_scripts/dimension_blocker.js",
+      "sha256": "ac3fe6ea61fd0a91a0ea3a52191431370aaa0bf3cf00d239000921bc22e213d9"
+    },
+    {
+      "file": "server_scripts/dimensional_recipes.js",
+      "sha256": "5c862c5aeadb6f0690434ec8a69e924f75529caedfa241e9acacbbfe349c0912"
+    },
+    {
+      "file": "server_scripts/elytra_disabled.js",
+      "sha256": "902c7ca0b07c7c76326b433dddb5c6fb53f736113ac228986228cc161a4bf490"
     },
     {
       "file": "server_scripts/exo_armor_weight.js",
-      "sha256": "4355421c724498d71fb17847342a919d9022e98efe1e38676aea5a14621a181b"
+      "sha256": "b09e29c83b78154abab048788781f4c6f5f34697d37c383dd08753ad63274539"
     },
     {
       "file": "server_scripts/ftb_helpers.js",
-      "sha256": "8f5c170c7f354052878e87f27f1de92eca33e572bc7f8b083a728d6186c5094a"
+      "sha256": "089fecce76656852a5da757733f9826a5d7e16b446de027a5dc3a18afa741e1c"
     },
     {
       "file": "server_scripts/main.js",
-      "sha256": "e2c853eec6f437e6a09fd6cbacdbf63db6aaac08c28dd48c86af1fcf3451031f"
+      "sha256": "2bd394ef37f069bfc82a90e3b70da645c281dfeb109c2a0646e51dbde07cf7b6"
     },
     {
       "file": "server_scripts/military_recipes.js",
-      "sha256": "d6ebfdb032f5551a3a7b6aada268f3985e744de736304b45cabbd7971d30ee97"
+      "sha256": "637928e1ce34b3c9394e943691f74b803a787a19cd0fcb6f923a1f483680f996"
     },
     {
       "file": "server_scripts/nation_bank.js",
-      "sha256": "b5d59a44774079837aea4cb142db8392c7dceb0ffc36ad27437b00cfc59e0f6b"
+      "sha256": "c25144d79f3e99ec7aebaa9395626b40c3887900a9a49d56fa7786fc321b8475"
     },
     {
       "file": "server_scripts/nation_homes.js",
-      "sha256": "08685df9c292873b0df1ec8ebd30992ebe76cf493dc53e755483d858b7cfebdf"
+      "sha256": "90401a641983c5bdb22ff110a2874340719c8b043bb2c1c7eea4b6c866249415"
     },
     {
       "file": "server_scripts/nation_info.js",
-      "sha256": "522d412225c77309e1fb09e669854408cb5966dd118c8f819186c5fc16620042"
+      "sha256": "4500bb4f4cebc3ece8b6d984128ffb0a234b41188a8ac8d8f6ebb92daefe7771"
+    },
+    {
+      "file": "server_scripts/onu_claims.js",
+      "sha256": "1785b55591683acbde09340d18524b9a862f78296e8942bbe0497fc193021330"
+    },
+    {
+      "file": "server_scripts/onu_contracts.js",
+      "sha256": "55709807dcf674bf533b20ec4fa817076a2f42eb502e682b9cd59fd2c0ba06c0"
+    },
+    {
+      "file": "server_scripts/onu_market.js",
+      "sha256": "31b5302f90e2782c78ff031bf4dc748eb8e5d806b9f1c1bc1cf43ca33d42b59f"
     },
     {
       "file": "server_scripts/territory_tax.js",
-      "sha256": "681e8b5d87deefa85a9067d87b98960459e6692412dbd407c7ab3065cab78826"
+      "sha256": "f4b29d45ea5c8f3aa3b259b6e3d50e2fb43f32163121e5856d457373d8f8f370"
     },
     {
       "file": "server_scripts/war_admin.js",
-      "sha256": "2c4f8cbe9d47ff38db5c3cb4522d207469001d69e9f06741efd49be8b8dbcf59"
+      "sha256": "cdca3041b947d0ec63a5043a2d7c31f3ce57c8fa9247e6480c210c559fa0ba00"
     },
     {
       "file": "server_scripts/war_claims_hook.js",
-      "sha256": "77ef5a2674a94f343f7cb3c64af2275f68807a5f9f83864b48bd7c98aa81be1e"
+      "sha256": "0c42013065107eafdc20c1345c317fed140b741ab21017bbd10a1f1fd87462f2"
     },
     {
       "file": "server_scripts/war_raidhours.js",
-      "sha256": "ae2cecb95889b9fa51fd2209730bab13bcfcc486f5fe54e1cb979dce4ad62b7a"
+      "sha256": "e9c1f37c20486801e7b54bc0cacd1fd887c97959047178f3637a15315dc51694"
     },
     {
       "file": "server_scripts/war_system.js",
-      "sha256": "d2c93815e4baa9cbfd6a2e5481ec9f08d224e95eef515101e1d73bbeeca13271"
+      "sha256": "68dad17858eac4174e7e983b7bc07ab2e7c96c86fea446523ddc72cd4e994b0e"
     },
     {
       "file": "startup_scripts/economy_items.js",
-      "sha256": "17319af82dc6cabb4bf4192acfb3bde59a4dfec822fb6ee52a59db479aadf5b3"
+      "sha256": "b051f4aea2b4c9821cc917a6fec6ec905c32a64995fd3f00a7058bd213065048"
     },
     {
       "file": "startup_scripts/military_armor.js",
-      "sha256": "f3ee6bd1b54a07487822f9943d08cf88d6486b2741f9e973e5f11d537ce1d95a"
+      "sha256": "c89e93cfdd453941572a3a7e375029c9437878e5bd1ee45130a4e2aa01085edd"
     }
   ]
 }

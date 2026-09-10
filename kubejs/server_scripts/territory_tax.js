@@ -1,6 +1,6 @@
 // priority: 50
 // =============================================================================
-// NationGlory Server Script - Entretien Territorial & Taxe sur Temps d'Activité
+// Third World Server Script - Entretien Territorial & Taxe sur Temps d'Activité
 // Concept 1 : Le temps fiscal ne s'écoule que lorsque la nation est active
 // =============================================================================
 
@@ -122,7 +122,7 @@ function processTeamTaxCycle(server, team, teamData, taxRecord, now) {
         taxRecord.debt_active_minutes = 0
         taxRecord.last_cycle_paid_at = now
         taxRecord.last_tax_amount = taxDue
-        notifyTeam(team, 'Impôts', 'Taxe d\'entretien territorial acquittée : §e' + taxDue + '$ §fpour §e' + chunkCount + ' chunks §f(1h d\'activité écoulée).', '§a')
+        notifyTeam(team, 'Impôts', 'Taxe d\'entretien territorial acquittée : §e' + taxDue + ' R §fpour §e' + chunkCount + ' chunks §f(1h d\'activité écoulée).', '§a')
     } else {
         // Trésor insuffisant
         taxRecord.in_debt = true
@@ -130,7 +130,7 @@ function processTeamTaxCycle(server, team, teamData, taxRecord, now) {
         var remainingMins = Math.max(0, TAX_CONFIG.GRACE_PLAYTIME_MINUTES - (taxRecord.debt_active_minutes || 0))
         var remainingH = (remainingMins / 60).toFixed(1)
 
-        notifyTeam(team, 'Alerte Fiscale', '§cTrésor insuffisant pour payer l\'entretien territorial (' + taxDue + '$ dus pour ' + chunkCount + ' chunks). Il vous reste §e' + remainingH + 'h de jeu actif §cpour approvisionner la banque avant saisie périphérique !', '§c')
+        notifyTeam(team, 'Alerte Fiscale', '§cTrésor insuffisant pour payer l\'entretien territorial (' + taxDue + ' R dus pour ' + chunkCount + ' chunks). Il vous reste §e' + remainingH + 'h de jeu actif §cpour approvisionner la banque avant saisie périphérique !', '§c')
     }
 }
 
@@ -202,7 +202,7 @@ ServerEvents.tick(function(event) {
                     var chunkCount = claimedChunks.size()
                     var taxDue = calculateProgressiveTax(chunkCount)
                     var leftM = Math.max(0, TAX_CONFIG.GRACE_PLAYTIME_MINUTES - record.debt_active_minutes)
-                    notifyTeam(teamObj, 'Défaut Fiscal', 'Rappel : ' + taxDue + '$ d\'entretien territorial impayés ! Délai de grâce restant : §e' + leftM + ' min de jeu actif§f.', '§c')
+                    notifyTeam(teamObj, 'Défaut Fiscal', 'Rappel : ' + taxDue + ' R d\'entretien territorial impayés ! Délai de grâce restant : §e' + leftM + ' min de jeu actif§f.', '§c')
                 }
 
                 // Expiration de la période de grâce active : saisie périphérique !
@@ -256,14 +256,14 @@ function showNationTaxOverview(player) {
         var remainingMins = Math.max(0, TAX_CONFIG.PLAYTIME_CYCLE_MINUTES - (record.active_minutes || 0))
 
         var bankAccount = (typeof getOrCreateNationBank === 'function') ? getOrCreateNationBank(team, player) : null
-        var balance = '0$'
+        var balance = '0 R'
         try {
             if (bankAccount && bankAccount.getBalanceText) balance = bankAccount.getBalanceText().getString()
         } catch (be) {}
 
         sendMsg(player, 'Fiscalité', '=== Entretien Territorial : §6' + team.getName().getString() + ' §f===', '§6')
         sendMsg(player, 'Territoire', 'Chunks revendiqués : §e' + count + ' §7(4 premiers exemptés)', '§7')
-        sendMsg(player, 'Tarif', 'Coût d\'entretien : §e' + taxPerHour + '$ §7par heure de jeu actif', '§7')
+        sendMsg(player, 'Tarif', 'Coût d\'entretien : §e' + taxPerHour + ' R §7par heure de jeu actif', '§7')
         sendMsg(player, 'Horloge', 'Prochain prélèvement dans : §b' + remainingMins + ' minute(s) de jeu active(s)', '§7')
         sendMsg(player, 'Trésorerie', 'Solde Banque Nationale : §a' + balance, '§7')
 

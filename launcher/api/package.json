@@ -1,10 +1,13 @@
 {
-  "name": "nationglory-launcher-api",
+  "name": "third-world-launcher-api",
   "version": "1.0.0",
-  "description": "API de distribution du modpack et manifest pour le launcher NationGlory",
+  "description": "API de distribution du modpack et manifest pour le launcher Third World",
   "type": "module",
   "scripts": {
     "start": "node index.mjs",
     "dev": "node --watch index.mjs"
+  },
+  "devDependencies": {
+    "selfsigned": "^5.5.0"
   }
 }

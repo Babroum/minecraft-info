@@ -135,10 +135,10 @@ def make_boots(base_color, sole_color, cuff_color):
     return im
 
 # Composite Armor
-make_helmet((52, 73, 94, 255), (41, 128, 185, 255), (33, 47, 61, 255)).save(os.path.join(textures_dir, 'composite_helmet.png'))
-make_chestplate((44, 62, 80, 255), (231, 76, 60, 255), (60, 85, 110, 255)).save(os.path.join(textures_dir, 'composite_chestplate.png'))
-make_leggings((44, 62, 80, 255), (60, 85, 110, 255), (33, 47, 61, 255)).save(os.path.join(textures_dir, 'composite_leggings.png'))
-make_boots((33, 47, 61, 255), (20, 25, 30, 255), (52, 73, 94, 255)).save(os.path.join(textures_dir, 'composite_boots.png'))
+make_helmet((30, 29, 29, 255), (83, 97, 116, 255), (75, 72, 72, 255)).save(os.path.join(textures_dir, 'composite_helmet.png'))
+make_chestplate((30, 29, 29, 255), (83, 97, 116, 255), (75, 72, 72, 255)).save(os.path.join(textures_dir, 'composite_chestplate.png'))
+make_leggings((30, 29, 29, 255), (83, 97, 116, 255), (75, 72, 72, 255)).save(os.path.join(textures_dir, 'composite_leggings.png'))
+make_boots((30, 29, 29, 255), (120, 97, 97, 255), (75, 72, 72, 255)).save(os.path.join(textures_dir, 'composite_boots.png'))
 
 save_model('composite_helmet')
 save_model('composite_chestplate')
@@ -146,31 +146,44 @@ save_model('composite_leggings')
 save_model('composite_boots')
 
 # Uranium Juggernaut Armor
-make_helmet((25, 45, 35, 255), (46, 204, 113, 255), (15, 30, 20, 255)).save(os.path.join(textures_dir, 'uranium_juggernaut_helmet.png'))
-make_chestplate((25, 45, 35, 255), (46, 204, 113, 255), (35, 65, 50, 255)).save(os.path.join(textures_dir, 'uranium_juggernaut_chestplate.png'))
-make_leggings((25, 45, 35, 255), (46, 204, 113, 255), (15, 30, 20, 255)).save(os.path.join(textures_dir, 'uranium_juggernaut_leggings.png'))
-make_boots((15, 30, 20, 255), (46, 204, 113, 255), (35, 65, 50, 255)).save(os.path.join(textures_dir, 'uranium_juggernaut_boots.png'))
+make_helmet((17, 67, 7, 255), (83, 97, 116, 255), (108, 18, 18, 255)).save(os.path.join(textures_dir, 'uranium_juggernaut_helmet.png'))
+make_chestplate((17, 67, 7, 255), (202, 111, 8, 255), (108, 18, 18, 255)).save(os.path.join(textures_dir, 'uranium_juggernaut_chestplate.png'))
+make_leggings((17, 67, 7, 255), (108, 18, 18, 255), (83, 9, 9, 255)).save(os.path.join(textures_dir, 'uranium_juggernaut_leggings.png'))
+make_boots((17, 67, 7, 255), (83, 9, 9, 255), (108, 18, 18, 255)).save(os.path.join(textures_dir, 'uranium_juggernaut_boots.png'))
 
 save_model('uranium_juggernaut_helmet')
 save_model('uranium_juggernaut_chestplate')
 save_model('uranium_juggernaut_leggings')
 save_model('uranium_juggernaut_boots')
 
-# Armor entity textures (64x32)
-def make_layer(base_rgb, accent_rgb, filename):
-    layer = Image.new('RGBA', (64, 32), (0, 0, 0, 0))
-    d = ImageDraw.Draw(layer)
-    d.rectangle([0, 0, 31, 15], fill=base_rgb + (255,))
-    d.rectangle([16, 16, 39, 31], fill=base_rgb + (255,))
-    d.rectangle([40, 16, 55, 31], fill=base_rgb + (255,))
-    d.rectangle([0, 16, 15, 31], fill=base_rgb + (255,))
-    d.rectangle([8, 8, 15, 11], fill=accent_rgb + (255,))
-    d.rectangle([20, 20, 27, 27], fill=accent_rgb + (255,))
-    layer.save(os.path.join(armor_models_dir, filename))
+# Armor entity textures (64x32) generated from raw skins
+def generate_armor_layers(raw_path, prefix):
+    src = Image.open(raw_path).convert('RGBA')
+    
+    # Layer 1: Helmet, Chestplate, Arms, Boots
+    l1 = src.copy()
+    for y in range(16, 20):
+        for x in range(4, 8):
+            l1.putpixel((x, y), (0, 0, 0, 0))
+    for y in range(20, 26):
+        for x in range(0, 16):
+            l1.putpixel((x, y), (0, 0, 0, 0))
+    l1.save(os.path.join(armor_models_dir, f'{prefix}_layer_1.png'))
+    
+    # Layer 2: Leggings (Pelvis belt + Thighs/Knees)
+    l2 = Image.new('RGBA', (64, 32), (0, 0, 0, 0))
+    for y in range(27, 32):
+        for x in range(16, 40):
+            l2.putpixel((x, y), src.getpixel((x, y)))
+    for y in range(16, 20):
+        for x in range(4, 8):
+            l2.putpixel((x, y), src.getpixel((x, y)))
+    for y in range(20, 29):
+        for x in range(0, 16):
+            l2.putpixel((x, y), src.getpixel((x, y)))
+    l2.save(os.path.join(armor_models_dir, f'{prefix}_layer_2.png'))
 
-make_layer((50, 65, 80), (70, 130, 180), 'composite_layer_1.png')
-make_layer((40, 55, 70), (70, 130, 180), 'composite_layer_2.png')
-make_layer((30, 50, 38), (46, 204, 113), 'uranium_juggernaut_layer_1.png')
-make_layer((20, 38, 28), (46, 204, 113), 'uranium_juggernaut_layer_2.png')
+generate_armor_layers('tools/textures_source/composite_raw.png', 'composite')
+generate_armor_layers('tools/textures_source/uranium_juggernaut_raw.png', 'uranium_juggernaut')
 
 print('All textures and models generated successfully!')

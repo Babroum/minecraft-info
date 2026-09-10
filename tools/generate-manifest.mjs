@@ -59,7 +59,7 @@ const datapacks = scanDir(datapacksDirectory, ".zip");
 const kubejs = scanDirRecursive(kubejsDirectory);
 
 const manifest = {
-    name: "NationGlory",
+    name: "Third World",
     version: "0.1.0",
     minecraft: {
         version: "1.21.1",

@@ -1,0 +1,8 @@
+{
+  "icon": "item:minecraft:shield",
+  "sort_index": 510,
+  "loading_screen": false,
+  "click": [
+    "command:/nation"
+  ]
+}

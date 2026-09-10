@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use tauri::{AppHandle, Emitter};
 
 pub const DEFAULT_DIR_NAME: &str = ".serveur-info";
-pub const DEFAULT_MODS_URL: &str = "http://localhost:8080";
+pub const DEFAULT_MODS_URL: &str = "https://176.169.48.104:58410";
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ModpackManifest {
@@ -92,6 +92,16 @@ pub fn resolve_game_dir(custom_dir: Option<String>) -> PathBuf {
     }
 }
 
+/// Normalise une URL en s'assurant qu'elle commence par https:// ou http://
+pub fn normalize_url(url: &str) -> String {
+    let trimmed = url.trim().trim_end_matches('/');
+    if !trimmed.starts_with("http://") && !trimmed.starts_with("https://") {
+        format!("https://{}", trimmed)
+    } else {
+        trimmed.to_string()
+    }
+}
+
 /// Résout l'URL de base pour télécharger le manifest et les mods
 /// 1. Paramètre explicite
 /// 2. Variable d'environnement `LAUNCHER_MODS_URL`
@@ -100,14 +110,14 @@ pub fn resolve_mods_url(custom_url: Option<String>) -> String {
     if let Some(url) = custom_url {
         let trimmed = url.trim();
         if !trimmed.is_empty() {
-            return trimmed.trim_end_matches('/').to_string();
+            return normalize_url(trimmed);
         }
     }
 
     if let Ok(env_url) = env::var("LAUNCHER_MODS_URL") {
         let trimmed = env_url.trim();
         if !trimmed.is_empty() {
-            return trimmed.trim_end_matches('/').to_string();
+            return normalize_url(trimmed);
         }
     }
 
@@ -248,6 +258,7 @@ pub async fn execute_sync(
 ) -> Result<SyncSummary, String> {
     let client = Client::builder()
         .user_agent("ServerLauncher/0.1.0")
+        .danger_accept_invalid_certs(true)
         .build()
         .map_err(|e| format!("Erreur initialisation client HTTP: {}", e))?;
 

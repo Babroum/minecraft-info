@@ -1,6 +1,6 @@
 // priority: 100
 // =============================================================================
-// NationGlory Server Script - Helpers FTB Teams, Chunks & Standardisation Chat
+// Third World Server Script - Helpers FTB Teams, Chunks & Standardisation Chat
 // =============================================================================
 
 /**
@@ -22,6 +22,66 @@ function writeJsonData(filename, data) {
     } catch (e) {
         console.error('[Storage] Erreur ecriture ' + filename + ' : ' + e)
     }
+}
+
+/**
+ * Récupère l'identifiant de dimension d'une entité ou joueur de manière robuste
+ */
+function getEntityDimensionId(entity) {
+    if (!entity) return 'minecraft:overworld'
+    try {
+        var lvl = null
+        if (typeof entity.level === 'function') lvl = entity.level()
+        else if (entity.level) lvl = entity.level
+        else if (typeof entity.getLevel === 'function') lvl = entity.getLevel()
+
+        if (lvl) {
+            var d = null
+            if (typeof lvl.dimension === 'function') d = lvl.dimension()
+            else if (lvl.dimension) d = lvl.dimension
+
+            if (d) {
+                if (typeof d.location === 'function') return String(d.location())
+                if (d.location) return String(d.location)
+                var str = String(d)
+                if (str.indexOf('overworld') !== -1) return 'minecraft:overworld'
+                if (str.indexOf('the_nether') !== -1) return 'minecraft:the_nether'
+                if (str.indexOf('the_end') !== -1) return 'minecraft:the_end'
+                return str
+            }
+        }
+    } catch (e) {
+        console.error('[Dimension] Erreur extraction dimension: ' + e)
+    }
+    return 'minecraft:overworld'
+}
+
+function getEntityX(entity) {
+    if (!entity) return 0
+    try {
+        if (typeof entity.getX === 'function') return Number(entity.getX())
+        if (entity.getX) return Number(entity.getX())
+        if (entity.x !== undefined) return Number(entity.x)
+        if (entity.position) {
+            var pos = typeof entity.position === 'function' ? entity.position() : entity.position
+            if (pos && pos.x !== undefined) return Number(pos.x)
+        }
+    } catch (e) {}
+    return 0
+}
+
+function getEntityZ(entity) {
+    if (!entity) return 0
+    try {
+        if (typeof entity.getZ === 'function') return Number(entity.getZ())
+        if (entity.getZ) return Number(entity.getZ())
+        if (entity.z !== undefined) return Number(entity.z)
+        if (entity.position) {
+            var pos = typeof entity.position === 'function' ? entity.position() : entity.position
+            if (pos && pos.z !== undefined) return Number(pos.z)
+        }
+    } catch (e) {}
+    return 0
 }
 
 /**

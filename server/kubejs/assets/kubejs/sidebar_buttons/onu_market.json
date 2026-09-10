@@ -1,0 +1,8 @@
+{
+  "icon": "item:minecraft:netherite_upgrade_smithing_template",
+  "sort_index": 500,
+  "loading_screen": false,
+  "click": [
+    "command:/marche"
+  ]
+}

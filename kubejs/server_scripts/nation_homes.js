@@ -1,6 +1,6 @@
 // priority: 70
 // =============================================================================
-// NationGlory Server Script - Homes de Nation et Ambassades d'Alliances
+// Third World Server Script - Homes de Nation et Ambassades d'Alliances
 // =============================================================================
 
 function loadNationHomes() {
@@ -93,6 +93,17 @@ function setNationHome(team, player) {
             return 0
         }
 
+        var dimStr = getEntityDimensionId(player) || 'minecraft:overworld'
+        var px = Math.round(Number(player.getX ? player.getX() : player.x) * 10) / 10
+        var py = Math.round(Number(player.getY ? player.getY() : player.y) * 10) / 10
+        var pz = Math.round(Number(player.getZ ? player.getZ() : player.z) * 10) / 10
+
+        if (isPlayerInOnuZone(player) || isCoordsInOnuZone(dimStr, px, pz)) {
+            sendMsg(player, 'ONU', 'Zone Internationale : Il est strictement INTERDIT de poser un Home de nation dans le sanctuaire de l\'ONU (rayon de 200 blocs autour de -204, -172).', '§c')
+            try { player.playSound('minecraft:entity.villager.no', 1.0, 1.0) } catch (ve) {}
+            return 0
+        }
+
         var claimCheck = checkClaimForHome(team, player)
         if (!claimCheck.allowed) {
             sendMsg(player, 'Sécurité', claimCheck.reason || 'Impossible de poser le Home ici.', '§c')
@@ -103,16 +114,6 @@ function setNationHome(team, player) {
         var teamIdStr = team.getId().toString()
         if (!homes[teamIdStr]) homes[teamIdStr] = {}
 
-        var dimStr = 'minecraft:overworld'
-        try {
-            if (player.level && player.level.dimension) {
-                dimStr = player.level.dimension().location().toString()
-            }
-        } catch (de) {}
-
-        var px = Math.round(player.getX() * 10) / 10
-        var py = Math.round(player.getY() * 10) / 10
-        var pz = Math.round(player.getZ() * 10) / 10
         var pyaw = Math.round(getPlayerYaw(player) * 10) / 10
         var ppitch = Math.round(getPlayerPitch(player) * 10) / 10
 
@@ -180,6 +181,17 @@ function setNationAllyHome(team, player) {
             return 0
         }
 
+        var dimStr = getEntityDimensionId(player) || 'minecraft:overworld'
+        var px = Math.round(Number(player.getX ? player.getX() : player.x) * 10) / 10
+        var py = Math.round(Number(player.getY ? player.getY() : player.y) * 10) / 10
+        var pz = Math.round(Number(player.getZ ? player.getZ() : player.z) * 10) / 10
+
+        if (isPlayerInOnuZone(player) || isCoordsInOnuZone(dimStr, px, pz)) {
+            sendMsg(player, 'ONU', 'Zone Internationale : Il est strictement INTERDIT de poser une Ambassade dans le sanctuaire de l\'ONU (rayon de 200 blocs autour de -204, -172).', '§c')
+            try { player.playSound('minecraft:entity.villager.no', 1.0, 1.0) } catch (ve) {}
+            return 0
+        }
+
         var claimCheck = checkClaimForHome(team, player)
         if (!claimCheck.allowed) {
             sendMsg(player, 'Sécurité', claimCheck.reason || 'Impossible d\'établir l\'Ambassade ici.', '§c')
@@ -190,16 +202,6 @@ function setNationAllyHome(team, player) {
         var teamIdStr = team.getId().toString()
         if (!homes[teamIdStr]) homes[teamIdStr] = {}
 
-        var dimStr = 'minecraft:overworld'
-        try {
-            if (player.level && player.level.dimension) {
-                dimStr = player.level.dimension().location().toString()
-            }
-        } catch (de) {}
-
-        var px = Math.round(player.getX() * 10) / 10
-        var py = Math.round(player.getY() * 10) / 10
-        var pz = Math.round(player.getZ() * 10) / 10
         var pyaw = Math.round(getPlayerYaw(player) * 10) / 10
         var ppitch = Math.round(getPlayerPitch(player) * 10) / 10
 
@@ -247,9 +249,62 @@ function deleteNationAllyHome(team, player) {
     return 0
 }
 
+var ONU_HUB_X = -204
+var ONU_HUB_Z = -172
+
+function isCoordsInOnuZone(dimStr, x, z) {
+    if (x === undefined || z === undefined || x === null || z === null) return false
+    var dim = String(dimStr || 'minecraft:overworld').toLowerCase()
+    if (dim.indexOf('overworld') === -1) return false
+    var nx = Number(x)
+    var nz = Number(z)
+    if (isNaN(nx) || isNaN(nz)) return false
+    var dx = nx - ONU_HUB_X
+    var dz = nz - ONU_HUB_Z
+    var distSq = dx * dx + dz * dz
+    if (distSq <= 40000) return true
+    if (Math.abs(dx) <= 200 && Math.abs(dz) <= 200) return true
+    return false
+}
+
+function isPlayerInOnuZone(player) {
+    if (!player) return false
+    try {
+        var px = Number(player.getX ? player.getX() : player.x)
+        var pz = Number(player.getZ ? player.getZ() : player.z)
+        var dimStr = String(getEntityDimensionId(player) || 'minecraft:overworld')
+        var inZone = isCoordsInOnuZone(dimStr, px, pz)
+        if (inZone) {
+            console.info('[ONU Zone] Joueur ' + player.getName().getString() + ' détecté dans la zone ONU (X=' + px + ', Z=' + pz + ')')
+        }
+        return inZone
+    } catch (e) {
+        console.error('[ONU Zone] Erreur isPlayerInOnuZone: ' + e)
+    }
+    return false
+}
+
 function teleportPlayerToCoords(player, homeData, label) {
     if (!player || !homeData) return 0
     try {
+        // 1. Interdiction de départ depuis la zone ONU
+        if (isPlayerInOnuZone(player)) {
+            sendMsg(player, 'ONU', 'Zone Internationale : Les téléportations sont STRICTEMENT INTERDITES dans un rayon de 200 blocs autour de l\'ONU (-204, -172). Repartez par train ou par la route !', '§c')
+            try {
+                player.playSound('minecraft:entity.villager.no', 1.0, 1.0)
+            } catch (ve) {}
+            return 0
+        }
+
+        // 2. Interdiction d'arrivée vers un Home situé dans la zone ONU
+        if (isCoordsInOnuZone(homeData.dim, homeData.x, homeData.z)) {
+            sendMsg(player, 'ONU', 'Zone Internationale : Destination refusée. Votre Home est situé dans le sanctuaire de l\'ONU (rayon de 200 blocs autour de -204, -172).', '§c')
+            try {
+                player.playSound('minecraft:entity.villager.no', 1.0, 1.0)
+            } catch (ve) {}
+            return 0
+        }
+
         var server = player.server
         var dimStr = homeData.dim || 'minecraft:overworld'
         var yaw = (typeof homeData.yaw === 'number') ? homeData.yaw : 0.0
@@ -274,6 +329,11 @@ function teleportPlayerToCoords(player, homeData, label) {
 
 function teleportToNationHome(player) {
     if (!player) return 0
+    if (isPlayerInOnuZone(player)) {
+        sendMsg(player, 'ONU', 'Zone Internationale : Les téléportations sont STRICTEMENT INTERDITES dans un rayon de 200 blocs autour de l\'ONU (-204, -172). Repartez par train ou par la route !', '§c')
+        try { player.playSound('minecraft:entity.villager.no', 1.0, 1.0) } catch (ve) {}
+        return 0
+    }
     var team = getPlayerNationTeam(player)
     if (!team) {
         sendMsg(player, 'Nation', 'Vous devez faire partie d\'une nation pour utiliser cette commande.', '§c')
@@ -292,6 +352,11 @@ function teleportToNationHome(player) {
 
 function teleportToAllyHome(player, targetNationName) {
     if (!player) return 0
+    if (isPlayerInOnuZone(player)) {
+        sendMsg(player, 'ONU', 'Zone Internationale : Les téléportations sont STRICTEMENT INTERDITES dans un rayon de 200 blocs autour de l\'ONU (-204, -172). Repartez par train ou par la route !', '§c')
+        try { player.playSound('minecraft:entity.villager.no', 1.0, 1.0) } catch (ve) {}
+        return 0
+    }
     if (!targetNationName || targetNationName.trim().length === 0) {
         sendMsg(player, 'Aide', 'Usage : §e/ally home <nom_nation_alliée>', '§c')
         return 0

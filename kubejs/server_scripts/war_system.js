@@ -1,9 +1,9 @@
 // priority: 50
 // =============================================================================
-// NationGlory Server Script - Moteur de Conflits Multi-Guerres & Coalitions
+// Third World Server Script - Moteur de Conflits Multi-Guerres & Coalitions
 // =============================================================================
 
-var WAR_COST = 2500 // Coût de déclaration en dollars ($)
+var WAR_COST = 2500 // Coût de déclaration en Robert Coins (R)
 var WARS_CACHE = null
 
 /**
@@ -227,7 +227,7 @@ function requestWarDeclaration(player, targetQuery) {
     if (typeof withdrawNationMoney === 'function') {
         var success = withdrawNationMoney(team, player, WAR_COST)
         if (!success) {
-            sendMsg(player, 'Guerre', 'Fonds insuffisants ! La déclaration de guerre coûte ' + WAR_COST + '$ au Trésor national.', '§c')
+            sendMsg(player, 'Guerre', 'Fonds insuffisants ! La déclaration de guerre coûte ' + WAR_COST + ' R au Trésor national.', '§c')
             return 0
         }
     }
@@ -256,7 +256,7 @@ function requestWarDeclaration(player, targetQuery) {
 
     saveWarsRegistry(server, wars)
 
-    sendMsg(player, 'Guerre', 'Demande de guerre #' + warId + ' contre §e' + defName + ' §fsoumise au Staff (' + WAR_COST + '$ débités).', '§a')
+    sendMsg(player, 'Guerre', 'Demande de guerre #' + warId + ' contre §e' + defName + ' §fsoumise au Staff (' + WAR_COST + ' R débités).', '§a')
 
     // Diffusion de l'alerte Staff avec boutons cliquables
     var staffMsg = Component.literal('§7[§6Staff§7] §fDemande de guerre §e#' + warId + ' §f: §e' + atkName + ' §fVS §e' + defName + ' §7| ')
@@ -328,7 +328,7 @@ function rejectWar(server, warQuery, reason) {
 
     var nameA = w.attackerName || getTeamDisplayName(server, w.attackerLeader)
     var nameB = w.defenderName || getTeamDisplayName(server, w.defenderLeader)
-    broadcastMsg(server, 'Staff', 'La demande de guerre #' + w.id + ' de §e' + nameA + ' §fcontre §e' + nameB + ' §fa été rejetée (' + refund + '$ restitués).', '§e')
+    broadcastMsg(server, 'Staff', 'La demande de guerre #' + w.id + ' de §e' + nameA + ' §fcontre §e' + nameB + ' §fa été rejetée (' + refund + ' R restitués).', '§e')
     return true
 }
 
@@ -431,8 +431,55 @@ function listActiveWars(player) {
     if (activeCount === 0) {
         sendMsg(player, 'Guerre', 'Aucune guerre active pour le moment.', '§a')
     }
+
+    try {
+        var warsList = []
+        for (var wid in wars) {
+            if (!wars.hasOwnProperty(wid)) continue
+            var warObj = wars[wid]
+            if (warObj.status === 'ACTIVE' || warObj.status === 'PENDING_ADMIN') {
+                warsList.push({
+                    id: warObj.id,
+                    attacker: warObj.attackerName || 'Attaquant',
+                    defender: warObj.defenderName || 'Défenseur',
+                    status: warObj.status,
+                    coalitionCount: ((warObj.attackers ? warObj.attackers.length : 1) + (warObj.defenders ? warObj.defenders.length : 1))
+                })
+            }
+        }
+        var isRaidActive = false
+        if (typeof isRaidHourActive === 'function') {
+            isRaidActive = isRaidHourActive(server)
+        }
+        var warPayload = {
+            raidHoursActive: isRaidActive,
+            activeWars: warsList
+        }
+        player.sendData('open_war_registry', { json: JSON.stringify(warPayload) })
+    } catch (we) {}
+
     return 1
 }
+
+NetworkEvents.dataReceived('action_war', function(event) {
+    try {
+        var player = event.player || event.getEntity()
+        if (!player) return
+        var data = event.data || event.getData()
+        var raw = data.getString ? data.getString('json') : String(data.get('json'))
+        if (!raw) return
+        var action = JSON.parse(raw)
+        if (action.action === 'peace' && action.warId) {
+            var wars = loadWarsRegistry(player.server)
+            var w = wars[action.warId]
+            if (w) {
+                handleWarPeace(player, w.attackerName || w.defenderName)
+            }
+        } else if (action.action === 'prompt_declare') {
+            sendMsg(player, 'Guerre', 'Pour déclarer une guerre, tapez : §e/war declare <NomDeLaNation>', '§e')
+        }
+    } catch (e) {}
+})
 
 // -----------------------------------------------------------------------------
 // COMMANDES CLI /war & /guerre

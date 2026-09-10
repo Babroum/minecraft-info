@@ -1,6 +1,6 @@
 // priority: 50
 // =============================================================================
-// NationGlory Server Script - Commandes d'Administration de Guerre (/waradmin)
+// Third World Server Script - Commandes d'Administration de Guerre (/waradmin)
 // =============================================================================
 
 ServerEvents.commandRegistry(function(event) {
