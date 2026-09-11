@@ -1,104 +1,53 @@
 {
 	"1": {
-		"id": 1,
+		"id": "1",
 		"status": "ENDED",
 		"requesterUuid": "137b73c3-8c48-3eb6-be1a-5c230d6e1dea",
-		"attackerName": "La fronce",
-		"defenderName": "suisse",
-		"attackerLeader": "baf26ed6-2f66-44f1-b4ba-29cac44e3300",
-		"defenderLeader": "c9b6066f-7366-4a4f-99a3-5f5bf535b7e6",
+		"attackerName": "France",
+		"defenderName": "m",
+		"attackerLeader": "11c8ec3b-8fc1-49f2-8605-862c677be994",
+		"defenderLeader": "cc2db9df-2861-4231-94b0-9eada3a8441b",
 		"attackers": [
-			"baf26ed6-2f66-44f1-b4ba-29cac44e3300"
+			"11c8ec3b-8fc1-49f2-8605-862c677be994"
 		],
 		"defenders": [
-			"c9b6066f-7366-4a4f-99a3-5f5bf535b7e6"
+			"cc2db9df-2861-4231-94b0-9eada3a8441b"
 		],
 		"attackerNames": [
-			"La fronce"
+			"France"
 		],
 		"defenderNames": [
-			"suisse"
+			"m"
 		],
-		"costPaid": 2500,
-		"createdAt": 1789119771222,
-		"peaceRequestedBy": "attackers",
-		"startedAt": 1789119774066,
-		"endedAt": 1789124684660
+		"costPaid": 0,
+		"createdAt": 1789125103329,
+		"startedAt": 1789125103329,
+		"peaceRequestedBy": null,
+		"endedAt": 1789125149761
 	},
 	"2": {
-		"id": 2,
-		"status": "ENDED",
-		"requesterUuid": "137b73c3-8c48-3eb6-be1a-5c230d6e1dea",
-		"attackerName": "La fronce",
-		"defenderName": "suisse",
-		"attackerLeader": "baf26ed6-2f66-44f1-b4ba-29cac44e3300",
-		"defenderLeader": "c9b6066f-7366-4a4f-99a3-5f5bf535b7e6",
-		"attackers": [
-			"baf26ed6-2f66-44f1-b4ba-29cac44e3300"
-		],
-		"defenders": [
-			"c9b6066f-7366-4a4f-99a3-5f5bf535b7e6"
-		],
-		"attackerNames": [
-			"La fronce"
-		],
-		"defenderNames": [
-			"suisse"
-		],
-		"costPaid": 2500,
-		"createdAt": 1789119859567,
-		"peaceRequestedBy": null,
-		"startedAt": 1789119878940,
-		"endedAt": 1789124258792
-	},
-	"3": {
-		"id": 3,
-		"status": "ENDED",
-		"requesterUuid": "137b73c3-8c48-3eb6-be1a-5c230d6e1dea",
-		"attackerName": "La fronce",
-		"defenderName": "suisse",
-		"attackerLeader": "baf26ed6-2f66-44f1-b4ba-29cac44e3300",
-		"defenderLeader": "c9b6066f-7366-4a4f-99a3-5f5bf535b7e6",
-		"attackers": [
-			"baf26ed6-2f66-44f1-b4ba-29cac44e3300"
-		],
-		"defenders": [
-			"c9b6066f-7366-4a4f-99a3-5f5bf535b7e6"
-		],
-		"attackerNames": [
-			"La fronce"
-		],
-		"defenderNames": [
-			"suisse"
-		],
-		"costPaid": 0,
-		"createdAt": 1789124284158,
-		"startedAt": 1789124284158,
-		"peaceRequestedBy": null
-	},
-	"4": {
-		"id": "4",
+		"id": "2",
 		"status": "ACTIVE",
 		"requesterUuid": "137b73c3-8c48-3eb6-be1a-5c230d6e1dea",
-		"attackerName": "La fronce",
-		"defenderName": "suisse",
-		"attackerLeader": "baf26ed6-2f66-44f1-b4ba-29cac44e3300",
-		"defenderLeader": "c9b6066f-7366-4a4f-99a3-5f5bf535b7e6",
+		"attackerName": "France",
+		"defenderName": "guiguilapute",
+		"attackerLeader": "11c8ec3b-8fc1-49f2-8605-862c677be994",
+		"defenderLeader": "d80ad29e-60a1-480e-9781-8964ed0a0398",
 		"attackers": [
-			"baf26ed6-2f66-44f1-b4ba-29cac44e3300"
+			"11c8ec3b-8fc1-49f2-8605-862c677be994"
 		],
 		"defenders": [
-			"c9b6066f-7366-4a4f-99a3-5f5bf535b7e6"
+			"d80ad29e-60a1-480e-9781-8964ed0a0398"
 		],
 		"attackerNames": [
-			"La fronce"
+			"France"
 		],
 		"defenderNames": [
-			"suisse"
+			"guiguilapute"
 		],
-		"costPaid": 0,
-		"createdAt": 1789124711626,
-		"startedAt": 1789124711626,
-		"peaceRequestedBy": null
+		"costPaid": 2500,
+		"createdAt": 1789125378469,
+		"startedAt": 1789125382154,
+		"peaceRequestedBy": "attackers"
 	}
 }

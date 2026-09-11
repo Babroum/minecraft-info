@@ -72,31 +72,35 @@ function isPositionInOnuClaim(level, blockX, blockZ) {
             var chunksApi = Java.loadClass('dev.ftb.mods.ftbchunks.api.FTBChunksAPI').api()
             if (chunksApi && chunksApi.isManagerLoaded()) {
                 var chunkMgr = chunksApi.getManager()
-                var ChunkDimPosClass = Java.loadClass('dev.ftb.mods.ftblibrary.math.ChunkDimPos')
-                var LevelClass = Java.loadClass('net.minecraft.world.level.Level')
-                var dimKey = (level && typeof level.dimension === 'function') ? level.dimension() : LevelClass.OVERWORLD
-                var pos = new ChunkDimPosClass(dimKey, chunkX, chunkZ)
-                var claim = chunkMgr.getChunk(pos)
-                if (claim && claim.getTeamData()) {
-                    var team = claim.getTeamData().getTeam()
-                    if (team) {
-                        var sName = team.getShortName() ? String(team.getShortName()).toLowerCase() : ''
-                        if (sName === 'onu') return true
-                        if (cachedOnuTeam && team.getId().equals(cachedOnuTeam.getId())) return true
-                        var teamIdStr = String(team.getId())
-                        if (teamIdStr === 'cb440140-1d45-4eff-9b10-2bab3d457d63') return true
+                if (chunkMgr) {
+                    var LevelClass = Java.loadClass('net.minecraft.world.level.Level')
+                    var dimKey = LevelClass.OVERWORLD
+                    try {
+                        if (level && typeof level.dimension === 'function') dimKey = level.dimension()
+                        else if (level && level.dimension) dimKey = level.dimension
+                    } catch (dErr) {}
+
+                    var ChunkDimPosClass = Java.loadClass('dev.ftb.mods.ftblibrary.math.ChunkDimPos')
+                    var pos = new ChunkDimPosClass(dimKey, chunkX, chunkZ)
+                    var claim = chunkMgr.getChunk(pos)
+                    if (claim && claim.getTeamData()) {
+                        var team = claim.getTeamData().getTeam()
+                        if (team) {
+                            var sName = team.getShortName() ? String(team.getShortName()).toLowerCase() : ''
+                            if (sName === 'onu') return true
+                            if (cachedOnuTeam && team.getId().equals(cachedOnuTeam.getId())) return true
+                            var teamIdStr = String(team.getId())
+                            if (teamIdStr === 'cb440140-1d45-4eff-9b10-2bab3d457d63') return true
+                        }
                     }
+                    // Si le chunk est sauvage ou appartient à une autre nation, ce n'est PAS l'ONU
                     return false
                 }
-                return false
             }
         } catch (apiErr) {}
 
-        // 2. Cache de secours (uniquement si FTB Chunks n'est pas initialisé)
-        if (chunkX >= -18 && chunkX <= -11 && chunkZ >= -16 && chunkZ <= -6) {
-            return true
-        }
-        if (chunkX === 1 && chunkZ === 1) {
+        // 2. Cache de secours (uniquement pour les 16 chunks officiels de l'ONU : cx -14..-11, cz -12..-9)
+        if (chunkX >= -14 && chunkX <= -11 && chunkZ >= -12 && chunkZ <= -9) {
             return true
         }
     } catch (e) {}
@@ -625,8 +629,8 @@ BlockEvents.broken(function(event) {
 
         if (isBlockInOnuHub(level, pos.getX(), pos.getZ())) {
             var player = event.player
-            if (player && player.hasPermissions(2)) {
-                return // Les administrateurs OP peuvent construire et modifier
+            if (player && player.isCreative && player.isCreative()) {
+                return // Seuls les administrateurs en mode Créatif peuvent modifier le Hub ONU
             }
             event.cancel()
             if (player) {
@@ -650,8 +654,8 @@ BlockEvents.placed(function(event) {
 
         if (isBlockInOnuHub(level, pos.getX(), pos.getZ())) {
             var player = event.player
-            if (player && player.hasPermissions(2)) {
-                return // Les administrateurs OP peuvent construire et modifier
+            if (player && player.isCreative && player.isCreative()) {
+                return // Seuls les administrateurs en mode Créatif peuvent modifier le Hub ONU
             }
             event.cancel()
             if (player) {
@@ -670,7 +674,7 @@ BlockEvents.placed(function(event) {
 ItemEvents.rightClicked(function(event) {
     try {
         var player = event.player
-        if (!player || player.hasPermissions(2)) return
+        if (!player || (player.isCreative && player.isCreative())) return
         var item = event.item
         if (!item || item.isEmpty()) return
 

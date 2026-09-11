@@ -329,7 +329,7 @@
     },
     {
       "file": "data/active_onu_contract.json",
-      "sha256": "7736a8c2bf4008a77570a0b575ad0fd42e25199c580d8a4cbf7815ea75e0ab51"
+      "sha256": "2ca8db425ebb3d28a482b82ae049f1b00959846df0fc7b74574c4609c342bc48"
     },
     {
       "file": "data/alliances.json",
@@ -345,11 +345,11 @@
     },
     {
       "file": "data/nation_homes.json",
-      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+      "sha256": "409ac8e55c8d959bda888d663ee60bb5a7a42c420364125dadba34571f2b9894"
     },
     {
       "file": "data/nation_taxes.json",
-      "sha256": "fde4d4326029ea1af3168b0c151adefd6a9304d03d119955b406e2d88981eabd"
+      "sha256": "9402e34c48557fc3c5e6cc88344adc3b7c6d1d69cdd71160d173f91986d64037"
     },
     {
       "file": "data/onu_teleport.json",
@@ -357,7 +357,7 @@
     },
     {
       "file": "data/wars.json",
-      "sha256": "88a03ede1edadca633520e0739bd558332715bfedd13027f45a662c0e64cb666"
+      "sha256": "4a65ae51baa2f8575cb33014048d5dfe470dabbbed5ca6634ad319003a87add1"
     },
     {
       "file": "server_scripts/alliance_system.js",
@@ -409,7 +409,7 @@
     },
     {
       "file": "server_scripts/onu_claims.js",
-      "sha256": "94e5f5e98fee7e0c854b9df13fe0147bd1501fbc3442fad999f18d0e7a6b6537"
+      "sha256": "09fdcd7d6c580f97e8107396c4404b6d180ed497b646603852a8cadd9b6d78f1"
     },
     {
       "file": "server_scripts/onu_contracts.js",
@@ -429,11 +429,11 @@
     },
     {
       "file": "server_scripts/war_admin.js",
-      "sha256": "fabdb148a2e34230d026f78d392acd7f361b4bf587acc32b5993871ab299d411"
+      "sha256": "371271d819ef6621486d850ea15517a2e3a44d9351bfc000a4f427d84edc41f2"
     },
     {
       "file": "server_scripts/war_claims_hook.js",
-      "sha256": "da68e26e66bf29b04ab31330f67534ca6b567715635693594c79408aed8cca8a"
+      "sha256": "578e8d4f0ca8db8fed2337bc8f4b15c435cdcaa78d7045cea6154c586266be99"
     },
     {
       "file": "server_scripts/war_raidhours.js",
@@ -441,7 +441,7 @@
     },
     {
       "file": "server_scripts/war_system.js",
-      "sha256": "130f9a3e91b288c436bba38438af546c596b6fa9956eebd3354e0a75de1c1e61"
+      "sha256": "325a2473bf60227523fb34ffa0c39561d682969fc82ab0bcf3d749a94e302d49"
     },
     {
       "file": "startup_scripts/economy_items.js",

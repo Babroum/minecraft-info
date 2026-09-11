@@ -1,21 +1,26 @@
 {
-	"id": "CT-METALLURGIE-1-286",
-	"title": "Programme Ferroviaire Transcontinental",
-	"lore": "L'ONU requiert des aciers lourds et rails pour relier les continents.",
+	"id": "CT-AGRO-2-148",
+	"title": "Plan Mondial Contre la Famine",
+	"lore": "Approvisionnement massif en féculents et légumes de conservation.",
 	"items": [
 		{
-			"id": "mekanism:ingot_steel",
-			"count": 128,
-			"name": "Lingot d'Acier"
+			"id": "farmersdelight:potato_crate",
+			"count": 32,
+			"name": "Caisse de Pommes de Terre"
 		},
 		{
-			"id": "create:track",
-			"count": 64,
-			"name": "Voie Ferrée Create"
+			"id": "farmersdelight:carrot_crate",
+			"count": 32,
+			"name": "Caisse de Carottes"
+		},
+		{
+			"id": "farmersdelight:cabbage_crate",
+			"count": 32,
+			"name": "Caisse de Choux"
 		}
 	],
-	"reward": 3200,
-	"driverCutPercent": 10,
-	"openedAt": 1789066870469,
+	"reward": 2500,
+	"driverCutPercent": 15,
+	"openedAt": 1789124846347,
 	"status": "OPEN"
 }
