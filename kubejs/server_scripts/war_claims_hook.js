@@ -41,11 +41,10 @@ LevelEvents.beforeExplosion(function(event) {
         var blockX = Math.floor(event.x)
         var blockZ = Math.floor(event.z)
 
-        // Neutralisation absolue de toute explosion dans le sanctuaire de l'ONU (rayon 200 blocs)
+        // Neutralisation absolue de toute explosion dans les territoires revendiqués par l'ONU
         var dimStr = String(level.dimension().location()).toLowerCase()
         if (dimStr.indexOf('overworld') !== -1) {
-            var distSq = blockX * blockX + blockZ * blockZ
-            if (distSq <= 40000 || (Math.abs(blockX) <= 200 && Math.abs(blockZ) <= 200)) {
+            if (typeof isPositionInOnuClaim === 'function' && isPositionInOnuClaim(level, blockX, blockZ)) {
                 event.cancel()
                 return
             }
@@ -53,6 +52,13 @@ LevelEvents.beforeExplosion(function(event) {
 
         var defendingTeam = getChunkOwningTeam(level, blockX, blockZ)
         if (!defendingTeam) return // Zone neutre/sauvage : explosion autorisée normalement
+
+        // Si c'est le territoire de l'ONU : invulnérabilité absolue aux explosions
+        var sName = defendingTeam.getShortName() ? String(defendingTeam.getShortName()).toLowerCase() : ''
+        if (sName === 'onu' || String(defendingTeam.getId()) === 'cb440140-1d45-4eff-9b10-2bab3d457d63') {
+            event.cancel()
+            return
+        }
 
         // Si la nation cible n'est dans aucune guerre active : Invulnérabilité 100%
         var defWars = getTeamActiveWars(server, defendingTeam.getId())

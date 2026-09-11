@@ -51,23 +51,60 @@ function isChunkInOnu200Radius(chunkX, chunkZ) {
 }
 
 /**
- * Vérifie si un bloc se situe dans l'enclave centrale du Hub de l'ONU
- * (Rayon immédiat de 50 blocs autour de X: -204, Z: -172 ou chunks centraux)
+ * Vérifie si une coordonnée (blockX, blockZ) se situe dans un chunk officiellement claim par l'ONU
  */
-function isBlockInOnuHub(level, blockX, blockZ) {
-    if (!level) return false
+function isPositionInOnuClaim(level, blockX, blockZ) {
     try {
-        var dim = (typeof level.dimension === 'function') ? level.dimension() : level.dimension
-        var loc = dim ? ((typeof dim.location === 'function') ? dim.location() : dim.location) : ''
-        var dimStr = String(loc).toLowerCase()
-        if (dimStr.indexOf('overworld') === -1) return false
+        if (level) {
+            var dim = (typeof level.dimension === 'function') ? level.dimension() : level.dimension
+            var loc = dim ? ((typeof dim.location === 'function') ? dim.location() : dim.location) : ''
+            var dimStr = String(loc || '').toLowerCase()
+            if (dimStr && dimStr.indexOf('overworld') === -1) return false
+        }
 
-        var dx = blockX - ONU_HUB_CONFIG.x
-        var dz = blockZ - ONU_HUB_CONFIG.z
-        if ((dx * dx + dz * dz) <= 2500) return true
-        if (Math.abs(dx) <= 50 && Math.abs(dz) <= 50) return true
+        var chunkX = Math.floor(blockX / 16)
+        var chunkZ = Math.floor(blockZ / 16)
+
+        // 1. Vérification dynamique via FTB Chunks
+        try {
+            var chunksApi = Java.loadClass('dev.ftb.mods.ftbchunks.api.FTBChunksAPI').api()
+            if (chunksApi && chunksApi.isManagerLoaded()) {
+                var chunkMgr = chunksApi.getManager()
+                var ChunkDimPosClass = Java.loadClass('dev.ftb.mods.ftblibrary.math.ChunkDimPos')
+                var LevelClass = Java.loadClass('net.minecraft.world.level.Level')
+                var dimKey = (typeof level.dimension === 'function') ? level.dimension() : LevelClass.OVERWORLD
+                var pos = new ChunkDimPosClass(dimKey, chunkX, chunkZ)
+                var claim = chunkMgr.getChunk(pos)
+                if (claim && claim.getTeamData()) {
+                    var team = claim.getTeamData().getTeam()
+                    if (team) {
+                        var sName = team.getShortName() ? String(team.getShortName()).toLowerCase() : ''
+                        if (sName === 'onu') return true
+                        if (cachedOnuTeam && team.getId().equals(cachedOnuTeam.getId())) return true
+                        var teamIdStr = String(team.getId())
+                        if (teamIdStr === 'cb440140-1d45-4eff-9b10-2bab3d457d63') return true
+                    }
+                }
+            }
+        } catch (apiErr) {}
+
+        // 2. Cache direct des 89 chunks officiels du complexe ONU
+        // Rectangle principal : Chunk X [-18 à -11], Chunk Z [-16 à -6] + spawn (1, 1)
+        if (chunkX >= -18 && chunkX <= -11 && chunkZ >= -16 && chunkZ <= -6) {
+            return true
+        }
+        if (chunkX === 1 && chunkZ === 1) {
+            return true
+        }
     } catch (e) {}
     return false
+}
+
+/**
+ * Vérifie si un bloc se situe dans les territoires du Hub de l'ONU
+ */
+function isBlockInOnuHub(level, blockX, blockZ) {
+    return isPositionInOnuClaim(level, blockX, blockZ)
 }
 
 /**
@@ -419,15 +456,13 @@ try {
 
             var tx = Number(target.getX ? target.getX() : target.x)
             var tz = Number(target.getZ ? target.getZ() : target.z)
-            var dx = tx - ONU_HUB_CONFIG.x
-            var dz = tz - ONU_HUB_CONFIG.z
-            var distSq = dx * dx + dz * dz
+            var level = target.level ? (typeof target.level === 'function' ? target.level() : target.level) : null
 
-            if (distSq <= 40000) { // Rayon de 200 blocs autour de (-204, -172)
+            if (isPositionInOnuClaim(level, tx, tz)) {
                 // 1. PVP Désactivé
                 if (target.isPlayer && target.isPlayer()) {
                     event.setCanceled(true)
-                    sendClaimMsg(player, 'Zone Neutre Internationale : Le combat entre joueurs (PVP) est STRICTEMENT DÉSACTIVÉ au Hub ONU !', '§c')
+                    sendClaimMsg(player, 'Zone Neutre Internationale : Le combat entre joueurs (PVP) est STRICTEMENT DÉSACTIVÉ dans les territoires de l\'ONU !', '§c')
                     try { player.playSound('minecraft:entity.villager.no', 1.0, 1.0) } catch (ve) {}
                     return
                 }
@@ -460,11 +495,9 @@ try {
 
             var ex = Number(entity.getX ? entity.getX() : entity.x)
             var ez = Number(entity.getZ ? entity.getZ() : entity.z)
-            var dx2 = ex - ONU_HUB_CONFIG.x
-            var dz2 = ez - ONU_HUB_CONFIG.z
-            var distSq = dx2 * dx2 + dz2 * dz2
+            var level = entity.level ? (typeof entity.level === 'function' ? entity.level() : entity.level) : null
 
-            if (distSq <= 40000) { // Dans les 200 blocs de l'ONU (-204, -172)
+            if (isPositionInOnuClaim(level, ex, ez)) {
                 var source = event.getSource()
                 var attacker = source ? (source.getEntity ? source.getEntity() : null) : null
 
@@ -505,9 +538,9 @@ EntityEvents.beforeHurt(function(event) {
 
         var ex = Number(entity.getX ? entity.getX() : entity.x)
         var ez = Number(entity.getZ ? entity.getZ() : entity.z)
-        var dx3 = ex - ONU_HUB_CONFIG.x
-        var dz3 = ez - ONU_HUB_CONFIG.z
-        if (dx3 * dx3 + dz3 * dz3 <= 40000) {
+        var level = entity.level ? (typeof entity.level === 'function' ? entity.level() : entity.level) : null
+
+        if (isPositionInOnuClaim(level, ex, ez)) {
             var source = event.getSource()
             var attacker = source ? (source.getEntity ? source.getEntity() : null) : null
 

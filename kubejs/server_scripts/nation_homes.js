@@ -259,11 +259,27 @@ function isCoordsInOnuZone(dimStr, x, z) {
     var nx = Number(x)
     var nz = Number(z)
     if (isNaN(nx) || isNaN(nz)) return false
+
+    // 1. Rayon de 200 blocs autour du Hub ONU (-204, -172)
     var dx = nx - ONU_HUB_X
     var dz = nz - ONU_HUB_Z
     var distSq = dx * dx + dz * dz
     if (distSq <= 40000) return true
     if (Math.abs(dx) <= 200 && Math.abs(dz) <= 200) return true
+
+    // 2. Chunks officiellement revendiqués par l'ONU (89 chunks)
+    var chunkX = Math.floor(nx / 16)
+    var chunkZ = Math.floor(nz / 16)
+    if (chunkX >= -18 && chunkX <= -11 && chunkZ >= -16 && chunkZ <= -6) return true
+    if (chunkX === 1 && chunkZ === 1) return true
+
+    // 3. API FTB Chunks dynamique si disponible
+    if (typeof isPositionInOnuClaim === 'function') {
+        try {
+            if (isPositionInOnuClaim(null, nx, nz)) return true
+        } catch (e) {}
+    }
+
     return false
 }
 
@@ -287,9 +303,9 @@ function isPlayerInOnuZone(player) {
 function teleportPlayerToCoords(player, homeData, label) {
     if (!player || !homeData) return 0
     try {
-        // 1. Interdiction de départ depuis la zone ONU
+        // 1. Interdiction de départ depuis la zone ONU (voulu RP)
         if (isPlayerInOnuZone(player)) {
-            sendMsg(player, 'ONU', 'Zone Internationale : Les téléportations sont STRICTEMENT INTERDITES dans un rayon de 200 blocs autour de l\'ONU (-204, -172). Repartez par train ou par la route !', '§c')
+            sendMsg(player, 'ONU', 'Zone Internationale : Les téléportations sont STRICTEMENT INTERDITES depuis les territoires de l\'ONU. Repartez par train ou par la route !', '§c')
             try {
                 player.playSound('minecraft:entity.villager.no', 1.0, 1.0)
             } catch (ve) {}
@@ -298,7 +314,7 @@ function teleportPlayerToCoords(player, homeData, label) {
 
         // 2. Interdiction d'arrivée vers un Home situé dans la zone ONU
         if (isCoordsInOnuZone(homeData.dim, homeData.x, homeData.z)) {
-            sendMsg(player, 'ONU', 'Zone Internationale : Destination refusée. Votre Home est situé dans le sanctuaire de l\'ONU (rayon de 200 blocs autour de -204, -172).', '§c')
+            sendMsg(player, 'ONU', 'Zone Internationale : Destination refusée. Votre Home est situé dans les territoires de l\'ONU.', '§c')
             try {
                 player.playSound('minecraft:entity.villager.no', 1.0, 1.0)
             } catch (ve) {}

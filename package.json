@@ -9,6 +9,7 @@
     "api:gen-certs": "node launcher/api/gen-certs.mjs",
     "app:dev": "npm --prefix launcher/app run tauri dev",
     "app:build": "npm --prefix launcher/app run tauri build",
-    "server:start": "cd server && run.bat nogui"
+    "server:start": "cd server && run.bat nogui",
+    "server:reset": "node tools/clean-test-data.mjs"
   }
 }

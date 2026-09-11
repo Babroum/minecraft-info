@@ -3,6 +3,8 @@
 // Third World Server Script - Helpers FTB Teams, Chunks & Standardisation Chat
 // =============================================================================
 
+var UUID = Java.loadClass('java.util.UUID')
+
 /**
  * Persistance JSON native KubeJS (JsonIO)
  */
@@ -84,6 +86,17 @@ function getEntityZ(entity) {
     return 0
 }
 
+function getPlayerUUID(player) {
+    if (!player) return null
+    try {
+        if (player.getUUID) return player.getUUID()
+        if (player.getUuid) return player.getUuid()
+        if (player.uuid) return (typeof player.uuid === 'string' ? UUID.fromString(player.uuid) : player.uuid)
+        if (player.getStringUuid) return UUID.fromString(player.getStringUuid())
+    } catch (e) {}
+    return null
+}
+
 /**
  * Récupère l'équipe Party (Nation) d'un joueur
  */
@@ -94,13 +107,7 @@ function getPlayerNationTeam(player) {
         if (!teamsApi || !teamsApi.isManagerLoaded()) return null
         
         var mgr = teamsApi.getManager()
-        var playerUUID = null
-        try {
-            if (player.getUUID) playerUUID = player.getUUID()
-            else if (player.uuid) playerUUID = player.uuid
-            else if (player.getStringUuid) playerUUID = UUID.fromString(player.getStringUuid())
-        } catch (ue) {}
-
+        var playerUUID = getPlayerUUID(player)
         if (!playerUUID) return null
         var uuidStr = playerUUID.toString()
 
@@ -109,7 +116,10 @@ function getPlayerNationTeam(player) {
             var teamOpt = mgr.getTeamForPlayerID(playerUUID)
             if (teamOpt && teamOpt.isPresent()) {
                 var foundTeam = teamOpt.get()
-                if (foundTeam && foundTeam.isPartyTeam()) return foundTeam
+                if (foundTeam) {
+                    if (foundTeam.isPartyTeam && foundTeam.isPartyTeam()) return foundTeam
+                    if (foundTeam.getEffectiveTeam && foundTeam.getEffectiveTeam().isPartyTeam()) return foundTeam.getEffectiveTeam()
+                }
             }
         } catch (e1) {}
 
@@ -118,7 +128,10 @@ function getPlayerNationTeam(player) {
             var optByPlayer = mgr.getTeamForPlayer(player)
             if (optByPlayer && optByPlayer.isPresent()) {
                 var foundTeam2 = optByPlayer.get()
-                if (foundTeam2 && foundTeam2.isPartyTeam()) return foundTeam2
+                if (foundTeam2) {
+                    if (foundTeam2.isPartyTeam && foundTeam2.isPartyTeam()) return foundTeam2
+                    if (foundTeam2.getEffectiveTeam && foundTeam2.getEffectiveTeam().isPartyTeam()) return foundTeam2.getEffectiveTeam()
+                }
             }
         } catch (e2) {}
 
@@ -129,14 +142,29 @@ function getPlayerNationTeam(player) {
                 var it = allTeams.iterator()
                 while (it.hasNext()) {
                     var t = it.next()
-                    if (t && t.isPartyTeam()) {
-                        var owner = t.getOwner()
+                    if (t && t.isPartyTeam && t.isPartyTeam()) {
+                        var owner = t.getOwner ? t.getOwner() : null
                         if (owner && (owner.equals(playerUUID) || owner.toString() === uuidStr)) {
                             return t
                         }
-                        var members = t.getMembers()
-                        if (members && members.contains(playerUUID)) {
-                            return t
+                        var members = t.getMembers ? t.getMembers() : null
+                        if (members) {
+                            var itMem = members.iterator()
+                            while (itMem.hasNext()) {
+                                var m = itMem.next()
+                                if (m && (m.equals(playerUUID) || m.toString() === uuidStr)) {
+                                    return t
+                                }
+                            }
+                        }
+                        // Vérification additionnelle via getRank
+                        if (t.getRank) {
+                            try {
+                                var rankObj = t.getRank(playerUUID)
+                                if (rankObj && String(rankObj).toLowerCase().indexOf('none') === -1) {
+                                    return t
+                                }
+                            } catch (rErr) {}
                         }
                     }
                 }
@@ -146,19 +174,6 @@ function getPlayerNationTeam(player) {
     } catch (err) {
         console.error('[FTB] Erreur getPlayerNationTeam : ' + err)
     }
-    return null
-}
-
-/**
- * Récupère l'UUID d'un joueur sous forme d'objet UUID
- */
-function getPlayerUUID(player) {
-    if (!player) return null
-    try {
-        if (player.getUUID) return player.getUUID()
-        if (player.uuid) return player.uuid
-        if (player.getStringUuid) return UUID.fromString(player.getStringUuid())
-    } catch (e) {}
     return null
 }
 
