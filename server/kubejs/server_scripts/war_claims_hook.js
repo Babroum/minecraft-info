@@ -258,7 +258,9 @@ BlockEvents.broken(function(event) {
             event.cancel()
         }
     } catch (err) {
-        console.error('[WarClaimsHook] Erreur broken : ' + err)
+        if (String(err).indexOf('EventExit') === -1) {
+            console.error('[WarClaimsHook] Erreur broken : ' + err)
+        }
     }
 })
 
@@ -320,7 +322,9 @@ BlockEvents.placed(function(event) {
             event.cancel()
         }
     } catch (err) {
-        console.error('[WarClaimsHook] Erreur placed : ' + err)
+        if (String(err).indexOf('EventExit') === -1) {
+            console.error('[WarClaimsHook] Erreur placed : ' + err)
+        }
     }
 })
 

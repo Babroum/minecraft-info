@@ -7,13 +7,64 @@ var WAR_COST = 2500 // Coût de déclaration en Robert Coins (R)
 var WARS_CACHE = null
 
 /**
+ * Récupère une entrée de guerre de façon sécurisée (supporte Map Java et Objet JS)
+ */
+function getWar(wars, id) {
+    if (!wars || id === null || id === undefined) return null
+    var sId = String(id)
+    if (typeof wars.get === 'function') {
+        try {
+            var item = wars.get(sId)
+            if (item) return item
+            var num = parseInt(sId, 10)
+            if (!isNaN(num)) {
+                item = wars.get(num)
+                if (item) return item
+            }
+        } catch (me) {}
+    }
+    try {
+        if (wars[sId]) return wars[sId]
+    } catch (e) {}
+    return null
+}
+
+/**
+ * Enregistre ou met à jour une guerre
+ */
+function setWar(wars, id, warObj) {
+    if (!wars || id === null || id === undefined) return
+    var sId = String(id)
+    if (typeof wars.put === 'function') {
+        try { wars.put(sId, warObj) } catch (pe) {}
+    }
+    try {
+        wars[sId] = warObj
+    } catch (e) {}
+}
+
+/**
+ * Supprime une guerre du registre
+ */
+function deleteWar(wars, id) {
+    if (!wars || id === null || id === undefined) return
+    var sId = String(id)
+    if (typeof wars.remove === 'function') {
+        try { wars.remove(sId) } catch (re) {}
+    }
+    try {
+        delete wars[sId]
+    } catch (e) {}
+}
+
+/**
  * Charge le registre des guerres depuis le cache mémoire et le fichier wars.json
  */
 function loadWarsRegistry(server) {
     if (WARS_CACHE !== null) return WARS_CACHE
     var fileData = readJsonData('wars.json')
-    if (fileData && typeof fileData === 'object') {
-        WARS_CACHE = fileData
+    if (fileData) {
+        WARS_CACHE = (typeof toJsObject === 'function') ? toJsObject(fileData) : fileData
         return WARS_CACHE
     }
     WARS_CACHE = {}
@@ -35,10 +86,8 @@ function getNextWarId(server) {
     var wars = loadWarsRegistry(server)
     var count = 0
     for (var k in wars) {
-        if (wars.hasOwnProperty(k)) {
-            var n = parseInt(k, 10)
-            if (!isNaN(n) && n > count) count = n
-        }
+        var n = parseInt(k, 10)
+        if (!isNaN(n) && n > count) count = n
     }
     count++
     return count.toString()
@@ -55,10 +104,10 @@ function findWarQuery(server, query, requirePending) {
     if (!query || query.trim() === '') {
         var lastPending = null
         for (var id in wars) {
-            if (wars.hasOwnProperty(id)) {
-                if (!requirePending || wars[id].status === 'PENDING_ADMIN') {
-                    lastPending = wars[id]
-                }
+            var w = getWar(wars, id)
+            if (!w) continue
+            if (!requirePending || w.status === 'PENDING_ADMIN') {
+                lastPending = w
             }
         }
         return lastPending
@@ -68,22 +117,20 @@ function findWarQuery(server, query, requirePending) {
     if (q.startsWith('#')) q = q.substring(1)
 
     // 2. Recherche directe par clé exacte
-    if (wars[q]) {
-        if (!requirePending || wars[q].status === 'PENDING_ADMIN') return wars[q]
-    }
-    if (wars['war_' + q]) {
-        if (!requirePending || wars['war_' + q].status === 'PENDING_ADMIN') return wars['war_' + q]
+    var direct = getWar(wars, q) || getWar(wars, 'war_' + q)
+    if (direct) {
+        if (!requirePending || direct.status === 'PENDING_ADMIN') return direct
     }
 
     // 3. Recherche par belligérants ou ID partiel
     for (var wId in wars) {
-        if (!wars.hasOwnProperty(wId)) continue
-        var w = wars[wId]
+        var w = getWar(wars, wId)
+        if (!w) continue
         if (requirePending && w.status !== 'PENDING_ADMIN') continue
 
         var nameA = (w.attackerName || getTeamDisplayName(server, w.attackerLeader)).toLowerCase()
         var nameB = (w.defenderName || getTeamDisplayName(server, w.defenderLeader)).toLowerCase()
-        if (nameA === q || nameB === q || nameA.includes(q) || nameB.includes(q) || w.id.toLowerCase() === q || w.id.toLowerCase().includes(q)) {
+        if (nameA === q || nameB === q || nameA.includes(q) || nameB.includes(q) || String(w.id).toLowerCase() === q || String(w.id).toLowerCase().includes(q)) {
             return w
         }
     }
@@ -107,9 +154,8 @@ function isNationAtWarWith(server, teamAId, teamBId) {
 
     var wars = loadWarsRegistry(server)
     for (var id in wars) {
-        if (!wars.hasOwnProperty(id)) continue
-        var w = wars[id]
-        if (w.status !== 'ACTIVE') continue
+        var w = getWar(wars, id)
+        if (!w || w.status !== 'ACTIVE') continue
 
         var inAtk = w.attackers && w.attackers.indexOf(aStr) !== -1
         var inDef = w.defenders && w.defenders.indexOf(bStr) !== -1
@@ -131,9 +177,8 @@ function getTeamActiveWars(server, teamId) {
     var wars = loadWarsRegistry(server)
     var result = []
     for (var id in wars) {
-        if (!wars.hasOwnProperty(id)) continue
-        var w = wars[id]
-        if (w.status === 'ACTIVE') {
+        var w = getWar(wars, id)
+        if (w && w.status === 'ACTIVE') {
             if ((w.attackers && w.attackers.indexOf(idStr) !== -1) || (w.defenders && w.defenders.indexOf(idStr) !== -1)) {
                 result.push(w)
             }
@@ -151,9 +196,8 @@ function findActiveWarBetween(server, teamAId, teamBId) {
     var bStr = teamBId.toString()
     var wars = loadWarsRegistry(server)
     for (var id in wars) {
-        if (!wars.hasOwnProperty(id)) continue
-        var w = wars[id]
-        if (w.status !== 'ACTIVE') continue
+        var w = getWar(wars, id)
+        if (!w || w.status !== 'ACTIVE') continue
         var hasA = (w.attackers.indexOf(aStr) !== -1 || w.defenders.indexOf(aStr) !== -1)
         var hasB = (w.attackers.indexOf(bStr) !== -1 || w.defenders.indexOf(bStr) !== -1)
         if (hasA && hasB) return w
@@ -167,7 +211,7 @@ function findActiveWarBetween(server, teamAId, teamBId) {
 function joinWarCoalition(server, warId, allyTeamId, callingTeamIdStr) {
     if (!server || !warId || !allyTeamId) return false
     var wars = loadWarsRegistry(server)
-    var w = wars[warId]
+    var w = getWar(wars, warId)
     if (!w || w.status !== 'ACTIVE') return false
 
     var allyStr = allyTeamId.toString()
@@ -238,7 +282,7 @@ function requestWarDeclaration(player, targetQuery) {
     var atkName = team.getName().getString()
     var defName = targetTeam.getName().getString()
 
-    wars[warId] = {
+    var newWar = {
         id: warId,
         status: isOp ? 'ACTIVE' : 'PENDING_ADMIN',
         requesterUuid: player.getStringUuid ? player.getStringUuid() : player.uuid.toString(),
@@ -255,17 +299,21 @@ function requestWarDeclaration(player, targetQuery) {
         startedAt: isOp ? Date.now() : null,
         peaceRequestedBy: null
     }
+    setWar(wars, warId, newWar)
 
     saveWarsRegistry(server, wars)
 
     if (isOp) {
         broadcastMsg(server, 'Guerre', 'Guerre déclarée (# ' + warId + ') : §e' + atkName + ' §fcontre §e' + defName + ' §f! Les hostilités sont immédiatement ouvertes.', '§c')
         if (typeof triggerCallToArms === 'function') {
-            var aTeam = getTeamById(server, wars[warId].attackerLeader)
-            var bTeam = getTeamById(server, wars[warId].defenderLeader)
-            if (aTeam && bTeam) {
-                triggerCallToArms(server, warId, aTeam.getId(), bTeam.getId())
-                triggerCallToArms(server, warId, bTeam.getId(), aTeam.getId())
+            var wEntry = getWar(wars, warId)
+            if (wEntry) {
+                var aTeam = getTeamById(server, wEntry.attackerLeader)
+                var bTeam = getTeamById(server, wEntry.defenderLeader)
+                if (aTeam && bTeam) {
+                    triggerCallToArms(server, warId, aTeam.getId(), bTeam.getId())
+                    triggerCallToArms(server, warId, bTeam.getId(), aTeam.getId())
+                }
             }
         }
         return 1
@@ -321,8 +369,8 @@ function startActiveWar(server, player, targetQuery) {
     var wars = loadWarsRegistry(server)
     for (var wid in wars) {
         if (!wars.hasOwnProperty(wid)) continue
-        var w = wars[wid]
-        if (w.status === 'PENDING_ADMIN') {
+        var w = getWar(wars, wid)
+        if (w && w.status === 'PENDING_ADMIN') {
             var hasA = (w.attackers && w.attackers.indexOf(team.getId().toString()) !== -1) || (w.defenders && w.defenders.indexOf(team.getId().toString()) !== -1)
             var hasB = (w.attackers && w.attackers.indexOf(targetTeam.getId().toString()) !== -1) || (w.defenders && w.defenders.indexOf(targetTeam.getId().toString()) !== -1)
             if (hasA && hasB) {
@@ -335,7 +383,7 @@ function startActiveWar(server, player, targetQuery) {
     var atkName = team.getName().getString()
     var defName = targetTeam.getName().getString()
 
-    wars[warId] = {
+    var newWarActive = {
         id: warId,
         status: 'ACTIVE',
         requesterUuid: player ? (player.getStringUuid ? player.getStringUuid() : player.uuid.toString()) : 'console',
@@ -352,15 +400,19 @@ function startActiveWar(server, player, targetQuery) {
         startedAt: Date.now(),
         peaceRequestedBy: null
     }
+    setWar(wars, warId, newWarActive)
     saveWarsRegistry(server, wars)
 
     broadcastMsg(server, 'Guerre', 'Guerre lancée (# ' + warId + ') : §e' + atkName + ' §fcontre §e' + defName + ' §f! Les hostilités sont ouvertes.', '§c')
     if (typeof triggerCallToArms === 'function') {
-        var aTeam2 = getTeamById(server, wars[warId].attackerLeader)
-        var bTeam2 = getTeamById(server, wars[warId].defenderLeader)
-        if (aTeam2 && bTeam2) {
-            triggerCallToArms(server, warId, aTeam2.getId(), bTeam2.getId())
-            triggerCallToArms(server, warId, bTeam2.getId(), aTeam2.getId())
+        var wActive = getWar(wars, warId)
+        if (wActive) {
+            var aTeam2 = getTeamById(server, wActive.attackerLeader)
+            var bTeam2 = getTeamById(server, wActive.defenderLeader)
+            if (aTeam2 && bTeam2) {
+                triggerCallToArms(server, warId, aTeam2.getId(), bTeam2.getId())
+                triggerCallToArms(server, warId, bTeam2.getId(), aTeam2.getId())
+            }
         }
     }
     return 1
@@ -376,7 +428,7 @@ function forceStopWar(server, player, targetQuery) {
         w.status = 'ENDED'
         w.endedAt = Date.now()
         var wars = loadWarsRegistry(server)
-        wars[w.id] = w
+        setWar(wars, w.id, w)
         saveWarsRegistry(server, wars)
         broadcastMsg(server, 'Guerre', 'Le conflit #' + w.id + ' a été arrêté par les arbitres fédéraux.', '§6')
         return 1
@@ -426,7 +478,7 @@ function approveWar(server, warQuery) {
     w.status = 'ACTIVE'
     w.startedAt = Date.now()
     var wars = loadWarsRegistry(server)
-    wars[w.id] = w
+    setWar(wars, w.id, w)
     saveWarsRegistry(server, wars)
 
     var nameA = w.attackerName || getTeamDisplayName(server, w.attackerLeader)
@@ -461,7 +513,7 @@ function rejectWar(server, warQuery, reason) {
         depositNationMoneyDirect(aTeam, refund)
     }
 
-    delete wars[w.id]
+    deleteWar(wars, w.id)
     saveWarsRegistry(server, wars)
 
     var nameA = w.attackerName || getTeamDisplayName(server, w.attackerLeader)
@@ -528,7 +580,7 @@ function handleWarPeace(player, targetQuery) {
         war.status = 'ENDED'
         war.endedAt = Date.now()
         var wars = loadWarsRegistry(server)
-        wars[war.id] = war
+        setWar(wars, war.id, war)
         saveWarsRegistry(server, wars)
 
         var nameA = war.attackerName || getTeamDisplayName(server, war.attackerLeader)
@@ -542,7 +594,7 @@ function handleWarPeace(player, targetQuery) {
         // Initier la proposition de paix
         war.peaceRequestedBy = myCamp
         var wars2 = loadWarsRegistry(server)
-        wars2[war.id] = war
+        setWar(wars2, war.id, war)
         saveWarsRegistry(server, wars2)
 
         sendMsg(player, 'Diplomatie', 'Proposition de paix transmise au camp adverse.', '§a')
@@ -564,21 +616,26 @@ function listActiveWars(player) {
     sendMsg(player, 'Guerre', 'Liste des conflits :', '§4')
     for (var id in wars) {
         if (!wars.hasOwnProperty(id)) continue
-        var w = wars[id]
+        var w = getWar(wars, id)
+        if (!w) continue
 
         // Récupération des noms complets des coalitions
         var atkNames = []
         if (w.attackerNames && w.attackerNames.length > 0) {
             atkNames = w.attackerNames
-        } else {
+        } else if (w.attackers && w.attackers.length > 0) {
             for (var a = 0; a < w.attackers.length; a++) atkNames.push(getTeamDisplayName(server, w.attackers[a]))
+        } else {
+            atkNames.push(w.attackerName || 'Inconnu')
         }
 
         var defNames = []
         if (w.defenderNames && w.defenderNames.length > 0) {
             defNames = w.defenderNames
-        } else {
+        } else if (w.defenders && w.defenders.length > 0) {
             for (var d = 0; d < w.defenders.length; d++) defNames.push(getTeamDisplayName(server, w.defenders[d]))
+        } else {
+            defNames.push(w.defenderName || 'Inconnu')
         }
 
         var statusLabel = (w.status === 'ACTIVE') ? '§c§lACTIF' : ((w.status === 'PENDING_ADMIN') ? '§e§lEN ATTENTE' : '§7TERMINÉE')
@@ -594,7 +651,8 @@ function listActiveWars(player) {
         var warsList = []
         for (var wid in wars) {
             if (!wars.hasOwnProperty(wid)) continue
-            var warObj = wars[wid]
+            var warObj = getWar(wars, wid)
+            if (!warObj) continue
             if (warObj.status === 'ACTIVE' || warObj.status === 'PENDING_ADMIN') {
                 warsList.push({
                     id: warObj.id,
@@ -629,7 +687,7 @@ NetworkEvents.dataReceived('action_war', function(event) {
         var action = JSON.parse(raw)
         if (action.action === 'peace' && action.warId) {
             var wars = loadWarsRegistry(player.server)
-            var w = wars[action.warId]
+            var w = getWar(wars, action.warId)
             if (w) {
                 handleWarPeace(player, w.attackerName || w.defenderName)
             }
@@ -664,7 +722,8 @@ ServerEvents.commandRegistry(function(event) {
                     var wars = loadWarsRegistry(ctx.source.server)
                     var lastActive = null
                     for (var id in wars) {
-                        if (wars[id].status === 'ACTIVE') lastActive = wars[id]
+                        var w = getWar(wars, id)
+                        if (w && w.status === 'ACTIVE') lastActive = w
                     }
                     if (lastActive) {
                         return forceStopWar(ctx.source.server, ctx.source.player, lastActive.id)

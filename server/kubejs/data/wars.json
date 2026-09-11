@@ -1,6 +1,6 @@
 {
 	"1": {
-		"id": "1",
+		"id": 1,
 		"status": "ENDED",
 		"requesterUuid": "137b73c3-8c48-3eb6-be1a-5c230d6e1dea",
 		"attackerName": "La fronce",
@@ -26,7 +26,7 @@
 		"endedAt": 1789119826940
 	},
 	"2": {
-		"id": "2",
+		"id": 2,
 		"status": "ACTIVE",
 		"requesterUuid": "137b73c3-8c48-3eb6-be1a-5c230d6e1dea",
 		"attackerName": "La fronce",
@@ -47,7 +47,7 @@
 		],
 		"costPaid": 2500,
 		"createdAt": 1789119859567,
-		"peaceRequestedBy": null,
+		"peaceRequestedBy": "attackers",
 		"startedAt": 1789119878940
 	}
 }

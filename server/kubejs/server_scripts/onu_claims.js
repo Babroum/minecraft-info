@@ -596,7 +596,9 @@ BlockEvents.broken(function(event) {
             }
         }
     } catch (e) {
-        console.error('[ONU Anti-Grief] Erreur broken : ' + e)
+        if (String(e).indexOf('EventExit') === -1) {
+            console.error('[ONU Anti-Grief] Erreur broken : ' + e)
+        }
     }
 })
 
@@ -619,7 +621,9 @@ BlockEvents.placed(function(event) {
             }
         }
     } catch (e) {
-        console.error('[ONU Anti-Grief] Erreur placed : ' + e)
+        if (String(e).indexOf('EventExit') === -1) {
+            console.error('[ONU Anti-Grief] Erreur placed : ' + e)
+        }
     }
 })
 

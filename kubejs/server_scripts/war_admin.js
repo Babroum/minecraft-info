@@ -66,7 +66,7 @@ ServerEvents.commandRegistry(function(event) {
                         if (w) {
                             w.status = 'ENDED'
                             var wars = loadWarsRegistry(server)
-                            wars[w.id] = w
+                            setWar(wars, w.id, w)
                             saveWarsRegistry(server, wars)
                             broadcastMsg(server, 'WarAdmin', 'Le conflit #' + w.id + ' a été arrêté de force par les arbitres fédéraux.', '§6')
                             return 1
@@ -84,8 +84,9 @@ ServerEvents.commandRegistry(function(event) {
                 var count = 0
                 for (var id in wars) {
                     if (!wars.hasOwnProperty(id)) continue
+                    var w = getWar(wars, id)
+                    if (!w) continue
                     count++
-                    var w = wars[id]
                     var nameA = w.attackerName || getTeamDisplayName(server, w.attackerLeader)
                     var nameB = w.defenderName || getTeamDisplayName(server, w.defenderLeader)
                     var statusLabel = (w.status === 'ACTIVE') ? '§c[ACTIF]' : ((w.status === 'PENDING_ADMIN') ? '§e[EN ATTENTE]' : '§7[TERMINÉE]')

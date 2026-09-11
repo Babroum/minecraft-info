@@ -6,12 +6,64 @@
 var UUID = Java.loadClass('java.util.UUID')
 
 /**
- * Persistance JSON native KubeJS (JsonIO)
+ * Convertit récursivement les structures Java (Map, List) en Objets et Tableaux JavaScript purs
+ */
+function toJsObject(val) {
+    if (val === null || val === undefined) return val
+    if (typeof val !== 'object') return val
+
+    if (Array.isArray(val)) {
+        for (var a = 0; a < val.length; a++) {
+            val[a] = toJsObject(val[a])
+        }
+        return val
+    }
+
+    try {
+        if (typeof val.keySet === 'function' && typeof val.get === 'function') {
+            var obj = {}
+            var it = val.keySet().iterator()
+            while (it.hasNext()) {
+                var k = it.next()
+                var keyStr = (k !== null && k !== undefined) ? String(k) : ''
+                obj[keyStr] = toJsObject(val.get(k))
+            }
+            return obj
+        }
+
+        if (typeof val.size === 'function' && typeof val.get === 'function') {
+            var arr = []
+            var len = val.size()
+            for (var i = 0; i < len; i++) {
+                arr.push(toJsObject(val.get(i)))
+            }
+            return arr
+        }
+    } catch (e) {}
+
+    return val
+}
+
+/**
+ * Persistance JSON native KubeJS & Java NIO (retourne un objet JavaScript pur)
  */
 function readJsonData(filename) {
     try {
+        var FileClass = Java.loadClass('java.io.File')
+        var f = new FileClass('kubejs/data/' + filename)
+        if (f.exists()) {
+            var FilesClass = Java.loadClass('java.nio.file.Files')
+            var raw = String(FilesClass.readString(f.toPath()))
+            if (raw && raw.trim() !== '') {
+                return toJsObject(JSON.parse(raw))
+            }
+        }
+    } catch (fe) {}
+    try {
         var data = JsonIO.read('kubejs/data/' + filename)
-        if (data) return data
+        if (data) {
+            return toJsObject(data)
+        }
     } catch (e) {
         console.error('[Storage] Erreur lecture ' + filename + ' : ' + e)
     }
@@ -20,10 +72,65 @@ function readJsonData(filename) {
 
 function writeJsonData(filename, data) {
     try {
+        var FileClass = Java.loadClass('java.io.File')
+        var f = new FileClass('kubejs/data/' + filename)
+        var parent = f.getParentFile()
+        if (parent && !parent.exists()) {
+            parent.mkdirs()
+        }
+        var FilesClass = Java.loadClass('java.nio.file.Files')
+        var jsonStr = JSON.stringify(data || {}, null, 2)
+        FilesClass.writeString(f.toPath(), jsonStr, [])
+        return
+    } catch (fe) {}
+    try {
         JsonIO.write('kubejs/data/' + filename, data)
     } catch (e) {
         console.error('[Storage] Erreur ecriture ' + filename + ' : ' + e)
     }
+}
+
+/**
+ * Accès sécurisé aux guerres (évite les bugs d'indexation numérique sur Map Java ou Objet JS)
+ */
+function getWar(wars, id) {
+    if (!wars || id === null || id === undefined) return null
+    var sId = String(id)
+    if (typeof wars.get === 'function') {
+        try {
+            var item = wars.get(sId)
+            if (item) return item
+        } catch (e) {}
+        try {
+            var num = parseInt(sId, 10)
+            if (!isNaN(num)) {
+                var item2 = wars.get(num)
+                if (item2) return item2
+            }
+        } catch (e) {}
+    }
+    try {
+        if (wars[sId] !== undefined) return wars[sId]
+    } catch (e) {}
+    return null
+}
+
+function setWar(wars, id, warObj) {
+    if (!wars || id === null || id === undefined) return
+    var sId = String(id)
+    if (typeof wars.put === 'function') {
+        try { wars.put(sId, warObj) } catch (pe) {}
+    }
+    try { wars[sId] = warObj } catch (e) {}
+}
+
+function deleteWar(wars, id) {
+    if (!wars || id === null || id === undefined) return
+    var sId = String(id)
+    if (typeof wars.remove === 'function') {
+        try { wars.remove(sId) } catch (re) {}
+    }
+    try { delete wars[sId] } catch (e) {}
 }
 
 /**

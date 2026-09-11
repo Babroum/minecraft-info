@@ -369,7 +369,7 @@
     },
     {
       "file": "server_scripts/ftb_helpers.js",
-      "sha256": "c8fddf1cc31669153e4a92e0fbbc883a46ccccfa18247d1778a2d87aaf4a278c"
+      "sha256": "8c49078a00cca04bfc0d456acf8b365eb054f8596672b7b5c209dd32ec401656"
     },
     {
       "file": "server_scripts/main.js",
@@ -397,7 +397,7 @@
     },
     {
       "file": "server_scripts/onu_claims.js",
-      "sha256": "3a9f7763387b7c25bedd87d4c4e26eba1222166acc389c7f9daf626a3de0ddc8"
+      "sha256": "1b091ce4d2f9b77c70b8b3b72ac45eb0ca78f72c485af1880aad71126da38c68"
     },
     {
       "file": "server_scripts/onu_contracts.js",
@@ -417,11 +417,11 @@
     },
     {
       "file": "server_scripts/war_admin.js",
-      "sha256": "cdca3041b947d0ec63a5043a2d7c31f3ce57c8fa9247e6480c210c559fa0ba00"
+      "sha256": "3a854d0cd2d3a33580ffb43a83099531177f5bbd6586ac3bb5d84138bc50c5d0"
     },
     {
       "file": "server_scripts/war_claims_hook.js",
-      "sha256": "b0bc1c35fab1699ca88eec2a123dddf67ed97d656fd22e705ca0576da995945e"
+      "sha256": "da68e26e66bf29b04ab31330f67534ca6b567715635693594c79408aed8cca8a"
     },
     {
       "file": "server_scripts/war_raidhours.js",
@@ -429,7 +429,7 @@
     },
     {
       "file": "server_scripts/war_system.js",
-      "sha256": "e1815bd6e987ce36cde38c461090c229b88609aafe46548bdb2857d885cb4175"
+      "sha256": "ccf6a746d587a2f53f9c574bd5fc76eea00831a5ab66d520a84557b9e45b533d"
     },
     {
       "file": "startup_scripts/economy_items.js",
