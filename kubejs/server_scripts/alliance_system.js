@@ -1,40 +1,43 @@
 // priority: 60
 // =============================================================================
-// Third World Server Script - Système d'Alliances Géopolitiques & Appel aux Armes
+// Third World Server Script - Système d'Alliances Géopolitiques & Diplomatie
+// =============================================================================
+// 1. Stockage permanent des traités d'alliance sur disque (alliances.json).
+// 2. Synchronisation bidirectionnelle avec les rangs FTB Teams (TeamRank.ALLY).
+// 3. Commandes souples et intuitives (/ally, /ally add, /ally accept, etc.).
+// 4. Système d'appel aux armes automatique en cas de déclaration de guerre.
 // =============================================================================
 
 var ALLIANCE_TIMEOUT_MS = 15 * 60 * 1000 // 15 minutes pour répondre à l'appel aux armes
+var ALLIANCES_CACHE = null
 
 /**
- * Charge les alliances depuis persistentData
+ * Charge les alliances depuis le fichier permanent alliances.json sur disque
  */
 function loadAlliances(server) {
-    if (!server) return {}
+    if (ALLIANCES_CACHE !== null) return ALLIANCES_CACHE
     try {
-        if (server.persistentData) {
-            var raw = server.persistentData.getString('nation_alliances')
-            if (raw && raw.length > 0) {
-                var data = JSON.parse(raw)
-                if (data && typeof data === 'object') return data
-            }
+        var fileData = readJsonData('alliances.json')
+        if (fileData && typeof fileData === 'object' && !Array.isArray(fileData)) {
+            ALLIANCES_CACHE = fileData
+            return ALLIANCES_CACHE
         }
     } catch (e) {
-        console.error('[Alliance] Erreur lecture alliances : ' + e)
+        console.error('[Alliance] Erreur lecture alliances.json : ' + e)
     }
-    return {}
+    ALLIANCES_CACHE = {}
+    return ALLIANCES_CACHE
 }
 
 /**
- * Sauvegarde les alliances dans persistentData
+ * Sauvegarde les alliances dans alliances.json sur disque
  */
 function saveAlliances(server, alliances) {
-    if (!server) return
+    ALLIANCES_CACHE = alliances || {}
     try {
-        if (server.persistentData) {
-            server.persistentData.putString('nation_alliances', JSON.stringify(alliances))
-        }
+        writeJsonData('alliances.json', ALLIANCES_CACHE)
     } catch (e) {
-        console.error('[Alliance] Erreur sauvegarde alliances : ' + e)
+        console.error('[Alliance] Erreur sauvegarde alliances.json : ' + e)
     }
 }
 
@@ -62,6 +65,62 @@ function getTeamAllies(server, teamId) {
 }
 
 /**
+ * Synchronise les membres de deux équipes alliées dans FTB Teams avec le rang ALLY
+ */
+function syncAllianceWithFTBTeams(server, teamAId, teamBId, isAlly) {
+    try {
+        if (!server || !teamAId || !teamBId) return
+        var aStr = teamAId.toString()
+        var bStr = teamBId.toString()
+        var teamA = getTeamById(server, aStr)
+        var teamB = getTeamById(server, bStr)
+        if (!teamA || !teamB) return
+
+        var TeamRankClass = Java.loadClass('dev.ftb.mods.ftbteams.api.TeamRank')
+        if (!TeamRankClass) return
+
+        var allyRank = TeamRankClass.ALLY
+
+        // Ajouter/retirer les membres de B dans A
+        var memB = teamB.getMembers ? teamB.getMembers() : null
+        if (memB) {
+            var itB = memB.iterator()
+            while (itB.hasNext()) {
+                var uB = itB.next()
+                try {
+                    if (isAlly) {
+                        if (teamA.addMember) teamA.addMember(uB, allyRank)
+                    } else {
+                        if (teamA.removeMember) teamA.removeMember(uB)
+                    }
+                } catch (eB) {}
+            }
+        }
+
+        // Ajouter/retirer les membres de A dans B
+        var memA = teamA.getMembers ? teamA.getMembers() : null
+        if (memA) {
+            var itA = memA.iterator()
+            while (itA.hasNext()) {
+                var uA = itA.next()
+                try {
+                    if (isAlly) {
+                        if (teamB.addMember) teamB.addMember(uA, allyRank)
+                    } else {
+                        if (teamB.removeMember) teamB.removeMember(uA)
+                    }
+                } catch (eA) {}
+            }
+        }
+
+        if (teamA.markDirty) teamA.markDirty()
+        if (teamB.markDirty) teamB.markDirty()
+    } catch (e) {
+        console.error('[Alliance] Erreur syncAllianceWithFTBTeams : ' + e)
+    }
+}
+
+/**
  * Enregistre une nouvelle alliance bilatérale
  */
 function addAlliance(server, teamAId, teamBId) {
@@ -78,6 +137,7 @@ function addAlliance(server, teamAId, teamBId) {
     if (all[bStr].indexOf(aStr) === -1) all[bStr].push(aStr)
 
     saveAlliances(server, all)
+    syncAllianceWithFTBTeams(server, teamAId, teamBId, true)
     return true
 }
 
@@ -109,6 +169,7 @@ function breakAlliance(server, teamAId, teamBId, reason) {
 
     if (wasAllied) {
         saveAlliances(server, all)
+        syncAllianceWithFTBTeams(server, teamAId, teamBId, false)
         var nameA = getTeamDisplayName(server, aStr)
         var nameB = getTeamDisplayName(server, bStr)
 
@@ -124,18 +185,18 @@ function breakAlliance(server, teamAId, teamBId, reason) {
 // -----------------------------------------------------------------------------
 // GESTION DES REQUÊTES D'ALLIANCE EN ATTENTE
 // -----------------------------------------------------------------------------
-var pendingAllianceRequests = {} // { targetTeamId: { fromTeamId, requestedAt } }
+var pendingAllianceRequests = {} // { targetTeamIdStr: { fromTeamId, fromTeamName, requestedAt } }
 
 function requestAlliance(player, targetQuery) {
     if (!player) return 0
-    var server = player.server
+    var server = player.server || (player.getServer ? player.getServer() : null)
     var team = getPlayerNationTeam(player)
     if (!team) {
         sendMsg(player, 'Alliance', 'Vous devez faire partie d\'une nation.', '§c')
         return 0
     }
-    if (!isTeamOwner(team, player)) {
-        sendMsg(player, 'Alliance', 'Seul le Leader (président) de la nation peut signer des traités d\'alliance.', '§c')
+    if (!isTeamOfficerOrOwner(team, player)) {
+        sendMsg(player, 'Alliance', 'Seul le Leader ou un Ministre peut proposer un traité d\'alliance.', '§c')
         return 0
     }
 
@@ -151,48 +212,64 @@ function requestAlliance(player, targetQuery) {
     }
 
     if (isAllied(server, team.getId(), targetTeam.getId())) {
-        sendMsg(player, 'Alliance', 'Vous êtes déjà allié à ' + targetTeam.getName().getString() + '.', '§e')
+        sendMsg(player, 'Alliance', 'Vous êtes déjà allié avec §6' + targetTeam.getName().getString() + '§f.', '§e')
         return 0
     }
 
+    var myIdStr = team.getId().toString()
     var targetIdStr = targetTeam.getId().toString()
+
+    // Si la nation cible nous avait déjà envoyé une demande, l'accepter immédiatement
+    var existingReq = pendingAllianceRequests[myIdStr]
+    if (existingReq && existingReq.fromTeamId === targetIdStr) {
+        return acceptAlliance(player, targetTeam.getName().getString())
+    }
+
     pendingAllianceRequests[targetIdStr] = {
-        fromTeamId: team.getId().toString(),
+        fromTeamId: myIdStr,
         fromTeamName: team.getName().getString(),
         requestedAt: Date.now()
     }
 
-    sendMsg(player, 'Alliance', 'Proposition d\'alliance transmise à §e' + targetTeam.getName().getString() + '§f.', '§a')
-    notifyTeam(targetTeam, 'Alliance', 'La nation §e' + team.getName().getString() + ' §fvous propose une alliance. Tapez §a/ally accept ' + team.getName().getString() + ' §fou §c/ally decline', '§6')
+    sendMsg(player, 'Alliance', 'Proposition d\'alliance transmise à §6' + targetTeam.getName().getString() + '§f.', '§a')
+    notifyTeam(targetTeam, 'Alliance', 'La nation §6' + team.getName().getString() + ' §fvous propose un pacte d\'alliance ! Tapez §a/ally accept ' + team.getName().getString() + ' §fou §c/ally decline', '§6')
     return 1
 }
 
 function acceptAlliance(player, targetQuery) {
     if (!player) return 0
-    var server = player.server
+    var server = player.server || (player.getServer ? player.getServer() : null)
     var team = getPlayerNationTeam(player)
-    if (!team || !isTeamOwner(team, player)) {
-        sendMsg(player, 'Alliance', 'Seul le Leader peut accepter une alliance.', '§c')
-        return 0
-    }
-
-    var targetTeam = findTeamByNameOrPlayer(server, targetQuery)
-    if (!targetTeam) {
-        sendMsg(player, 'Alliance', 'Nation introuvable : "' + targetQuery + '".', '§c')
+    if (!team || !isTeamOfficerOrOwner(team, player)) {
+        sendMsg(player, 'Alliance', 'Seul le Leader ou un Ministre peut accepter une alliance.', '§c')
         return 0
     }
 
     var myIdStr = team.getId().toString()
     var req = pendingAllianceRequests[myIdStr]
-    if (!req || req.fromTeamId !== targetTeam.getId().toString()) {
-        sendMsg(player, 'Alliance', 'Aucune demande d\'alliance en attente venant de ' + targetTeam.getName().getString() + '.', '§c')
+
+    var targetTeam = null
+    if (targetQuery && targetQuery.trim().length > 0) {
+        targetTeam = findTeamByNameOrPlayer(server, targetQuery)
+    } else if (req) {
+        targetTeam = getTeamById(server, req.fromTeamId)
+    }
+
+    if (!targetTeam) {
+        sendMsg(player, 'Alliance', 'Aucune demande d\'alliance ciblée en attente.', '§c')
+        return 0
+    }
+
+    var targetIdStr = targetTeam.getId().toString()
+    if (!req || req.fromTeamId !== targetIdStr) {
+        sendMsg(player, 'Alliance', 'Aucune demande d\'alliance en attente venant de §6' + targetTeam.getName().getString() + '§c.', '§c')
         return 0
     }
 
     delete pendingAllianceRequests[myIdStr]
     addAlliance(server, team.getId(), targetTeam.getId())
 
-    broadcastMsg(server, 'Diplomatie', 'Un pacte d\'alliance a été signé entre §e' + team.getName().getString() + ' §fet §e' + targetTeam.getName().getString() + ' §f!', '§a')
+    broadcastMsg(server, 'Diplomatie', 'Un pacte d\'alliance officiel a été signé entre §6' + team.getName().getString() + ' §fet §6' + targetTeam.getName().getString() + ' §f!', '§a')
     return 1
 }
 
@@ -211,9 +288,42 @@ function declineAlliance(player, targetQuery) {
     return 0
 }
 
+function handleSmartAllyCommand(player, targetQuery) {
+    if (!targetQuery || targetQuery.trim() === '') {
+        return listAlliances(player)
+    }
+    var server = player.server || (player.getServer ? player.getServer() : null)
+    var team = getPlayerNationTeam(player)
+    if (!team) {
+        sendMsg(player, 'Alliance', 'Vous devez faire partie d\'une nation.', '§c')
+        return 0
+    }
+
+    var targetTeam = findTeamByNameOrPlayer(server, targetQuery)
+    if (!targetTeam) {
+        sendMsg(player, 'Alliance', 'Nation introuvable : "' + targetQuery + '".', '§c')
+        return 0
+    }
+
+    if (isAllied(server, team.getId(), targetTeam.getId())) {
+        sendMsg(player, 'Alliance', 'Votre nation est déjà alliée avec §6' + targetTeam.getName().getString() + '§f.', '§a')
+        sendMsg(player, 'Aide', 'Pour visiter leur ambassade : §e/ally home ' + targetTeam.getName().getString(), '§7')
+        sendMsg(player, 'Aide', 'Pour rompre l\'alliance : §c/ally break ' + targetTeam.getName().getString(), '§7')
+        return 1
+    }
+
+    var myIdStr = team.getId().toString()
+    var req = pendingAllianceRequests[myIdStr]
+    if (req && req.fromTeamId === targetTeam.getId().toString()) {
+        return acceptAlliance(player, targetTeam.getName().getString())
+    }
+
+    return requestAlliance(player, targetQuery)
+}
+
 function listAlliances(player) {
     if (!player) return 0
-    var server = player.server
+    var server = player.server || (player.getServer ? player.getServer() : null)
     var team = getPlayerNationTeam(player)
     if (!team) {
         sendMsg(player, 'Alliance', 'Vous devez faire partie d\'une nation.', '§c')
@@ -221,14 +331,16 @@ function listAlliances(player) {
     }
 
     var allies = getTeamAllies(server, team.getId())
-    if (allies.length === 0) {
-        sendMsg(player, 'Alliance', 'Votre nation n\'a aucun allié officiel.', '§7')
+    if (!allies || allies.length === 0) {
+        sendMsg(player, 'Alliance', 'Votre nation n\'a aucun traité d\'alliance actif.', '§7')
+        sendMsg(player, 'Aide', 'Pour proposer une alliance : §e/ally add <nom_nation>', '§7')
     } else {
         var names = []
         for (var i = 0; i < allies.length; i++) {
             names.push(getTeamDisplayName(server, allies[i]))
         }
-        sendMsg(player, 'Alliance', 'Alliés officiels (' + names.length + ') : §e' + names.join('§f, §e'), '§a')
+        sendMsg(player, 'Alliance', 'Nations alliées officielles (' + names.length + ') : §a' + names.join('§7, §a'), '§a')
+        sendMsg(player, 'Raccourci', 'Ambassade alliée : §e/ally home <nom_nation>', '§7')
     }
     return 1
 }
@@ -238,13 +350,10 @@ function listAlliances(player) {
 // -----------------------------------------------------------------------------
 var pendingCallsToArms = {} // { allyTeamIdStr: { warId, callingTeamId, enemyTeamId, expiresAt } }
 
-/**
- * Déclenche un appel aux armes automatique à tous les alliés d'une nation qui entre en guerre
- */
 function triggerCallToArms(server, warId, callingTeamId, enemyTeamId) {
     if (!server || !warId || !callingTeamId) return
     var allies = getTeamAllies(server, callingTeamId)
-    if (allies.length === 0) return
+    if (!allies || allies.length === 0) return
 
     var callingName = getTeamDisplayName(server, callingTeamId.toString())
     var enemyName = getTeamDisplayName(server, enemyTeamId.toString())
@@ -266,16 +375,13 @@ function triggerCallToArms(server, warId, callingTeamId, enemyTeamId) {
     }
 }
 
-/**
- * Répond à un appel aux armes (acceptation ou refus)
- */
 function handleCallToArmsResponse(player, warId, accept) {
     if (!player) return 0
-    var server = player.server
+    var server = player.server || (player.getServer ? player.getServer() : null)
     var team = getPlayerNationTeam(player)
     if (!team) return 0
-    if (!isTeamOwner(team, player)) {
-        sendMsg(player, 'Guerre', 'Seul le Leader peut engager sa nation dans une guerre alliée.', '§c')
+    if (!isTeamOfficerOrOwner(team, player)) {
+        sendMsg(player, 'Guerre', 'Seul le Leader ou un Ministre peut engager sa nation dans une guerre alliée.', '§c')
         return 0
     }
 
@@ -290,40 +396,14 @@ function handleCallToArmsResponse(player, warId, accept) {
     delete pendingCallsToArms[teamIdStr]
 
     if (accept) {
-        // Intégrer l'équipe à la coalition
         if (typeof joinWarCoalition === 'function') {
             joinWarCoalition(server, warId, team.getId(), call.callingTeamId)
         }
         broadcastMsg(server, 'Guerre', 'La nation alliée §e' + team.getName().getString() + ' §frejoint le conflit aux côtés de ses alliés !', '§c')
         return 1
     } else {
-        // Refus : Rupture immédiate de l'alliance pour défection
         breakAlliance(server, UUID.fromString(call.callingTeamId), team.getId(), 'defection')
         return 1
-    }
-}
-
-/**
- * Vérifie périodiquement l'expiration des appels aux armes
- */
-function checkCallsToArmsExpiration(server) {
-    if (!server) return
-    var now = Date.now()
-    var expiredKeys = []
-    for (var k in pendingCallsToArms) {
-        if (pendingCallsToArms.hasOwnProperty(k)) {
-            if (pendingCallsToArms[k].expiresAt <= now) {
-                expiredKeys.push(k)
-            }
-        }
-    }
-
-    for (var j = 0; j < expiredKeys.length; j++) {
-        var aId = expiredKeys[j]
-        var item = pendingCallsToArms[aId]
-        delete pendingCallsToArms[aId]
-        // Expiration = refus automatique et rupture
-        breakAlliance(server, UUID.fromString(item.callingTeamId), UUID.fromString(aId), 'defection')
     }
 }
 
@@ -336,6 +416,14 @@ ServerEvents.commandRegistry(function(event) {
 
     event.register(
         Commands.literal('ally')
+            // /ally add <nation> ou /ally request <nation>
+            .then(Commands.literal('add')
+                .then(Commands.argument('nation', StringArgumentType.string())
+                    .executes(function(ctx) {
+                        return requestAlliance(ctx.source.player, StringArgumentType.getString(ctx, 'nation'))
+                    })
+                )
+            )
             .then(Commands.literal('request')
                 .then(Commands.argument('nation', StringArgumentType.string())
                     .executes(function(ctx) {
@@ -343,13 +431,18 @@ ServerEvents.commandRegistry(function(event) {
                     })
                 )
             )
+            // /ally accept [nation]
             .then(Commands.literal('accept')
+                .executes(function(ctx) {
+                    return acceptAlliance(ctx.source.player, null)
+                })
                 .then(Commands.argument('nation', StringArgumentType.string())
                     .executes(function(ctx) {
                         return acceptAlliance(ctx.source.player, StringArgumentType.getString(ctx, 'nation'))
                     })
                 )
             )
+            // /ally decline [nation]
             .then(Commands.literal('decline')
                 .then(Commands.argument('nation', StringArgumentType.string())
                     .executes(function(ctx) {
@@ -360,14 +453,15 @@ ServerEvents.commandRegistry(function(event) {
                     return declineAlliance(ctx.source.player, null)
                 })
             )
+            // /ally break <nation> ou /ally remove <nation>
             .then(Commands.literal('break')
                 .then(Commands.argument('nation', StringArgumentType.string())
                     .executes(function(ctx) {
                         var player = ctx.source.player
                         if (!player) return 0
                         var team = getPlayerNationTeam(player)
-                        if (!team || !isTeamOwner(team, player)) {
-                            sendMsg(player, 'Alliance', 'Seul le Leader peut rompre une alliance.', '§c')
+                        if (!team || !isTeamOfficerOrOwner(team, player)) {
+                            sendMsg(player, 'Alliance', 'Seul le Leader ou un Ministre peut rompre une alliance.', '§c')
                             return 0
                         }
                         var target = findTeamByNameOrPlayer(player.server, StringArgumentType.getString(ctx, 'nation'))
@@ -384,10 +478,35 @@ ServerEvents.commandRegistry(function(event) {
                     })
                 )
             )
+            .then(Commands.literal('remove')
+                .then(Commands.argument('nation', StringArgumentType.string())
+                    .executes(function(ctx) {
+                        var player = ctx.source.player
+                        if (!player) return 0
+                        var team = getPlayerNationTeam(player)
+                        if (!team || !isTeamOfficerOrOwner(team, player)) {
+                            sendMsg(player, 'Alliance', 'Seul le Leader ou un Ministre peut rompre une alliance.', '§c')
+                            return 0
+                        }
+                        var target = findTeamByNameOrPlayer(player.server, StringArgumentType.getString(ctx, 'nation'))
+                        if (!target) {
+                            sendMsg(player, 'Alliance', 'Nation introuvable.', '§c')
+                            return 0
+                        }
+                        if (breakAlliance(player.server, team.getId(), target.getId(), 'voluntary')) {
+                            sendMsg(player, 'Alliance', 'Traité d\'alliance dissous avec succès.', '§a')
+                        } else {
+                            sendMsg(player, 'Alliance', 'Vous n\'étiez pas allié à cette nation.', '§c')
+                        }
+                        return 1
+                    })
+                )
+            )
+            // /ally list
             .then(Commands.literal('list').executes(function(ctx) {
                 return listAlliances(ctx.source.player)
             }))
-            // Téléportation vers l'Ambassade d'une nation alliée (/ally home <nation>)
+            // /ally home <nation>
             .then(Commands.literal('home')
                 .then(Commands.argument('nation', StringArgumentType.string())
                     .executes(function(ctx) {
@@ -395,26 +514,39 @@ ServerEvents.commandRegistry(function(event) {
                     })
                 )
             )
-            // Téléportation inversée demandée (/ally <nom_alliée> home)
-            .then(Commands.argument('targetNation', StringArgumentType.string())
-                .then(Commands.literal('home')
-                    .executes(function(ctx) {
-                        return (typeof teleportToAllyHome === 'function') ? teleportToAllyHome(ctx.source.player, StringArgumentType.getString(ctx, 'targetNation')) : 0
-                    })
-                )
+            // /ally <nation> (commande intelligente)
+            .then(Commands.argument('nation', StringArgumentType.string())
+                .executes(function(ctx) {
+                    var target = StringArgumentType.getString(ctx, 'nation')
+                    return handleSmartAllyCommand(ctx.source.player, target)
+                })
             )
             .executes(function(ctx) {
                 return listAlliances(ctx.source.player)
             })
     )
 
-    // Raccourci direct pratique: /allyhome <nom_alliée>
+    // Raccourci direct /allies
     event.register(
-        Commands.literal('allyhome')
-            .then(Commands.argument('nation', StringArgumentType.string())
-                .executes(function(ctx) {
-                    return (typeof teleportToAllyHome === 'function') ? teleportToAllyHome(ctx.source.player, StringArgumentType.getString(ctx, 'nation')) : 0
-                })
-            )
+        Commands.literal('allies').executes(function(ctx) {
+            return listAlliances(ctx.source.player)
+        })
     )
+})
+
+// Synchronisation automatique des alliances au démarrage et lors des connexions
+PlayerEvents.loggedIn(function(event) {
+    try {
+        var player = event.player
+        var server = player.server || (player.getServer ? player.getServer() : null)
+        var team = getPlayerNationTeam(player)
+        if (server && team) {
+            var allies = getTeamAllies(server, team.getId())
+            if (allies && allies.length > 0) {
+                for (var i = 0; i < allies.length; i++) {
+                    syncAllianceWithFTBTeams(server, team.getId(), allies[i], true)
+                }
+            }
+        }
+    } catch (e) {}
 })

@@ -1,1 +1,20 @@
-[]
+[
+  {
+    "uuid": "5640109f-1cca-3bda-8c05-381ab142596f",
+    "name": "croksioe",
+    "level": 4,
+    "bypassesPlayerLimit": false
+  },
+  {
+    "uuid": "137b73c3-8c48-3eb6-be1a-5c230d6e1dea",
+    "name": "croksie",
+    "level": 4,
+    "bypassesPlayerLimit": false
+  },
+  {
+    "uuid": "5a87bffc-fc4d-3593-adf8-dfd3c04cac18",
+    "name": "nitram",
+    "level": 4,
+    "bypassesPlayerLimit": false
+  }
+]

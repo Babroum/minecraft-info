@@ -28,7 +28,7 @@ thirdPersonArmPoseAlwaysOn = true
 # Range: 0 ~ 5
 pipScopeRefreshRate = 2
 #Enables pip scopes
-pipScopesEnabled = true
+pipScopesEnabled = false
 #Sets pip scope red color balance. This options works for shaders only.
 # Default: 90
 # Range: 0 ~ 255
@@ -42,7 +42,7 @@ pipScopeColorBalanceGreen = 105
 # Range: 0 ~ 255
 pipScopeColorBalanceBlue = 110
 #Enables custom shaders
-customShadersEnabled = true
+customShadersEnabled = false
 #Enables explosions to destroy blocks
 explosionDestroyBlocksEnabled = true
 #Sets the probability of dropping some item(s) by monster mobs.
@@ -73,7 +73,7 @@ goreSoundsEnabled = true
 #Enables first-person shell ejection effects
 shellEjectionEnabled = true
 #Enables advanced integraiton with Iris shaders
-advancedIrisIntegrationEnabled = true
+advancedIrisIntegrationEnabled = false
 #Enables advanced first person animations
 firstPersonAnimationsEnabled = true
 #Enables advanced third person animations

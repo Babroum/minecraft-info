@@ -28,9 +28,20 @@ function showNationOverview(player) {
         if (bankAccount && bankAccount.getBalanceText) balanceText = bankAccount.getBalanceText().getString()
     } catch (e) {}
 
+    var allyIds = (typeof getTeamAllies === 'function') ? getTeamAllies(server, team.getId()) : []
+    var allyNames = []
+    for (var a = 0; a < allyIds.length; a++) {
+        var aName = (typeof getTeamDisplayName === 'function') ? getTeamDisplayName(server, allyIds[a]) : null
+        if (aName) {
+            allyNames.push(aName)
+        }
+    }
+    var alliesText = allyNames.length > 0 ? ('§b' + allyNames.join('§7, §b') + ' §a(' + allyNames.length + ')') : '§7Aucune'
+
     sendMsg(player, 'Nation', '§6' + teamName + ' §7| Rang : ' + rankLabel + ' §7| Statut : ' + warStatus, '§6')
+    sendMsg(player, 'Alliances', alliesText, '§b')
     sendMsg(player, 'Trésor', 'Solde National : §a' + balanceText, '§2')
-    sendMsg(player, 'Raccourcis', '§f/nation home §7| §f/nation sethome §7| §f/nation tax §7| §f/ally list', '§7')
+    sendMsg(player, 'Raccourcis', '§f/nation home §7| §f/nation tax §7| §f/ally list §7| §f/ally <nation>', '§7')
 
     try {
         var membersList = []
@@ -59,6 +70,7 @@ function showNationOverview(player) {
             bankBalance: balanceText,
             warStatus: warStatus,
             chunkCount: 0,
+            allies: allyNames,
             members: membersList
         }
         player.sendData('open_nation_dashboard', { json: JSON.stringify(nationPayload) })
@@ -241,6 +253,115 @@ ServerEvents.commandRegistry(function(event) {
                         }
                     })
                 )
+            )
+            // Alliances
+            .then(Commands.literal('ally')
+                .then(Commands.literal('list').executes(function(ctx) {
+                    return (typeof listAlliances === 'function') ? listAlliances(ctx.source.player) : 0
+                }))
+                .then(Commands.literal('add')
+                    .then(Commands.argument('nation', StringArgumentType.string())
+                        .executes(function(ctx) {
+                            return (typeof requestAlliance === 'function') ? requestAlliance(ctx.source.player, StringArgumentType.getString(ctx, 'nation')) : 0
+                        })
+                    )
+                )
+                .then(Commands.literal('accept')
+                    .executes(function(ctx) {
+                        return (typeof acceptAlliance === 'function') ? acceptAlliance(ctx.source.player, null) : 0
+                    })
+                    .then(Commands.argument('nation', StringArgumentType.string())
+                        .executes(function(ctx) {
+                            return (typeof acceptAlliance === 'function') ? acceptAlliance(ctx.source.player, StringArgumentType.getString(ctx, 'nation')) : 0
+                        })
+                    )
+                )
+                .then(Commands.literal('decline')
+                    .executes(function(ctx) {
+                        return (typeof declineAlliance === 'function') ? declineAlliance(ctx.source.player, null) : 0
+                    })
+                    .then(Commands.argument('nation', StringArgumentType.string())
+                        .executes(function(ctx) {
+                            return (typeof declineAlliance === 'function') ? declineAlliance(ctx.source.player, StringArgumentType.getString(ctx, 'nation')) : 0
+                        })
+                    )
+                )
+                .then(Commands.literal('break')
+                    .then(Commands.argument('nation', StringArgumentType.string())
+                        .executes(function(ctx) {
+                            var p = ctx.source.player
+                            if (!p) return 0
+                            var t = (typeof getPlayerNationTeam === 'function') ? getPlayerNationTeam(p) : null
+                            if (!t || !isTeamOfficerOrOwner(t, p)) {
+                                sendMsg(p, 'Alliance', 'Seul le Leader ou un Ministre peut rompre une alliance.', '§c')
+                                return 0
+                            }
+                            var tgt = (typeof findTeamByNameOrPlayer === 'function') ? findTeamByNameOrPlayer(p.server, StringArgumentType.getString(ctx, 'nation')) : null
+                            if (!tgt) {
+                                sendMsg(p, 'Alliance', 'Nation introuvable.', '§c')
+                                return 0
+                            }
+                            if (typeof breakAlliance === 'function' && breakAlliance(p.server, t.getId(), tgt.getId(), 'voluntary')) {
+                                sendMsg(p, 'Alliance', 'Traité d\'alliance dissous avec succès.', '§a')
+                            } else {
+                                sendMsg(p, 'Alliance', 'Vous n\'étiez pas allié à cette nation.', '§c')
+                            }
+                            return 1
+                        })
+                    )
+                )
+                .then(Commands.argument('nation', StringArgumentType.string())
+                    .executes(function(ctx) {
+                        return (typeof handleSmartAllyCommand === 'function') ? handleSmartAllyCommand(ctx.source.player, StringArgumentType.getString(ctx, 'nation')) : 0
+                    })
+                )
+                .executes(function(ctx) {
+                    return (typeof listAlliances === 'function') ? listAlliances(ctx.source.player) : 0
+                })
+            )
+            .then(Commands.literal('allies').executes(function(ctx) {
+                return (typeof listAlliances === 'function') ? listAlliances(ctx.source.player) : 0
+            }))
+            // Guerres & Conflits
+            .then(Commands.literal('war')
+                .then(Commands.literal('declare')
+                    .then(Commands.argument('cible', StringArgumentType.greedyString())
+                        .executes(function(ctx) {
+                            return (typeof requestWarDeclaration === 'function') ? requestWarDeclaration(ctx.source.player, StringArgumentType.getString(ctx, 'cible')) : 0
+                        })
+                    )
+                )
+                .then(Commands.literal('peace')
+                    .executes(function(ctx) {
+                        return (typeof handleWarPeace === 'function') ? handleWarPeace(ctx.source.player, null) : 0
+                    })
+                    .then(Commands.argument('cible', StringArgumentType.greedyString())
+                        .executes(function(ctx) {
+                            return (typeof handleWarPeace === 'function') ? handleWarPeace(ctx.source.player, StringArgumentType.getString(ctx, 'cible')) : 0
+                        })
+                    )
+                )
+                .then(Commands.literal('list').executes(function(ctx) {
+                    return (typeof listActiveWars === 'function') ? listActiveWars(ctx.source.player) : 0
+                }))
+                .then(Commands.argument('cible', StringArgumentType.greedyString())
+                    .executes(function(ctx) {
+                        return (typeof handleSmartWarCommand === 'function') ? handleSmartWarCommand(ctx.source.player, StringArgumentType.getString(ctx, 'cible')) : 0
+                    })
+                )
+                .executes(function(ctx) {
+                    return (typeof listActiveWars === 'function') ? listActiveWars(ctx.source.player) : 0
+                })
+            )
+            .then(Commands.literal('guerre')
+                .then(Commands.argument('cible', StringArgumentType.greedyString())
+                    .executes(function(ctx) {
+                        return (typeof handleSmartWarCommand === 'function') ? handleSmartWarCommand(ctx.source.player, StringArgumentType.getString(ctx, 'cible')) : 0
+                    })
+                )
+                .executes(function(ctx) {
+                    return (typeof listActiveWars === 'function') ? listActiveWars(ctx.source.player) : 0
+                })
             )
             // Vue d'ensemble
             .then(Commands.literal('info').executes(function(ctx) {

@@ -124,7 +124,7 @@
     },
     {
       "file": "pointblank-neoforge-1.21-1.12.1.jar",
-      "sha256": "a9c036e651cd2ec5d3ae54cbcefaea36c603723f09bb3083b4785839779921b6"
+      "sha256": "19cb12fae9bfddee54178811172e3e40121d557791da9e0e3a3eb5d499f42c22"
     },
     {
       "file": "railways-0.2.1+neoforge-mc1.21.1.jar",
@@ -345,11 +345,11 @@
     },
     {
       "file": "data/onu_teleport.json",
-      "sha256": "d863195811311b04a169f618494c3a998623bb92242b4eec61e8b66c99eafcbf"
+      "sha256": "ba6423bd9ae9bb2810fbc7a729638ccbf623d328de55dcf306f3286ddcb34572"
     },
     {
       "file": "server_scripts/alliance_system.js",
-      "sha256": "371cda86a210f7edc35d4e01cc0b2d92efec15fa68c5f9faa2e275c2d0dd489b"
+      "sha256": "087f38b861128aff09f4fb1adbf6a32681643a42608acb977fac2831e2e397bd"
     },
     {
       "file": "server_scripts/dimension_blocker.js",
@@ -393,11 +393,11 @@
     },
     {
       "file": "server_scripts/nation_info.js",
-      "sha256": "4500bb4f4cebc3ece8b6d984128ffb0a234b41188a8ac8d8f6ebb92daefe7771"
+      "sha256": "c0f3b3fbc5994ae1d2e1cfea1da19d9284efaf97e379325d4fa6e4f4e82bf101"
     },
     {
       "file": "server_scripts/onu_claims.js",
-      "sha256": "df8f4cfd5bc916338526698464ac314089615b1a5a2f33bda021f353176c20fe"
+      "sha256": "3a9f7763387b7c25bedd87d4c4e26eba1222166acc389c7f9daf626a3de0ddc8"
     },
     {
       "file": "server_scripts/onu_contracts.js",
@@ -421,7 +421,7 @@
     },
     {
       "file": "server_scripts/war_claims_hook.js",
-      "sha256": "3ad594e57cc44265bd08d12505e98268ba524ca59e7e6ab314acf467d95b1241"
+      "sha256": "b0bc1c35fab1699ca88eec2a123dddf67ed97d656fd22e705ca0576da995945e"
     },
     {
       "file": "server_scripts/war_raidhours.js",
@@ -429,7 +429,7 @@
     },
     {
       "file": "server_scripts/war_system.js",
-      "sha256": "68dad17858eac4174e7e983b7bc07ab2e7c96c86fea446523ddc72cd4e994b0e"
+      "sha256": "e1815bd6e987ce36cde38c461090c229b88609aafe46548bdb2857d885cb4175"
     },
     {
       "file": "startup_scripts/economy_items.js",

@@ -62,17 +62,36 @@ function isPositionInOnuClaim(level, blockX, blockZ) {
             if (dimStr && dimStr.indexOf('overworld') === -1) return false
         }
 
-        var chunkX = Math.floor(blockX / 16)
-        var chunkZ = Math.floor(blockZ / 16)
+        var bx = Math.floor(blockX)
+        var bz = Math.floor(blockZ)
 
-        // 1. Vérification dynamique via FTB Chunks
+        // 1. Périmètre de 200 blocs autour du centre ONU (-204, -172)
+        var dx = bx - ONU_HUB_CONFIG.x
+        var dz = bz - ONU_HUB_CONFIG.z
+        if (dx * dx + dz * dz <= (ONU_HUB_CONFIG.radius * ONU_HUB_CONFIG.radius)) return true
+
+        var chunkX = bx >> 4
+        var chunkZ = bz >> 4
+
+        if (typeof isChunkInOnu200Radius === 'function' && isChunkInOnu200Radius(chunkX, chunkZ)) return true
+
+        // 2. Cache direct des 89 chunks officiels du complexe ONU
+        // Rectangle principal : Chunk X [-18 à -11], Chunk Z [-16 à -6] + spawn (1, 1)
+        if (chunkX >= -18 && chunkX <= -11 && chunkZ >= -16 && chunkZ <= -6) {
+            return true
+        }
+        if (chunkX === 1 && chunkZ === 1) {
+            return true
+        }
+
+        // 3. Vérification dynamique via FTB Chunks
         try {
             var chunksApi = Java.loadClass('dev.ftb.mods.ftbchunks.api.FTBChunksAPI').api()
             if (chunksApi && chunksApi.isManagerLoaded()) {
                 var chunkMgr = chunksApi.getManager()
                 var ChunkDimPosClass = Java.loadClass('dev.ftb.mods.ftblibrary.math.ChunkDimPos')
                 var LevelClass = Java.loadClass('net.minecraft.world.level.Level')
-                var dimKey = (typeof level.dimension === 'function') ? level.dimension() : LevelClass.OVERWORLD
+                var dimKey = (level && typeof level.dimension === 'function') ? level.dimension() : LevelClass.OVERWORLD
                 var pos = new ChunkDimPosClass(dimKey, chunkX, chunkZ)
                 var claim = chunkMgr.getChunk(pos)
                 if (claim && claim.getTeamData()) {
@@ -87,15 +106,6 @@ function isPositionInOnuClaim(level, blockX, blockZ) {
                 }
             }
         } catch (apiErr) {}
-
-        // 2. Cache direct des 89 chunks officiels du complexe ONU
-        // Rectangle principal : Chunk X [-18 à -11], Chunk Z [-16 à -6] + spawn (1, 1)
-        if (chunkX >= -18 && chunkX <= -11 && chunkZ >= -16 && chunkZ <= -6) {
-            return true
-        }
-        if (chunkX === 1 && chunkZ === 1) {
-            return true
-        }
     } catch (e) {}
     return false
 }
@@ -497,28 +507,30 @@ try {
             var ez = Number(entity.getZ ? entity.getZ() : entity.z)
             var level = entity.level ? (typeof entity.level === 'function' ? entity.level() : entity.level) : null
 
-            if (isPositionInOnuClaim(level, ex, ez)) {
-                var source = event.getSource()
-                var attacker = source ? (source.getEntity ? source.getEntity() : null) : null
+            var victimInOnu = isPositionInOnuClaim(level, ex, ez)
 
-                // PVP : joueur contre joueur
-                if (entity.isPlayer && entity.isPlayer()) {
-                    if (attacker && attacker.isPlayer && attacker.isPlayer()) {
-                        event.setCanceled(true)
-                        event.setAmount(0)
-                        return
-                    }
-                }
+            var source = event.getSource()
+            var attacker = source ? (source.getEntity ? source.getEntity() : (source.getDirectEntity ? source.getDirectEntity() : null)) : null
+            var attackerInOnu = false
+            if (attacker) {
+                var ax = Number(attacker.getX ? attacker.getX() : attacker.x)
+                var az = Number(attacker.getZ ? attacker.getZ() : attacker.z)
+                attackerInOnu = isPositionInOnuClaim(level, ax, az)
+            }
 
-                // PVE : Protection absolue de tout PNJ / villageois / entité non-monstre
-                if (!entity.isPlayer || !entity.isPlayer()) {
-                    var typeStr = entity.getType ? entity.getType().toString().toLowerCase() : ''
-                    var isHostile = (typeStr.indexOf('zombie') !== -1 || typeStr.indexOf('skeleton') !== -1 || typeStr.indexOf('creeper') !== -1 || typeStr.indexOf('spider') !== -1)
-                    if (!isHostile) {
-                        event.setCanceled(true)
-                        event.setAmount(0)
-                        return
-                    }
+            if (victimInOnu || attackerInOnu) {
+                var typeStr = entity.getType ? entity.getType().toString().toLowerCase() : ''
+                var isHostile = (typeStr.indexOf('zombie') !== -1 || typeStr.indexOf('skeleton') !== -1 || typeStr.indexOf('creeper') !== -1 || typeStr.indexOf('spider') !== -1)
+
+                if (!isHostile) {
+                    event.setCanceled(true)
+                    event.setAmount(0)
+                    return
+                } else if (attackerInOnu && !victimInOnu) {
+                    // Tir depuis l'intérieur du sanctuaire ONU vers l'extérieur
+                    event.setCanceled(true)
+                    event.setAmount(0)
+                    return
                 }
             }
         } catch (de) {}
@@ -540,23 +552,23 @@ EntityEvents.beforeHurt(function(event) {
         var ez = Number(entity.getZ ? entity.getZ() : entity.z)
         var level = entity.level ? (typeof entity.level === 'function' ? entity.level() : entity.level) : null
 
-        if (isPositionInOnuClaim(level, ex, ez)) {
-            var source = event.getSource()
-            var attacker = source ? (source.getEntity ? source.getEntity() : null) : null
+        var victimInOnu = isPositionInOnuClaim(level, ex, ez)
 
-            // PVP
-            if (entity.isPlayer && entity.isPlayer()) {
-                if (attacker && attacker.isPlayer && attacker.isPlayer()) {
-                    event.setDamage(0)
-                    return
-                }
-            }
+        var source = event.getSource()
+        var attacker = source ? (source.getEntity ? source.getEntity() : null) : null
+        var attackerInOnu = false
+        if (attacker) {
+            var ax = Number(attacker.getX ? attacker.getX() : attacker.x)
+            var az = Number(attacker.getZ ? attacker.getZ() : attacker.z)
+            attackerInOnu = isPositionInOnuClaim(level, ax, az)
+        }
 
-            // PVE / PNJ
+        if (victimInOnu || attackerInOnu) {
             var typeStr = entity.getType ? entity.getType().toString().toLowerCase() : ''
             var isHostile = (typeStr.indexOf('zombie') !== -1 || typeStr.indexOf('skeleton') !== -1 || typeStr.indexOf('creeper') !== -1 || typeStr.indexOf('spider') !== -1)
-            if (!isHostile && (!entity.isPlayer || !entity.isPlayer())) {
+            if (!isHostile) {
                 event.setDamage(0)
+                event.cancel()
             }
         }
     } catch (e) {}
@@ -630,6 +642,19 @@ ItemEvents.rightClicked(function(event) {
                 sendClaimMsg(player, 'Zone Internationale : L\'utilisation d\'objets destructeurs est interdite au Hub ONU !', '§c')
                 try { player.playSound('minecraft:entity.villager.no', 1.0, 1.0) } catch (ve) {}
             }
+        }
+    } catch (e) {}
+})
+
+// Neutralisation absolue de toute explosion dans le complexe ONU (missiles, TNT, ballistix)
+LevelEvents.beforeExplosion(function(event) {
+    try {
+        var level = event.level
+        if (!level || level.isClientSide()) return
+        var bx = Math.floor(event.x)
+        var bz = Math.floor(event.z)
+        if (isPositionInOnuClaim(level, bx, bz)) {
+            event.cancel()
         }
     } catch (e) {}
 })

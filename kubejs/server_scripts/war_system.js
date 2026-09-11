@@ -192,7 +192,7 @@ function joinWarCoalition(server, warId, allyTeamId, callingTeamIdStr) {
 }
 
 /**
- * Déclaration de guerre soumise par un Leader (nécessite validation staff + frais)
+ * Déclaration de guerre soumise par un Leader ou un Staff (nécessite validation staff pour les joueurs normaux)
  */
 function requestWarDeclaration(player, targetQuery) {
     if (!player) return 0
@@ -202,7 +202,8 @@ function requestWarDeclaration(player, targetQuery) {
         sendMsg(player, 'Guerre', 'Vous devez appartenir à une nation.', '§c')
         return 0
     }
-    if (!isTeamOwner(team, player)) {
+    var isOp = player.hasPermissions(2)
+    if (!isTeamOwner(team, player) && !isOp) {
         sendMsg(player, 'Guerre', 'Seul le Leader de la nation peut déclarer une guerre.', '§c')
         return 0
     }
@@ -223,8 +224,8 @@ function requestWarDeclaration(player, targetQuery) {
         return 0
     }
 
-    // Débit des frais de déclaration de guerre
-    if (typeof withdrawNationMoney === 'function') {
+    // Débit des frais de déclaration de guerre (gratuit pour les admins/OP en test)
+    if (!isOp && typeof withdrawNationMoney === 'function') {
         var success = withdrawNationMoney(team, player, WAR_COST)
         if (!success) {
             sendMsg(player, 'Guerre', 'Fonds insuffisants ! La déclaration de guerre coûte ' + WAR_COST + ' R au Trésor national.', '§c')
@@ -239,7 +240,7 @@ function requestWarDeclaration(player, targetQuery) {
 
     wars[warId] = {
         id: warId,
-        status: 'PENDING_ADMIN',
+        status: isOp ? 'ACTIVE' : 'PENDING_ADMIN',
         requesterUuid: player.getStringUuid ? player.getStringUuid() : player.uuid.toString(),
         attackerName: atkName,
         defenderName: defName,
@@ -249,12 +250,26 @@ function requestWarDeclaration(player, targetQuery) {
         defenders: [targetTeam.getId().toString()],
         attackerNames: [atkName],
         defenderNames: [defName],
-        costPaid: WAR_COST,
+        costPaid: isOp ? 0 : WAR_COST,
         createdAt: Date.now(),
+        startedAt: isOp ? Date.now() : null,
         peaceRequestedBy: null
     }
 
     saveWarsRegistry(server, wars)
+
+    if (isOp) {
+        broadcastMsg(server, 'Guerre', 'Guerre déclarée (# ' + warId + ') : §e' + atkName + ' §fcontre §e' + defName + ' §f! Les hostilités sont immédiatement ouvertes.', '§c')
+        if (typeof triggerCallToArms === 'function') {
+            var aTeam = getTeamById(server, wars[warId].attackerLeader)
+            var bTeam = getTeamById(server, wars[warId].defenderLeader)
+            if (aTeam && bTeam) {
+                triggerCallToArms(server, warId, aTeam.getId(), bTeam.getId())
+                triggerCallToArms(server, warId, bTeam.getId(), aTeam.getId())
+            }
+        }
+        return 1
+    }
 
     sendMsg(player, 'Guerre', 'Demande de guerre #' + warId + ' contre §e' + defName + ' §fsoumise au Staff (' + WAR_COST + ' R débités).', '§a')
 
@@ -262,19 +277,142 @@ function requestWarDeclaration(player, targetQuery) {
     var staffMsg = Component.literal('§7[§6Staff§7] §fDemande de guerre §e#' + warId + ' §f: §e' + atkName + ' §fVS §e' + defName + ' §7| ')
     try {
         var btnApprove = Component.literal('§a§l[ACCEPTER]')
-            .clickRunCommand('/waradmin approve ' + warId)
+            .clickRunCommand('/war approve ' + warId)
             .hover(Component.literal('§aCliquer pour valider la guerre #' + warId))
         var btnReject = Component.literal('§c§l[REFUSER]')
-            .clickRunCommand('/waradmin reject ' + warId)
+            .clickRunCommand('/war reject ' + warId)
             .hover(Component.literal('§cCliquer pour refuser la guerre #' + warId))
 
         staffMsg = staffMsg.append(btnApprove).append(Component.literal(' ')).append(btnReject)
     } catch (e) {
-        staffMsg = Component.literal('§7[§6Staff§7] §fDemande de guerre #' + warId + ' : §e' + atkName + ' §fVS §e' + defName + ' §f(Tapez §a/waradmin approve ' + warId + '§f)')
+        staffMsg = Component.literal('§7[§6Staff§7] §fDemande de guerre #' + warId + ' : §e' + atkName + ' §fVS §e' + defName + ' §f(Tapez §a/war approve ' + warId + '§f)')
     }
 
     server.tell(staffMsg)
     return 1
+}
+
+/**
+ * Lance immédiatement une guerre active (admin/OP ou test)
+ */
+function startActiveWar(server, player, targetQuery) {
+    if (!server) return 0
+    var team = player ? getPlayerNationTeam(player) : null
+    if (!team) {
+        if (player) sendMsg(player, 'Guerre', 'Vous devez appartenir à une nation.', '§c')
+        return 0
+    }
+    var targetTeam = findTeamByNameOrPlayer(server, targetQuery)
+    if (!targetTeam) {
+        if (player) sendMsg(player, 'Guerre', 'Nation introuvable : "' + targetQuery + '".', '§c')
+        return 0
+    }
+    if (targetTeam.getId().equals(team.getId())) {
+        if (player) sendMsg(player, 'Guerre', 'Vous ne pouvez pas déclarer la guerre à votre propre nation.', '§c')
+        return 0
+    }
+
+    if (isNationAtWarWith(server, team.getId(), targetTeam.getId())) {
+        if (player) sendMsg(player, 'Guerre', 'Votre nation est déjà en guerre active contre ' + targetTeam.getName().getString() + '.', '§c')
+        return 0
+    }
+
+    // Si une demande était en attente, on l'approuve
+    var wars = loadWarsRegistry(server)
+    for (var wid in wars) {
+        if (!wars.hasOwnProperty(wid)) continue
+        var w = wars[wid]
+        if (w.status === 'PENDING_ADMIN') {
+            var hasA = (w.attackers && w.attackers.indexOf(team.getId().toString()) !== -1) || (w.defenders && w.defenders.indexOf(team.getId().toString()) !== -1)
+            var hasB = (w.attackers && w.attackers.indexOf(targetTeam.getId().toString()) !== -1) || (w.defenders && w.defenders.indexOf(targetTeam.getId().toString()) !== -1)
+            if (hasA && hasB) {
+                return approveWar(server, wid) ? 1 : 0
+            }
+        }
+    }
+
+    var warId = getNextWarId(server)
+    var atkName = team.getName().getString()
+    var defName = targetTeam.getName().getString()
+
+    wars[warId] = {
+        id: warId,
+        status: 'ACTIVE',
+        requesterUuid: player ? (player.getStringUuid ? player.getStringUuid() : player.uuid.toString()) : 'console',
+        attackerName: atkName,
+        defenderName: defName,
+        attackerLeader: team.getId().toString(),
+        defenderLeader: targetTeam.getId().toString(),
+        attackers: [team.getId().toString()],
+        defenders: [targetTeam.getId().toString()],
+        attackerNames: [atkName],
+        defenderNames: [defName],
+        costPaid: 0,
+        createdAt: Date.now(),
+        startedAt: Date.now(),
+        peaceRequestedBy: null
+    }
+    saveWarsRegistry(server, wars)
+
+    broadcastMsg(server, 'Guerre', 'Guerre lancée (# ' + warId + ') : §e' + atkName + ' §fcontre §e' + defName + ' §f! Les hostilités sont ouvertes.', '§c')
+    if (typeof triggerCallToArms === 'function') {
+        var aTeam2 = getTeamById(server, wars[warId].attackerLeader)
+        var bTeam2 = getTeamById(server, wars[warId].defenderLeader)
+        if (aTeam2 && bTeam2) {
+            triggerCallToArms(server, warId, aTeam2.getId(), bTeam2.getId())
+            triggerCallToArms(server, warId, bTeam2.getId(), aTeam2.getId())
+        }
+    }
+    return 1
+}
+
+/**
+ * Arrête de force une guerre
+ */
+function forceStopWar(server, player, targetQuery) {
+    if (!server) return 0
+    var w = findWarQuery(server, targetQuery, false)
+    if (w) {
+        w.status = 'ENDED'
+        w.endedAt = Date.now()
+        var wars = loadWarsRegistry(server)
+        wars[w.id] = w
+        saveWarsRegistry(server, wars)
+        broadcastMsg(server, 'Guerre', 'Le conflit #' + w.id + ' a été arrêté par les arbitres fédéraux.', '§6')
+        return 1
+    }
+    if (player) sendMsg(player, 'Guerre', 'Guerre introuvable : "' + targetQuery + '".', '§c')
+    return 0
+}
+
+/**
+ * Commande intelligente /war <cible>
+ */
+function handleSmartWarCommand(player, targetQuery) {
+    if (!player) return 0
+    var server = player.server
+    var team = getPlayerNationTeam(player)
+    if (!team) {
+        sendMsg(player, 'Guerre', 'Vous devez appartenir à une nation.', '§c')
+        return 0
+    }
+
+    var targetTeam = findTeamByNameOrPlayer(server, targetQuery)
+    if (!targetTeam) {
+        sendMsg(player, 'Guerre', 'Nation introuvable : "' + targetQuery + '". Tapez §e/nation list §cpour voir les nations.', '§c')
+        return 0
+    }
+
+    if (isNationAtWarWith(server, team.getId(), targetTeam.getId())) {
+        var war = findActiveWarBetween(server, team.getId(), targetTeam.getId())
+        var warId = war ? war.id : '?'
+        sendMsg(player, 'Guerre #' + warId, 'Vous êtes en guerre §c§lACTIVE§f contre §e' + targetTeam.getName().getString() + '§f !', '§c')
+        sendMsg(player, 'Raid Hours', getRaidHoursStatusText(), '§6')
+        sendMsg(player, 'Paix', 'Pour négocier un traité de paix : §e/war peace ' + targetTeam.getName().getString(), '§a')
+        return 1
+    }
+
+    return requestWarDeclaration(player, targetQuery)
 }
 
 /**
@@ -346,6 +484,26 @@ function handleWarPeace(player, targetQuery) {
     if (!isTeamOfficerOrOwner(team, player)) {
         sendMsg(player, 'Diplomatie', 'Seuls le Leader et les Ministres peuvent négocier la paix.', '§c')
         return 0
+    }
+
+    if (!targetQuery || targetQuery.trim() === '') {
+        var activeWars = getTeamActiveWars(server, team.getId())
+        if (activeWars.length === 1) {
+            var onlyWar = activeWars[0]
+            var myTeamIdStr = team.getId().toString()
+            var isAtk = (onlyWar.attackers.indexOf(myTeamIdStr) !== -1)
+            var oppLeaderId = isAtk ? onlyWar.defenderLeader : onlyWar.attackerLeader
+            var oppTeam = getTeamById(server, oppLeaderId)
+            if (oppTeam) {
+                targetQuery = oppTeam.getName().getString()
+            }
+        } else if (activeWars.length === 0) {
+            sendMsg(player, 'Diplomatie', 'Votre nation n\'est engagée dans aucune guerre active.', '§a')
+            return 0
+        } else {
+            sendMsg(player, 'Diplomatie', 'Précisez la nation avec laquelle négocier la paix : /war peace <nation>', '§e')
+            return 0
+        }
     }
 
     var targetTeam = findTeamByNameOrPlayer(server, targetQuery)
@@ -490,20 +648,56 @@ ServerEvents.commandRegistry(function(event) {
 
     event.register(
         Commands.literal('war')
+            // Démarrage forcé direct d'une guerre (Staff / Tests)
+            .then(Commands.literal('start')
+                .requires(function(source) { return source.hasPermission(2) })
+                .then(Commands.argument('cible', StringArgumentType.greedyString())
+                    .executes(function(ctx) {
+                        return startActiveWar(ctx.source.server, ctx.source.player, StringArgumentType.getString(ctx, 'cible'))
+                    })
+                )
+            )
+            // Arrêt forcé d'une guerre
+            .then(Commands.literal('stop')
+                .requires(function(source) { return source.hasPermission(2) })
+                .executes(function(ctx) {
+                    var wars = loadWarsRegistry(ctx.source.server)
+                    var lastActive = null
+                    for (var id in wars) {
+                        if (wars[id].status === 'ACTIVE') lastActive = wars[id]
+                    }
+                    if (lastActive) {
+                        return forceStopWar(ctx.source.server, ctx.source.player, lastActive.id)
+                    }
+                    if (ctx.source.player) sendMsg(ctx.source.player, 'Guerre', 'Aucune guerre active à arrêter.', '§c')
+                    return 0
+                })
+                .then(Commands.argument('cible', StringArgumentType.greedyString())
+                    .executes(function(ctx) {
+                        return forceStopWar(ctx.source.server, ctx.source.player, StringArgumentType.getString(ctx, 'cible'))
+                    })
+                )
+            )
+            // Déclaration formelle
             .then(Commands.literal('declare')
-                .then(Commands.argument('cible', StringArgumentType.string())
+                .then(Commands.argument('cible', StringArgumentType.greedyString())
                     .executes(function(ctx) {
                         return requestWarDeclaration(ctx.source.player, StringArgumentType.getString(ctx, 'cible'))
                     })
                 )
             )
+            // Traité de paix
             .then(Commands.literal('peace')
-                .then(Commands.argument('cible', StringArgumentType.string())
+                .executes(function(ctx) {
+                    return handleWarPeace(ctx.source.player, null)
+                })
+                .then(Commands.argument('cible', StringArgumentType.greedyString())
                     .executes(function(ctx) {
                         return handleWarPeace(ctx.source.player, StringArgumentType.getString(ctx, 'cible'))
                     })
                 )
             )
+            // Validation staff
             .then(Commands.literal('approve')
                 .requires(function(source) { return source.hasPermission(2) })
                 .executes(function(ctx) {
@@ -515,7 +709,7 @@ ServerEvents.commandRegistry(function(event) {
                     }
                     return success ? 1 : 0
                 })
-                .then(Commands.argument('cible', StringArgumentType.string())
+                .then(Commands.argument('cible', StringArgumentType.greedyString())
                     .executes(function(ctx) {
                         var q = StringArgumentType.getString(ctx, 'cible')
                         var success = approveWar(ctx.source.server, q)
@@ -528,13 +722,14 @@ ServerEvents.commandRegistry(function(event) {
                     })
                 )
             )
+            // Refus staff
             .then(Commands.literal('reject')
                 .requires(function(source) { return source.hasPermission(2) })
                 .executes(function(ctx) {
                     var success = rejectWar(ctx.source.server, null, 'Refusé par administrateur')
                     return success ? 1 : 0
                 })
-                .then(Commands.argument('cible', StringArgumentType.string())
+                .then(Commands.argument('cible', StringArgumentType.greedyString())
                     .executes(function(ctx) {
                         var q = StringArgumentType.getString(ctx, 'cible')
                         var success = rejectWar(ctx.source.server, q, 'Refusé par administrateur')
@@ -559,12 +754,48 @@ ServerEvents.commandRegistry(function(event) {
             .then(Commands.literal('list').executes(function(ctx) {
                 return listActiveWars(ctx.source.player)
             }))
-            .then(Commands.literal('raidhours').executes(function(ctx) {
-                if (ctx.source.player) {
-                    sendMsg(ctx.source.player, 'Raid Hours', getRaidHoursStatusText(), '§6')
-                }
-                return 1
-            }))
+            // Contrôle des Raid Hours
+            .then(Commands.literal('raidhours')
+                .then(Commands.literal('on')
+                    .requires(function(source) { return source.hasPermission(2) })
+                    .executes(function(ctx) {
+                        RAID_CONFIG.forceState = true
+                        broadcastMsg(ctx.source.server, 'Raid Hours', 'Les Raid Hours ont été ACTIVÉES par le Staff ! Les claims ennemis sont vulnérables au minage/siège.', '§c')
+                        return 1
+                    })
+                )
+                .then(Commands.literal('off')
+                    .requires(function(source) { return source.hasPermission(2) })
+                    .executes(function(ctx) {
+                        RAID_CONFIG.forceState = false
+                        broadcastMsg(ctx.source.server, 'Raid Hours', 'Les Raid Hours ont été DÉSACTIVÉES par le Staff. Claims sécurisés.', '§a')
+                        return 1
+                    })
+                )
+                .then(Commands.literal('auto')
+                    .requires(function(source) { return source.hasPermission(2) })
+                    .executes(function(ctx) {
+                        RAID_CONFIG.forceState = null
+                        if (ctx.source.player) sendMsg(ctx.source.player, 'Raid Hours', 'Mode automatique rétabli (' + RAID_CONFIG.startHour + 'h00 - ' + RAID_CONFIG.endHour + 'h00).', '§a')
+                        return 1
+                    })
+                )
+                .executes(function(ctx) {
+                    if (ctx.source.player) {
+                        sendMsg(ctx.source.player, 'Raid Hours', getRaidHoursStatusText(), '§6')
+                        if (ctx.source.player.hasPermissions(2)) {
+                            sendMsg(ctx.source.player, 'Raid Hours Staff', 'Contrôle : §e/war raidhours on §7| §e/war raidhours off §7| §e/war raidhours auto', '§7')
+                        }
+                    }
+                    return 1
+                })
+            )
+            // Commande intelligente directe /war <nation>
+            .then(Commands.argument('cible', StringArgumentType.greedyString())
+                .executes(function(ctx) {
+                    return handleSmartWarCommand(ctx.source.player, StringArgumentType.getString(ctx, 'cible'))
+                })
+            )
             .executes(function(ctx) {
                 return listActiveWars(ctx.source.player)
             })
@@ -573,15 +804,46 @@ ServerEvents.commandRegistry(function(event) {
     // Alias /guerre
     event.register(
         Commands.literal('guerre')
+            .then(Commands.literal('start')
+                .requires(function(source) { return source.hasPermission(2) })
+                .then(Commands.argument('cible', StringArgumentType.greedyString())
+                    .executes(function(ctx) {
+                        return startActiveWar(ctx.source.server, ctx.source.player, StringArgumentType.getString(ctx, 'cible'))
+                    })
+                )
+            )
+            .then(Commands.literal('stop')
+                .requires(function(source) { return source.hasPermission(2) })
+                .executes(function(ctx) {
+                    var wars2 = loadWarsRegistry(ctx.source.server)
+                    var lastActive2 = null
+                    for (var id2 in wars2) {
+                        if (wars2[id2].status === 'ACTIVE') lastActive2 = wars2[id2]
+                    }
+                    if (lastActive2) {
+                        return forceStopWar(ctx.source.server, ctx.source.player, lastActive2.id)
+                    }
+                    if (ctx.source.player) sendMsg(ctx.source.player, 'Guerre', 'Aucune guerre active à arrêter.', '§c')
+                    return 0
+                })
+                .then(Commands.argument('cible', StringArgumentType.greedyString())
+                    .executes(function(ctx) {
+                        return forceStopWar(ctx.source.server, ctx.source.player, StringArgumentType.getString(ctx, 'cible'))
+                    })
+                )
+            )
             .then(Commands.literal('declare')
-                .then(Commands.argument('cible', StringArgumentType.string())
+                .then(Commands.argument('cible', StringArgumentType.greedyString())
                     .executes(function(ctx) {
                         return requestWarDeclaration(ctx.source.player, StringArgumentType.getString(ctx, 'cible'))
                     })
                 )
             )
             .then(Commands.literal('peace')
-                .then(Commands.argument('cible', StringArgumentType.string())
+                .executes(function(ctx) {
+                    return handleWarPeace(ctx.source.player, null)
+                })
+                .then(Commands.argument('cible', StringArgumentType.greedyString())
                     .executes(function(ctx) {
                         return handleWarPeace(ctx.source.player, StringArgumentType.getString(ctx, 'cible'))
                     })
@@ -592,7 +854,7 @@ ServerEvents.commandRegistry(function(event) {
                 .executes(function(ctx) {
                     return approveWar(ctx.source.server, null) ? 1 : 0
                 })
-                .then(Commands.argument('cible', StringArgumentType.string())
+                .then(Commands.argument('cible', StringArgumentType.greedyString())
                     .executes(function(ctx) {
                         return approveWar(ctx.source.server, StringArgumentType.getString(ctx, 'cible')) ? 1 : 0
                     })
@@ -601,6 +863,43 @@ ServerEvents.commandRegistry(function(event) {
             .then(Commands.literal('list').executes(function(ctx) {
                 return listActiveWars(ctx.source.player)
             }))
+            .then(Commands.literal('raidhours')
+                .then(Commands.literal('on')
+                    .requires(function(source) { return source.hasPermission(2) })
+                    .executes(function(ctx) {
+                        RAID_CONFIG.forceState = true
+                        broadcastMsg(ctx.source.server, 'Raid Hours', 'Les Raid Hours ont été ACTIVÉES par le Staff !', '§c')
+                        return 1
+                    })
+                )
+                .then(Commands.literal('off')
+                    .requires(function(source) { return source.hasPermission(2) })
+                    .executes(function(ctx) {
+                        RAID_CONFIG.forceState = false
+                        broadcastMsg(ctx.source.server, 'Raid Hours', 'Les Raid Hours ont été DÉSACTIVÉES par le Staff.', '§a')
+                        return 1
+                    })
+                )
+                .then(Commands.literal('auto')
+                    .requires(function(source) { return source.hasPermission(2) })
+                    .executes(function(ctx) {
+                        RAID_CONFIG.forceState = null
+                        if (ctx.source.player) sendMsg(ctx.source.player, 'Raid Hours', 'Mode automatique rétabli.', '§a')
+                        return 1
+                    })
+                )
+                .executes(function(ctx) {
+                    if (ctx.source.player) {
+                        sendMsg(ctx.source.player, 'Raid Hours', getRaidHoursStatusText(), '§6')
+                    }
+                    return 1
+                })
+            )
+            .then(Commands.argument('cible', StringArgumentType.greedyString())
+                .executes(function(ctx) {
+                    return handleSmartWarCommand(ctx.source.player, StringArgumentType.getString(ctx, 'cible'))
+                })
+            )
             .executes(function(ctx) {
                 return listActiveWars(ctx.source.player)
             })
