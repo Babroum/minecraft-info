@@ -175,6 +175,8 @@ function breakAlliance(server, teamAId, teamBId, reason) {
 
         if (reason === 'defection') {
             broadcastMsg(server, 'Diplomatie', 'La nation §e' + nameB + ' §fa refusé l\'appel aux armes de §e' + nameA + '§f. Le traité d\'alliance est rompu.', '§c')
+        } else if (reason === 'war_declaration') {
+            broadcastMsg(server, 'Diplomatie', 'Trahison ! Le traité d\'alliance entre §e' + nameA + ' §fet §e' + nameB + ' §fa été rompu unilatéralement par une déclaration de guerre !', '§c')
         } else {
             broadcastMsg(server, 'Diplomatie', 'Le traité d\'alliance entre §e' + nameA + ' §fet §e' + nameB + ' §fest rompu.', '§e')
         }

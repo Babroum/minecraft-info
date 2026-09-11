@@ -268,6 +268,13 @@ function requestWarDeclaration(player, targetQuery) {
         return 0
     }
 
+    // Trahison / rupture automatique de l'alliance si les deux nations étaient alliées
+    if (typeof isAllied === 'function' && isAllied(server, team.getId(), targetTeam.getId())) {
+        if (typeof breakAlliance === 'function') {
+            breakAlliance(server, team.getId(), targetTeam.getId(), 'war_declaration')
+        }
+    }
+
     // Débit des frais de déclaration de guerre (gratuit pour les admins/OP en test)
     if (!isOp && typeof withdrawNationMoney === 'function') {
         var success = withdrawNationMoney(team, player, WAR_COST)
@@ -363,6 +370,13 @@ function startActiveWar(server, player, targetQuery) {
     if (isNationAtWarWith(server, team.getId(), targetTeam.getId())) {
         if (player) sendMsg(player, 'Guerre', 'Votre nation est déjà en guerre active contre ' + targetTeam.getName().getString() + '.', '§c')
         return 0
+    }
+
+    // Trahison / rupture automatique de l'alliance si les deux nations étaient alliées
+    if (typeof isAllied === 'function' && isAllied(server, team.getId(), targetTeam.getId())) {
+        if (typeof breakAlliance === 'function') {
+            breakAlliance(server, team.getId(), targetTeam.getId(), 'war_declaration')
+        }
     }
 
     // Si une demande était en attente, on l'approuve
@@ -481,6 +495,13 @@ function approveWar(server, warQuery) {
     setWar(wars, w.id, w)
     saveWarsRegistry(server, wars)
 
+    // Rupture automatique de l'alliance entre les belligérants s'ils étaient alliés
+    if (typeof isAllied === 'function' && isAllied(server, w.attackerLeader, w.defenderLeader)) {
+        if (typeof breakAlliance === 'function') {
+            breakAlliance(server, w.attackerLeader, w.defenderLeader, 'war_declaration')
+        }
+    }
+
     var nameA = w.attackerName || getTeamDisplayName(server, w.attackerLeader)
     var nameB = w.defenderName || getTeamDisplayName(server, w.defenderLeader)
 
@@ -533,59 +554,67 @@ function handleWarPeace(player, targetQuery) {
         sendMsg(player, 'Diplomatie', 'Vous devez appartenir à une nation.', '§c')
         return 0
     }
-    if (!isTeamOfficerOrOwner(team, player)) {
+    var isOp = player.hasPermissions(2)
+    if (!isOp && !isTeamOfficerOrOwner(team, player)) {
         sendMsg(player, 'Diplomatie', 'Seuls le Leader et les Ministres peuvent négocier la paix.', '§c')
         return 0
     }
 
-    if (!targetQuery || targetQuery.trim() === '') {
+    var war = null
+
+    // 1. Si une cible ou un ID de guerre est fourni
+    if (targetQuery && targetQuery.trim() !== '') {
+        var q = targetQuery.trim().toLowerCase()
+        if (q === 'force' && isOp) {
+            var activeWars = getTeamActiveWars(server, team.getId())
+            if (activeWars.length > 0) war = activeWars[0]
+        } else {
+            war = findWarQuery(server, targetQuery, false)
+            if (!war) {
+                var tTeam = findTeamByNameOrPlayer(server, targetQuery)
+                if (tTeam) {
+                    war = findActiveWarBetween(server, team.getId(), tTeam.getId())
+                }
+            }
+        }
+    }
+
+    // 2. Si aucune cible ou non trouvée, prend la guerre active de l'équipe
+    if (!war) {
         var activeWars = getTeamActiveWars(server, team.getId())
         if (activeWars.length === 1) {
-            var onlyWar = activeWars[0]
-            var myTeamIdStr = team.getId().toString()
-            var isAtk = (onlyWar.attackers.indexOf(myTeamIdStr) !== -1)
-            var oppLeaderId = isAtk ? onlyWar.defenderLeader : onlyWar.attackerLeader
-            var oppTeam = getTeamById(server, oppLeaderId)
-            if (oppTeam) {
-                targetQuery = oppTeam.getName().getString()
-            }
+            war = activeWars[0]
         } else if (activeWars.length === 0) {
             sendMsg(player, 'Diplomatie', 'Votre nation n\'est engagée dans aucune guerre active.', '§a')
             return 0
         } else {
-            sendMsg(player, 'Diplomatie', 'Précisez la nation avec laquelle négocier la paix : /war peace <nation>', '§e')
+            sendMsg(player, 'Diplomatie', 'Plusieurs guerres actives ! Précisez la nation : /war peace <nation>', '§e')
             return 0
         }
     }
 
-    var targetTeam = findTeamByNameOrPlayer(server, targetQuery)
-    if (!targetTeam) {
-        sendMsg(player, 'Diplomatie', 'Nation introuvable : "' + targetQuery + '".', '§c')
-        return 0
-    }
-
-    var war = findActiveWarBetween(server, team.getId(), targetTeam.getId())
-    if (!war) {
-        sendMsg(player, 'Diplomatie', 'Votre nation n\'est pas en guerre contre ' + targetTeam.getName().getString() + '.', '§c')
+    if (!war || war.status !== 'ACTIVE') {
+        sendMsg(player, 'Diplomatie', 'Aucun conflit actif correspondant trouvé.', '§c')
         return 0
     }
 
     var myTeamIdStr = team.getId().toString()
-    var isAttackerCamp = (war.attackers.indexOf(myTeamIdStr) !== -1)
+    var isAttackerCamp = (war.attackers && war.attackers.indexOf(myTeamIdStr) !== -1)
     var myCamp = isAttackerCamp ? 'attackers' : 'defenders'
     var opposingCamp = isAttackerCamp ? 'defenders' : 'attackers'
 
-    if (war.peaceRequestedBy === opposingCamp) {
-        // Paix acceptée mutuellement !
+    // Si le camp adverse a déjà proposé la paix, OU si c'est un Admin/OP qui signe la paix
+    if (war.peaceRequestedBy === opposingCamp || isOp) {
         war.status = 'ENDED'
         war.endedAt = Date.now()
+        war.peaceRequestedBy = null
         var wars = loadWarsRegistry(server)
         setWar(wars, war.id, war)
         saveWarsRegistry(server, wars)
 
         var nameA = war.attackerName || getTeamDisplayName(server, war.attackerLeader)
         var nameB = war.defenderName || getTeamDisplayName(server, war.defenderLeader)
-        broadcastMsg(server, 'Diplomatie', 'Le traité de paix entre §e' + nameA + ' §fet §e' + nameB + ' §fa été ratifié. Fin des hostilités !', '§a')
+        broadcastMsg(server, 'Diplomatie', 'Le traité de paix entre §e' + nameA + ' §fet §e' + nameB + ' §fa été ratifié ! Fin des hostilités.', '§a')
         return 1
     } else if (war.peaceRequestedBy === myCamp) {
         sendMsg(player, 'Diplomatie', 'Votre camp a déjà proposé la paix. En attente de la ratification adverse.', '§e')
@@ -815,6 +844,29 @@ ServerEvents.commandRegistry(function(event) {
             }))
             // Contrôle des Raid Hours
             .then(Commands.literal('raidhours')
+                .then(Commands.literal('force')
+                    .requires(function(source) { return source.hasPermission(2) })
+                    .executes(function(ctx) {
+                        RAID_CONFIG.forceState = true
+                        broadcastMsg(ctx.source.server, 'Raid Hours', 'Les Raid Hours ont été FORCÉES et ACTIVÉES par le Staff ! Les claims ennemis sont vulnérables au minage/siège.', '§c')
+                        return 1
+                    })
+                    .then(Commands.literal('on').executes(function(ctx) {
+                        RAID_CONFIG.forceState = true
+                        broadcastMsg(ctx.source.server, 'Raid Hours', 'Les Raid Hours ont été ACTIVÉES par le Staff ! Les claims ennemis sont vulnérables au minage/siège.', '§c')
+                        return 1
+                    }))
+                    .then(Commands.literal('off').executes(function(ctx) {
+                        RAID_CONFIG.forceState = false
+                        broadcastMsg(ctx.source.server, 'Raid Hours', 'Les Raid Hours ont été DÉSACTIVÉES par le Staff. Claims sécurisés.', '§a')
+                        return 1
+                    }))
+                    .then(Commands.literal('auto').executes(function(ctx) {
+                        RAID_CONFIG.forceState = null
+                        if (ctx.source.player) sendMsg(ctx.source.player, 'Raid Hours', 'Mode automatique rétabli (' + RAID_CONFIG.startHour + 'h00 - ' + RAID_CONFIG.endHour + 'h00).', '§a')
+                        return 1
+                    }))
+                )
                 .then(Commands.literal('on')
                     .requires(function(source) { return source.hasPermission(2) })
                     .executes(function(ctx) {
@@ -843,7 +895,7 @@ ServerEvents.commandRegistry(function(event) {
                     if (ctx.source.player) {
                         sendMsg(ctx.source.player, 'Raid Hours', getRaidHoursStatusText(), '§6')
                         if (ctx.source.player.hasPermissions(2)) {
-                            sendMsg(ctx.source.player, 'Raid Hours Staff', 'Contrôle : §e/war raidhours on §7| §e/war raidhours off §7| §e/war raidhours auto', '§7')
+                            sendMsg(ctx.source.player, 'Raid Hours Staff', 'Contrôle : §e/war raidhours force §7(ou §eon§7/§eoff§7/§eauto§7)', '§7')
                         }
                     }
                     return 1

@@ -101,6 +101,11 @@ ServerEvents.commandRegistry(function(event) {
                     return 1
                 }))
                 .then(Commands.literal('force')
+                    .executes(function(ctx) {
+                        RAID_CONFIG.forceState = true
+                        broadcastMsg(ctx.source.server, 'Raid Hours', 'Les Raid Hours ont été FORCÉES et ACTIVÉES par le Staff ! Les claims ennemis sont vulnérables.', '§c')
+                        return 1
+                    })
                     .then(Commands.literal('on').executes(function(ctx) {
                         RAID_CONFIG.forceState = true
                         broadcastMsg(ctx.source.server, 'Raid Hours', 'Les Raid Hours ont été ACTIVÉES par le Staff ! Les claims ennemis sont vulnérables.', '§c')
@@ -117,6 +122,21 @@ ServerEvents.commandRegistry(function(event) {
                         return 1
                     }))
                 )
+                .then(Commands.literal('on').executes(function(ctx) {
+                    RAID_CONFIG.forceState = true
+                    broadcastMsg(ctx.source.server, 'Raid Hours', 'Les Raid Hours ont été ACTIVÉES par le Staff ! Les claims ennemis sont vulnérables.', '§c')
+                    return 1
+                }))
+                .then(Commands.literal('off').executes(function(ctx) {
+                    RAID_CONFIG.forceState = false
+                    broadcastMsg(ctx.source.server, 'Raid Hours', 'Les Raid Hours ont été DÉSACTIVÉES par le Staff. Claims sécurisés.', '§a')
+                    return 1
+                }))
+                .then(Commands.literal('auto').executes(function(ctx) {
+                    RAID_CONFIG.forceState = null
+                    sendMsg(ctx.source.player, 'WarAdmin', 'Mode automatique rétabli (' + RAID_CONFIG.startHour + 'h - ' + RAID_CONFIG.endHour + 'h).', '§a')
+                    return 1
+                }))
                 .then(Commands.literal('set')
                     .then(Commands.argument('debut', IntegerArgumentType.integer(0, 23))
                         .then(Commands.argument('fin', IntegerArgumentType.integer(0, 23))

@@ -51,7 +51,7 @@ function isChunkInOnu200Radius(chunkX, chunkZ) {
 }
 
 /**
- * Vérifie si une coordonnée (blockX, blockZ) se situe dans un chunk officiellement claim par l'ONU
+ * Vérifie si une coordonnée (blockX, blockZ) se situe STRICTEMENT dans un chunk officiel de l'ONU
  */
 function isPositionInOnuClaim(level, blockX, blockZ) {
     try {
@@ -64,27 +64,10 @@ function isPositionInOnuClaim(level, blockX, blockZ) {
 
         var bx = Math.floor(blockX)
         var bz = Math.floor(blockZ)
-
-        // 1. Périmètre de 200 blocs autour du centre ONU (-204, -172)
-        var dx = bx - ONU_HUB_CONFIG.x
-        var dz = bz - ONU_HUB_CONFIG.z
-        if (dx * dx + dz * dz <= (ONU_HUB_CONFIG.radius * ONU_HUB_CONFIG.radius)) return true
-
         var chunkX = bx >> 4
         var chunkZ = bz >> 4
 
-        if (typeof isChunkInOnu200Radius === 'function' && isChunkInOnu200Radius(chunkX, chunkZ)) return true
-
-        // 2. Cache direct des 89 chunks officiels du complexe ONU
-        // Rectangle principal : Chunk X [-18 à -11], Chunk Z [-16 à -6] + spawn (1, 1)
-        if (chunkX >= -18 && chunkX <= -11 && chunkZ >= -16 && chunkZ <= -6) {
-            return true
-        }
-        if (chunkX === 1 && chunkZ === 1) {
-            return true
-        }
-
-        // 3. Vérification dynamique via FTB Chunks
+        // 1. Vérification dynamique via FTB Chunks (priorité absolue)
         try {
             var chunksApi = Java.loadClass('dev.ftb.mods.ftbchunks.api.FTBChunksAPI').api()
             if (chunksApi && chunksApi.isManagerLoaded()) {
@@ -103,9 +86,19 @@ function isPositionInOnuClaim(level, blockX, blockZ) {
                         var teamIdStr = String(team.getId())
                         if (teamIdStr === 'cb440140-1d45-4eff-9b10-2bab3d457d63') return true
                     }
+                    return false
                 }
+                return false
             }
         } catch (apiErr) {}
+
+        // 2. Cache de secours (uniquement si FTB Chunks n'est pas initialisé)
+        if (chunkX >= -18 && chunkX <= -11 && chunkZ >= -16 && chunkZ <= -6) {
+            return true
+        }
+        if (chunkX === 1 && chunkZ === 1) {
+            return true
+        }
     } catch (e) {}
     return false
 }
@@ -454,6 +447,47 @@ try {
 // -----------------------------------------------------------------------------
 
 // Blocage du coup/clic gauche sur les PNJ ou entre joueurs (AttackEntityEvent)
+/**
+ * Détecte de façon exhaustive les monstres et créatures hostiles
+ */
+function isHostileMob(entity) {
+    if (!entity) return false
+    try {
+        var EnemyClass = Java.loadClass('net.minecraft.world.entity.monster.Enemy')
+        if (EnemyClass && EnemyClass.isAssignableFrom(entity.getClass())) {
+            return true
+        }
+    } catch (e) {}
+    try {
+        if (typeof entity.isEnemy === 'function' && entity.isEnemy()) return true
+    } catch (e2) {}
+    try {
+        var typeStr = entity.getType ? String(entity.getType().toString()).toLowerCase() : ''
+        if (typeStr.indexOf('zombie') !== -1 || typeStr.indexOf('skeleton') !== -1 || 
+            typeStr.indexOf('creeper') !== -1 || typeStr.indexOf('spider') !== -1 || 
+            typeStr.indexOf('slime') !== -1 || typeStr.indexOf('phantom') !== -1 || 
+            typeStr.indexOf('witch') !== -1 || typeStr.indexOf('pillager') !== -1 || 
+            typeStr.indexOf('vindicator') !== -1 || typeStr.indexOf('evoker') !== -1 || 
+            typeStr.indexOf('ravager') !== -1 || typeStr.indexOf('enderman') !== -1 || 
+            typeStr.indexOf('drowned') !== -1 || typeStr.indexOf('husk') !== -1 || 
+            typeStr.indexOf('stray') !== -1 || typeStr.indexOf('silverfish') !== -1 ||
+            typeStr.indexOf('blaze') !== -1 || typeStr.indexOf('ghast') !== -1 ||
+            typeStr.indexOf('hoglin') !== -1 || typeStr.indexOf('piglin_brute') !== -1 ||
+            typeStr.indexOf('warden') !== -1 || typeStr.indexOf('wither') !== -1 ||
+            typeStr.indexOf('guardian') !== -1 || typeStr.indexOf('shulker') !== -1 ||
+            typeStr.indexOf('monster') !== -1) {
+            return true
+        }
+    } catch (e3) {}
+    return false
+}
+
+// -----------------------------------------------------------------------------
+// 2. DÉSACTIVATION DU PVP & PROTECTION DES PNJ DANS LES CLAIMS DE L'ONU
+// (Les monstres hostiles PEUVENT être tués par les joueurs !)
+// -----------------------------------------------------------------------------
+
+// Blocage du coup/clic gauche sur les PNJ ou entre joueurs (AttackEntityEvent)
 try {
     NativeEvents.onEvent(Java.loadClass('net.neoforged.neoforge.event.entity.player.AttackEntityEvent'), function(event) {
         try {
@@ -469,23 +503,24 @@ try {
             var level = target.level ? (typeof target.level === 'function' ? target.level() : target.level) : null
 
             if (isPositionInOnuClaim(level, tx, tz)) {
-                // 1. PVP Désactivé
+                // 1. Autoriser d'attaquer et tuer les monstres / mobs hostiles
+                if (isHostileMob(target)) {
+                    return // Attaque permise !
+                }
+
+                // 2. PVP Désactivé
                 if (target.isPlayer && target.isPlayer()) {
                     event.setCanceled(true)
-                    sendClaimMsg(player, 'Zone Neutre Internationale : Le combat entre joueurs (PVP) est STRICTEMENT DÉSACTIVÉ dans les territoires de l\'ONU !', '§c')
+                    sendClaimMsg(player, 'Zone Neutre : Le combat entre joueurs (PVP) est STRICTEMENT DÉSACTIVÉ dans les claims de l\'ONU !', '§c')
                     try { player.playSound('minecraft:entity.villager.no', 1.0, 1.0) } catch (ve) {}
                     return
                 }
 
-                // 2. PVE / PNJ totalement invulnérables
-                var typeStr = target.getType ? target.getType().toString().toLowerCase() : ''
-                var isHostile = (typeStr.indexOf('zombie') !== -1 || typeStr.indexOf('skeleton') !== -1 || typeStr.indexOf('creeper') !== -1 || typeStr.indexOf('spider') !== -1)
-                if (!isHostile) {
-                    event.setCanceled(true)
-                    sendClaimMsg(player, 'Zone Neutre Internationale : Les PNJ et personnels de l\'ONU sont TOTALEMENT INVULNÉRABLES !', '§c')
-                    try { player.playSound('minecraft:entity.villager.no', 1.0, 1.0) } catch (ve) {}
-                    return
-                }
+                // 3. PVE Pacifique / PNJ protégés
+                event.setCanceled(true)
+                sendClaimMsg(player, 'Zone Neutre : Les PNJ et animaux sont protégés dans les claims de l\'ONU !', '§c')
+                try { player.playSound('minecraft:entity.villager.no', 1.0, 1.0) } catch (ve) {}
+                return
             }
         } catch (ae) {}
     })
@@ -519,15 +554,20 @@ try {
             }
 
             if (victimInOnu || attackerInOnu) {
-                var typeStr = entity.getType ? entity.getType().toString().toLowerCase() : ''
-                var isHostile = (typeStr.indexOf('zombie') !== -1 || typeStr.indexOf('skeleton') !== -1 || typeStr.indexOf('creeper') !== -1 || typeStr.indexOf('spider') !== -1)
+                // 1. Les monstres hostiles peuvent subir des dégâts et être tués
+                if (isHostileMob(entity)) {
+                    return // Dégâts autorisés sur les monstres !
+                }
 
-                if (!isHostile) {
+                // 2. Tir depuis l'intérieur des claims ONU vers l'extérieur : bloqué
+                if (attackerInOnu && !victimInOnu) {
                     event.setCanceled(true)
                     event.setAmount(0)
                     return
-                } else if (attackerInOnu && !victimInOnu) {
-                    // Tir depuis l'intérieur du sanctuaire ONU vers l'extérieur
+                }
+
+                // 3. Joueurs et PNJ protégés dans les claims ONU
+                if (victimInOnu) {
                     event.setCanceled(true)
                     event.setAmount(0)
                     return
@@ -564,12 +604,11 @@ EntityEvents.beforeHurt(function(event) {
         }
 
         if (victimInOnu || attackerInOnu) {
-            var typeStr = entity.getType ? entity.getType().toString().toLowerCase() : ''
-            var isHostile = (typeStr.indexOf('zombie') !== -1 || typeStr.indexOf('skeleton') !== -1 || typeStr.indexOf('creeper') !== -1 || typeStr.indexOf('spider') !== -1)
-            if (!isHostile) {
-                event.setDamage(0)
-                event.cancel()
+            if (isHostileMob(entity)) {
+                return // Dégâts autorisés sur les monstres !
             }
+            event.setDamage(0)
+            event.cancel()
         }
     } catch (e) {}
 })
