@@ -349,7 +349,7 @@
     },
     {
       "file": "data/nation_taxes.json",
-      "sha256": "9402e34c48557fc3c5e6cc88344adc3b7c6d1d69cdd71160d173f91986d64037"
+      "sha256": "4139d235b420f80ee3c672cd7c5ab5a93e901bd2c41aa62ca22c9ab97b0f3516"
     },
     {
       "file": "data/onu_teleport.json",
@@ -357,7 +357,7 @@
     },
     {
       "file": "data/wars.json",
-      "sha256": "4a65ae51baa2f8575cb33014048d5dfe470dabbbed5ca6634ad319003a87add1"
+      "sha256": "ba91f7155c3f1edbdd58505b2686fd82bfb022e3cd8f4b88f900e23d3373f71b"
     },
     {
       "file": "server_scripts/alliance_system.js",
@@ -401,7 +401,7 @@
     },
     {
       "file": "server_scripts/nation_homes.js",
-      "sha256": "b99c682129069d3c8fd8fbaac3230b6606aeb5be0218d70d49b03c2bfce82636"
+      "sha256": "f5681332a506f846155913b063b519fc99ac7c8dc1dd10b0e41da3a1336adec8"
     },
     {
       "file": "server_scripts/nation_info.js",
@@ -409,7 +409,7 @@
     },
     {
       "file": "server_scripts/onu_claims.js",
-      "sha256": "09fdcd7d6c580f97e8107396c4404b6d180ed497b646603852a8cadd9b6d78f1"
+      "sha256": "3f2c0cc782dc5c8d95aaec02c47b7d2e2f8b40809b60828a696bdd3584862cb7"
     },
     {
       "file": "server_scripts/onu_contracts.js",
@@ -433,7 +433,7 @@
     },
     {
       "file": "server_scripts/war_claims_hook.js",
-      "sha256": "578e8d4f0ca8db8fed2337bc8f4b15c435cdcaa78d7045cea6154c586266be99"
+      "sha256": "db04a7f4cf668c640e80b770aeef59d71782ec3ff7663ec4b16a6eb8eb1d3bb1"
     },
     {
       "file": "server_scripts/war_raidhours.js",

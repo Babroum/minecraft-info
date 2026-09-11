@@ -24,7 +24,7 @@ if (fs.existsSync(serverDataDir)) {
     }
 }
 
-function copyDirRecursive(src, dest, skipDataOverwrite = false, skipDataDir = false) {
+function copyDirRecursive(src, dest, isDataDir = false, skipDataDir = false) {
     if (!fs.existsSync(dest)) {
         fs.mkdirSync(dest, { recursive: true });
     }
@@ -38,13 +38,13 @@ function copyDirRecursive(src, dest, skipDataOverwrite = false, skipDataDir = fa
 
         const srcPath = path.join(src, entry.name);
         const destPath = path.join(dest, entry.name);
+        const isData = isDataDir || (entry.name === "data");
 
         if (entry.isDirectory()) {
-            const isData = (entry.name === "data");
-            copyDirRecursive(srcPath, destPath, isData || skipDataOverwrite, skipDataDir);
+            copyDirRecursive(srcPath, destPath, isData, skipDataDir);
         } else {
-            if (skipDataOverwrite && fs.existsSync(destPath)) {
-                // Ne jamais écraser les données actives du serveur si elles existent déjà
+            // Seuls les fichiers dans le dossier "data" ne doivent pas écraser les données actives non-vides du serveur
+            if (isData && fs.existsSync(destPath)) {
                 const existing = fs.readFileSync(destPath, "utf8").trim();
                 if (existing && existing !== "{}") {
                     continue;
@@ -56,7 +56,7 @@ function copyDirRecursive(src, dest, skipDataOverwrite = false, skipDataDir = fa
 }
 
 console.log(`Synchronisation de ${srcDir} vers ${destDir}...`);
-copyDirRecursive(srcDir, destDir, true, false);
+copyDirRecursive(srcDir, destDir, false, false);
 console.log("Synchronisation vers le serveur terminée avec succès !");
 
 const appData = process.env.APPDATA;

@@ -58,6 +58,25 @@ ServerEvents.commandRegistry(function(event) {
                 )
             )
             .then(Commands.literal('forcestop')
+                .executes(function(ctx) {
+                    var server = ctx.source.server
+                    var wars = loadWarsRegistry(server)
+                    var lastActive = null
+                    for (var id in wars) {
+                        var w = getWar(wars, id)
+                        if (w && w.status === 'ACTIVE') lastActive = w
+                    }
+                    if (lastActive) {
+                        lastActive.status = 'ENDED'
+                        lastActive.endedAt = Date.now()
+                        setWar(wars, lastActive.id, lastActive)
+                        saveWarsRegistry(server, wars)
+                        broadcastMsg(server, 'WarAdmin', 'Le conflit #' + lastActive.id + ' a été arrêté de force par les arbitres fédéraux.', '§6')
+                        return 1
+                    }
+                    sendMsg(ctx.source.player, 'WarAdmin', 'Aucune guerre active à arrêter.', '§c')
+                    return 0
+                })
                 .then(Commands.argument('cible', StringArgumentType.string())
                     .executes(function(ctx) {
                         var target = StringArgumentType.getString(ctx, 'cible')
@@ -65,6 +84,7 @@ ServerEvents.commandRegistry(function(event) {
                         var w = findWarQuery(server, target, false)
                         if (w) {
                             w.status = 'ENDED'
+                            w.endedAt = Date.now()
                             var wars = loadWarsRegistry(server)
                             setWar(wars, w.id, w)
                             saveWarsRegistry(server, wars)
@@ -73,6 +93,16 @@ ServerEvents.commandRegistry(function(event) {
                         }
                         sendMsg(ctx.source.player, 'WarAdmin', 'Guerre introuvable.', '§c')
                         return 0
+                    })
+                )
+            )
+            .then(Commands.literal('peace')
+                .executes(function(ctx) {
+                    return (typeof handleWarPeace === 'function') ? handleWarPeace(ctx.source.player, 'force') : 0
+                })
+                .then(Commands.argument('cible', StringArgumentType.string())
+                    .executes(function(ctx) {
+                        return (typeof handleWarPeace === 'function') ? handleWarPeace(ctx.source.player, StringArgumentType.getString(ctx, 'cible')) : 0
                     })
                 )
             )

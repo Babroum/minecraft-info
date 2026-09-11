@@ -1,6 +1,6 @@
 {
 	"1": {
-		"id": "1",
+		"id": 1,
 		"status": "ENDED",
 		"requesterUuid": "137b73c3-8c48-3eb6-be1a-5c230d6e1dea",
 		"attackerName": "France",
@@ -26,8 +26,8 @@
 		"endedAt": 1789125149761
 	},
 	"2": {
-		"id": "2",
-		"status": "ACTIVE",
+		"id": 2,
+		"status": "ENDED",
 		"requesterUuid": "137b73c3-8c48-3eb6-be1a-5c230d6e1dea",
 		"attackerName": "France",
 		"defenderName": "guiguilapute",
@@ -48,6 +48,7 @@
 		"costPaid": 2500,
 		"createdAt": 1789125378469,
 		"startedAt": 1789125382154,
-		"peaceRequestedBy": "attackers"
+		"peaceRequestedBy": null,
+		"endedAt": 1789126343202
 	}
 }

@@ -99,7 +99,7 @@ function setNationHome(team, player) {
         var pz = Math.round(Number(player.getZ ? player.getZ() : player.z) * 10) / 10
 
         if (isPlayerInOnuZone(player) || isCoordsInOnuZone(dimStr, px, pz)) {
-            sendMsg(player, 'ONU', 'Zone Internationale : Il est strictement INTERDIT de poser un Home de nation dans le sanctuaire de l\'ONU (rayon de 200 blocs autour de -204, -172).', '§c')
+            sendMsg(player, 'ONU', 'Zone Internationale : Il est strictement INTERDIT de poser un Home de nation dans la zone des 200 mètres autour de l\'ONU (-204, -172).', '§c')
             try { player.playSound('minecraft:entity.villager.no', 1.0, 1.0) } catch (ve) {}
             return 0
         }
@@ -260,20 +260,12 @@ function isCoordsInOnuZone(dimStr, x, z) {
     var nz = Number(z)
     if (isNaN(nx) || isNaN(nz)) return false
 
-    // 1. Rayon de 200 blocs autour du Hub ONU (-204, -172)
-    var dx = nx - ONU_HUB_X
-    var dz = nz - ONU_HUB_Z
-    var distSq = dx * dx + dz * dz
-    if (distSq <= 40000) return true
-    if (Math.abs(dx) <= 200 && Math.abs(dz) <= 200) return true
+    // 1. Zone carrée de 200 mètres (400x400 blocs) autour du Hub ONU (-204, -172)
+    var dx = Math.abs(nx - ONU_HUB_X)
+    var dz = Math.abs(nz - ONU_HUB_Z)
+    if (dx <= 200 && dz <= 200) return true
 
-    // 2. Chunks officiellement revendiqués par l'ONU (89 chunks)
-    var chunkX = Math.floor(nx / 16)
-    var chunkZ = Math.floor(nz / 16)
-    if (chunkX >= -18 && chunkX <= -11 && chunkZ >= -16 && chunkZ <= -6) return true
-    if (chunkX === 1 && chunkZ === 1) return true
-
-    // 3. API FTB Chunks dynamique si disponible
+    // 2. Chunks revendiqués par l'ONU (détection dynamique via FTB Chunks)
     if (typeof isPositionInOnuClaim === 'function') {
         try {
             if (isPositionInOnuClaim(null, nx, nz)) return true
@@ -346,7 +338,7 @@ function teleportPlayerToCoords(player, homeData, label) {
 function teleportToNationHome(player) {
     if (!player) return 0
     if (isPlayerInOnuZone(player)) {
-        sendMsg(player, 'ONU', 'Zone Internationale : Les téléportations sont STRICTEMENT INTERDITES dans un rayon de 200 blocs autour de l\'ONU (-204, -172). Repartez par train ou par la route !', '§c')
+        sendMsg(player, 'ONU', 'Zone Internationale : Les téléportations sont STRICTEMENT INTERDITES dans la zone des 200 mètres autour de l\'ONU (-204, -172). Repartez par train ou par la route !', '§c')
         try { player.playSound('minecraft:entity.villager.no', 1.0, 1.0) } catch (ve) {}
         return 0
     }
@@ -369,7 +361,7 @@ function teleportToNationHome(player) {
 function teleportToAllyHome(player, targetNationName) {
     if (!player) return 0
     if (isPlayerInOnuZone(player)) {
-        sendMsg(player, 'ONU', 'Zone Internationale : Les téléportations sont STRICTEMENT INTERDITES dans un rayon de 200 blocs autour de l\'ONU (-204, -172). Repartez par train ou par la route !', '§c')
+        sendMsg(player, 'ONU', 'Zone Internationale : Les téléportations sont STRICTEMENT INTERDITES dans la zone des 200 mètres autour de l\'ONU (-204, -172). Repartez par train ou par la route !', '§c')
         try { player.playSound('minecraft:entity.villager.no', 1.0, 1.0) } catch (ve) {}
         return 0
     }

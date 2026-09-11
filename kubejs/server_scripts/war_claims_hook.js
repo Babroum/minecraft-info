@@ -9,10 +9,7 @@ var warBypassedPlayers = {} // { [playerUuidStr]: true }
  * Vérifie si le joueur est un administrateur en mode Créatif (bâtisseur/staff)
  */
 function isCreativeAdmin(player) {
-    if (!player) return false
-    try {
-        if (player.isCreative && player.isCreative()) return true
-    } catch (e) {}
+    // Les admins et le mode créatif n'ont pas de superpouvoir pour casser les chunks claims
     return false
 }
 
@@ -97,10 +94,8 @@ function setPlayerWarBypass(player, enable) {
             warBypassedPlayers[uuidStr] = true
         } else {
             delete warBypassedPlayers[uuidStr]
-            // Ne conserve le bypass que si le joueur est un administrateur en Créatif
-            if (!isCreativeAdmin(player)) {
-                chunkMgr.setBypassProtection(pUuid, false)
-            }
+            // Révocation systématique du bypass (aucun passe-droit créatif/admin sur les claims)
+            chunkMgr.setBypassProtection(pUuid, false)
         }
     } catch (e) {
         console.error('[WarClaimsHook] Erreur setPlayerWarBypass : ' + e)
@@ -143,11 +138,9 @@ function shouldAllowWarAction(player, level, blockX, blockZ) {
         return false // Pas en guerre
     }
 
-    // 3. Période de raid obligatoire (18h-22h) - autoriser bypass uniquement en créatif
+    // 3. Période de raid obligatoire (18h-22h)
     if (typeof isRaidHourActive === 'function' && !isRaidHourActive()) {
-        if (!isCreativeAdmin(player)) {
-            return false // Hors Raid Hours pour les joueurs en survie (même OP)
-        }
+        return false // Hors Raid Hours
     }
 
     return true
@@ -198,19 +191,16 @@ ServerEvents.tick(function(event) {
                 if (uuidStr && warBypassedPlayers[uuidStr]) {
                     setPlayerWarBypass(p, false)
                 }
-                // Si le joueur est en Survie et n'est pas dans une action de guerre autorisée,
-                // s'assurer que le bypass FTB Chunks est bien désactivé (notamment pour les OPs)
-                if (!isCreativeAdmin(p)) {
-                    try {
-                        var chunksApi = Java.loadClass('dev.ftb.mods.ftbchunks.api.FTBChunksAPI').api()
-                        if (chunksApi && chunksApi.isManagerLoaded()) {
-                            var chunkMgr = chunksApi.getManager()
-                            if (chunkMgr && pUuid && chunkMgr.getBypassProtection(pUuid)) {
-                                chunkMgr.setBypassProtection(pUuid, false)
-                            }
+                // S'assurer que le bypass FTB Chunks est bien désactivé pour tous les joueurs en dehors de la guerre
+                try {
+                    var chunksApi = Java.loadClass('dev.ftb.mods.ftbchunks.api.FTBChunksAPI').api()
+                    if (chunksApi && chunksApi.isManagerLoaded()) {
+                        var chunkMgr = chunksApi.getManager()
+                        if (chunkMgr && pUuid && chunkMgr.getBypassProtection(pUuid)) {
+                            chunkMgr.setBypassProtection(pUuid, false)
                         }
-                    } catch (be) {}
-                }
+                    }
+                } catch (be) {}
             }
         }
     } catch (te) {}
@@ -241,9 +231,7 @@ BlockEvents.broken(function(event) {
         // Protection inviolable de l'ONU
         if (isLevelOverworld(level)) {
             if (typeof isPositionInOnuClaim === 'function' && isPositionInOnuClaim(level, bx, bz)) {
-                if (!isCreativeAdmin(player)) {
-                    event.cancel()
-                }
+                event.cancel()
                 return
             }
         }
@@ -253,9 +241,7 @@ BlockEvents.broken(function(event) {
 
         var sName = defendingTeam.getShortName() ? String(defendingTeam.getShortName()).toLowerCase() : ''
         if (sName === 'onu' || String(defendingTeam.getId()) === 'cb440140-1d45-4eff-9b10-2bab3d457d63') {
-            if (!isCreativeAdmin(player)) {
-                event.cancel()
-            }
+            event.cancel()
             return
         }
 
@@ -266,8 +252,8 @@ BlockEvents.broken(function(event) {
 
         // Vérification de guerre déclarée
         if (attackingTeam && typeof isNationAtWarWith === 'function' && isNationAtWarWith(server, attackingTeam.getId(), defendingTeam.getId())) {
-            if ((typeof isRaidHourActive === 'function' && isRaidHourActive()) || isCreativeAdmin(player)) {
-                // MINAGE AUTORISÉ DANS LES CHUNKS ENNEMIS PENDANT LES RAID HOURS (OU ADMIN EN CRÉATIF) !
+            if (typeof isRaidHourActive === 'function' && isRaidHourActive()) {
+                // MINAGE AUTORISÉ DANS LES CHUNKS ENNEMIS PENDANT LES RAID HOURS !
                 return
             } else {
                 sendMsg(player, 'Guerre', 'Le minage en territoire ennemi n\'est autorisé que pendant les Raid Hours (18h-22h) ! Tapez §e/war raidhours force §cpour tester en tant que Staff.', '§c')
@@ -277,10 +263,8 @@ BlockEvents.broken(function(event) {
         }
 
         // Si le joueur n'est pas en guerre contre cette nation, annulation ferme
-        if (!isCreativeAdmin(player)) {
-            sendMsg(player, 'Territoire', 'Ce territoire appartient à §6' + defendingTeam.getName().getString() + '§c. Vous n\'êtes pas en guerre !', '§c')
-            event.cancel()
-        }
+        sendMsg(player, 'Territoire', 'Ce territoire appartient à §6' + defendingTeam.getName().getString() + '§c. Vous n\'êtes pas en guerre !', '§c')
+        event.cancel()
     } catch (err) {
         if (String(err).indexOf('EventExit') === -1) {
             console.error('[WarClaimsHook] Erreur broken : ' + err)
@@ -306,9 +290,7 @@ BlockEvents.placed(function(event) {
         // Protection inviolable de l'ONU
         if (isLevelOverworld(level)) {
             if (typeof isPositionInOnuClaim === 'function' && isPositionInOnuClaim(level, bx, bz)) {
-                if (!isCreativeAdmin(player)) {
-                    event.cancel()
-                }
+                event.cancel()
                 return
             }
         }
@@ -318,9 +300,7 @@ BlockEvents.placed(function(event) {
 
         var sName = defendingTeam.getShortName() ? String(defendingTeam.getShortName()).toLowerCase() : ''
         if (sName === 'onu' || String(defendingTeam.getId()) === 'cb440140-1d45-4eff-9b10-2bab3d457d63') {
-            if (!isCreativeAdmin(player)) {
-                event.cancel()
-            }
+            event.cancel()
             return
         }
 
@@ -331,8 +311,8 @@ BlockEvents.placed(function(event) {
 
         // Vérification de guerre déclarée
         if (attackingTeam && typeof isNationAtWarWith === 'function' && isNationAtWarWith(server, attackingTeam.getId(), defendingTeam.getId())) {
-            if ((typeof isRaidHourActive === 'function' && isRaidHourActive()) || isCreativeAdmin(player)) {
-                // Pose autorisée en Raid Hours pour le siège (ou test admin en créatif)
+            if (typeof isRaidHourActive === 'function' && isRaidHourActive()) {
+                // Pose autorisée en Raid Hours pour le siège
                 return
             } else {
                 sendMsg(player, 'Guerre', 'La pose de blocs en territoire ennemi n\'est autorisée qu\'en Raid Hours (18h-22h) ! Tapez §e/war raidhours force §cpour tester en tant que Staff.', '§c')
@@ -342,9 +322,7 @@ BlockEvents.placed(function(event) {
         }
 
         // Non allié et non ennemi : refus catégorique
-        if (!isCreativeAdmin(player)) {
-            event.cancel()
-        }
+        event.cancel()
     } catch (err) {
         if (String(err).indexOf('EventExit') === -1) {
             console.error('[WarClaimsHook] Erreur placed : ' + err)
@@ -406,9 +384,8 @@ LevelEvents.beforeExplosion(function(event) {
         }
 
         var isRaid = (typeof isRaidHourActive === 'function' && isRaidHourActive())
-        var isCreative = attackingPlayer && isCreativeAdmin(attackingPlayer)
 
-        if (!isRaid && !isCreative) {
+        if (!isRaid) {
             event.cancel()
             return
         }
@@ -416,11 +393,9 @@ LevelEvents.beforeExplosion(function(event) {
         if (attackingPlayer) {
             var attackingTeam = (typeof getPlayerNationTeam === 'function') ? getPlayerNationTeam(attackingPlayer) : null
             if (!attackingTeam || !isNationAtWarWith(server, attackingTeam.getId(), defendingTeam.getId())) {
-                if (!isCreative) {
-                    sendMsg(attackingPlayer, 'Défense', 'Cette nation n\'est pas votre ennemie de guerre déclarée ! Dégâts impossibles.', '§c')
-                    event.cancel()
-                    return
-                }
+                sendMsg(attackingPlayer, 'Défense', 'Cette nation n\'est pas votre ennemie de guerre déclarée ! Dégâts impossibles.', '§c')
+                event.cancel()
+                return
             }
             // Ennemi confirmé en période de Raid Hours : DÉGÂTS D'EXPLOSION AUTORISÉS !
         }
@@ -455,7 +430,7 @@ BlockEvents.rightClicked(function(event) {
         if (!attackingTeam) return
 
         if (typeof isNationAtWarWith === 'function' && isNationAtWarWith(server, attackingTeam.getId(), defendingTeam.getId())) {
-            if ((typeof isRaidHourActive === 'function' && isRaidHourActive()) || isCreativeAdmin(player)) {
+            if (typeof isRaidHourActive === 'function' && isRaidHourActive()) {
                 var blockId = event.block.getId()
                 // Autoriser l'ouverture des portes, trappes, boutons et leviers ennemis en Raid Hours
                 if (blockId.includes('door') || blockId.includes('trapdoor') || blockId.includes('button') || blockId.includes('lever') || blockId.includes('gate')) {

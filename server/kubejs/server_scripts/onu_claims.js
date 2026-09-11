@@ -42,16 +42,15 @@ function isChunkInOnu200Radius(chunkX, chunkZ) {
     if (minZ > hz) closestZ = minZ
     else if (maxZ < hz) closestZ = maxZ
 
-    var dx = closestX - hx
-    var dz = closestZ - hz
-    var distSq = dx * dx + dz * dz
-    if (distSq <= 40000) return true
-    if (Math.abs(dx) <= 200 && Math.abs(dz) <= 200) return true
+    var dx = Math.abs(closestX - hx)
+    var dz = Math.abs(closestZ - hz)
+    // Périmètre carré de 200 blocs autour du hub (-204, -172)
+    if (dx <= 200 && dz <= 200) return true
     return false
 }
 
 /**
- * Vérifie si une coordonnée (blockX, blockZ) se situe dans un chunk officiellement claim par l'ONU
+ * Vérifie si une coordonnée (blockX, blockZ) se situe STRICTEMENT dans un chunk officiel de l'ONU
  */
 function isPositionInOnuClaim(level, blockX, blockZ) {
     try {
@@ -64,48 +63,41 @@ function isPositionInOnuClaim(level, blockX, blockZ) {
 
         var bx = Math.floor(blockX)
         var bz = Math.floor(blockZ)
-
-        // 1. Périmètre de 200 blocs autour du centre ONU (-204, -172)
-        var dx = bx - ONU_HUB_CONFIG.x
-        var dz = bz - ONU_HUB_CONFIG.z
-        if (dx * dx + dz * dz <= (ONU_HUB_CONFIG.radius * ONU_HUB_CONFIG.radius)) return true
-
         var chunkX = bx >> 4
         var chunkZ = bz >> 4
 
-        if (typeof isChunkInOnu200Radius === 'function' && isChunkInOnu200Radius(chunkX, chunkZ)) return true
-
-        // 2. Cache direct des 89 chunks officiels du complexe ONU
-        // Rectangle principal : Chunk X [-18 à -11], Chunk Z [-16 à -6] + spawn (1, 1)
-        if (chunkX >= -18 && chunkX <= -11 && chunkZ >= -16 && chunkZ <= -6) {
-            return true
-        }
-        if (chunkX === 1 && chunkZ === 1) {
-            return true
-        }
-
-        // 3. Vérification dynamique via FTB Chunks
+        // Vérification 100% dynamique via FTB Chunks (chunks claimés manuellement en mod admin)
         try {
             var chunksApi = Java.loadClass('dev.ftb.mods.ftbchunks.api.FTBChunksAPI').api()
             if (chunksApi && chunksApi.isManagerLoaded()) {
                 var chunkMgr = chunksApi.getManager()
-                var ChunkDimPosClass = Java.loadClass('dev.ftb.mods.ftblibrary.math.ChunkDimPos')
-                var LevelClass = Java.loadClass('net.minecraft.world.level.Level')
-                var dimKey = (level && typeof level.dimension === 'function') ? level.dimension() : LevelClass.OVERWORLD
-                var pos = new ChunkDimPosClass(dimKey, chunkX, chunkZ)
-                var claim = chunkMgr.getChunk(pos)
-                if (claim && claim.getTeamData()) {
-                    var team = claim.getTeamData().getTeam()
-                    if (team) {
-                        var sName = team.getShortName() ? String(team.getShortName()).toLowerCase() : ''
-                        if (sName === 'onu') return true
-                        if (cachedOnuTeam && team.getId().equals(cachedOnuTeam.getId())) return true
-                        var teamIdStr = String(team.getId())
-                        if (teamIdStr === 'cb440140-1d45-4eff-9b10-2bab3d457d63') return true
+                if (chunkMgr) {
+                    var LevelClass = Java.loadClass('net.minecraft.world.level.Level')
+                    var dimKey = LevelClass.OVERWORLD
+                    try {
+                        if (level && typeof level.dimension === 'function') dimKey = level.dimension()
+                        else if (level && level.dimension) dimKey = level.dimension
+                    } catch (dErr) {}
+
+                    var ChunkDimPosClass = Java.loadClass('dev.ftb.mods.ftblibrary.math.ChunkDimPos')
+                    var pos = new ChunkDimPosClass(dimKey, chunkX, chunkZ)
+                    var claim = chunkMgr.getChunk(pos)
+                    if (claim && claim.getTeamData()) {
+                        var team = claim.getTeamData().getTeam()
+                        if (team) {
+                            var sName = team.getShortName() ? String(team.getShortName()).toLowerCase() : ''
+                            if (sName === 'onu') return true
+                            if (cachedOnuTeam && team.getId().equals(cachedOnuTeam.getId())) return true
+                            var teamIdStr = String(team.getId())
+                            if (teamIdStr === 'cb440140-1d45-4eff-9b10-2bab3d457d63') return true
+                        }
                     }
+                    return false
                 }
             }
         } catch (apiErr) {}
+
+        return false
     } catch (e) {}
     return false
 }
@@ -246,58 +238,12 @@ function claimOnuChunks(server) {
         var teamData = chunkMgr.getOrCreateData(onuTeam)
         if (!teamData) return
 
-        // Augmenter largement les quotas de l'ONU
-        try { teamData.setExtraClaimChunks(100) } catch (eq) {}
-        try { teamData.setExtraForceLoadChunks(100) } catch (ef) {}
+        // Augmenter largement les quotas de l'ONU pour les claims manuels en mod admin
+        try { teamData.setExtraClaimChunks(500) } catch (eq) {}
+        try { teamData.setExtraForceLoadChunks(500) } catch (ef) {}
 
-        var Level = Java.loadClass('net.minecraft.world.level.Level')
-        var ChunkDimPosClass = Java.loadClass('dev.ftb.mods.ftblibrary.math.ChunkDimPos')
-        var overworldDim = Level.OVERWORLD
-        // Libérer les anciens claims éventuels à (0, 0) si l'ONU les possédait
-        for (var oldCx = -2; oldCx <= 1; oldCx++) {
-            for (var oldCz = -2; oldCz <= 1; oldCz++) {
-                var oldPos = new ChunkDimPosClass(overworldDim, oldCx, oldCz)
-                var oldClaim = chunkMgr.getChunk(oldPos)
-                if (oldClaim) {
-                    var oldOwner = oldClaim.getTeamData().getTeam()
-                    if (oldOwner && oldOwner.getId().equals(onuTeam.getId())) {
-                        try { oldClaim.unclaim(src, false) } catch (uOld) {}
-                    }
-                }
-            }
-        }
-
-        // Revendiquer les 16 chunks (4x4) centrés sur X: -204, Z: -172 (cx: -14..-11, cz: -12..-9)
-        var claimedCount = 0
-        for (var cx = -14; cx <= -11; cx++) {
-            for (var cz = -12; cz <= -9; cz++) {
-                var pos = new ChunkDimPosClass(overworldDim, cx, cz)
-                var existingClaim = chunkMgr.getChunk(pos)
-
-                if (existingClaim) {
-                    var ownerTeam = existingClaim.getTeamData().getTeam()
-                    if (ownerTeam && ownerTeam.getId().equals(onuTeam.getId())) {
-                        if (!existingClaim.isActuallyForceLoaded()) {
-                            try { teamData.forceLoad(src, pos, false, false) } catch (fe) {}
-                        }
-                        claimedCount++
-                        continue
-                    } else {
-                        // Éjection de tout squat civil ou militaire dans le sanctuaire ONU
-                        try { existingClaim.unclaim(src, false) } catch (ue) {}
-                    }
-                }
-
-                try {
-                    teamData.claim(src, pos, false)
-                    try { teamData.forceLoad(src, pos, false, false) } catch (fle) {}
-                    claimedCount++
-                } catch (claimErr) {
-                    console.error('[ONU Claims] Erreur claim (' + cx + ', ' + cz + ') : ' + claimErr)
-                }
-            }
-        }
-        console.info('[ONU Claims] ' + claimedCount + '/16 chunks du Hub ONU (-204, -172) revendiqués et sécurisés.')
+        // Les chunks de l'ONU sont claimés manuellement en mod admin.
+        // On ne force plus de grille fixe et on ne libère aucun chunk claimé par l'ONU.
     } catch (err) {
         console.error('[ONU Claims] Erreur claimOnuChunks : ' + err)
     }
@@ -454,6 +400,47 @@ try {
 // -----------------------------------------------------------------------------
 
 // Blocage du coup/clic gauche sur les PNJ ou entre joueurs (AttackEntityEvent)
+/**
+ * Détecte de façon exhaustive les monstres et créatures hostiles
+ */
+function isHostileMob(entity) {
+    if (!entity) return false
+    try {
+        var EnemyClass = Java.loadClass('net.minecraft.world.entity.monster.Enemy')
+        if (EnemyClass && EnemyClass.isAssignableFrom(entity.getClass())) {
+            return true
+        }
+    } catch (e) {}
+    try {
+        if (typeof entity.isEnemy === 'function' && entity.isEnemy()) return true
+    } catch (e2) {}
+    try {
+        var typeStr = entity.getType ? String(entity.getType().toString()).toLowerCase() : ''
+        if (typeStr.indexOf('zombie') !== -1 || typeStr.indexOf('skeleton') !== -1 || 
+            typeStr.indexOf('creeper') !== -1 || typeStr.indexOf('spider') !== -1 || 
+            typeStr.indexOf('slime') !== -1 || typeStr.indexOf('phantom') !== -1 || 
+            typeStr.indexOf('witch') !== -1 || typeStr.indexOf('pillager') !== -1 || 
+            typeStr.indexOf('vindicator') !== -1 || typeStr.indexOf('evoker') !== -1 || 
+            typeStr.indexOf('ravager') !== -1 || typeStr.indexOf('enderman') !== -1 || 
+            typeStr.indexOf('drowned') !== -1 || typeStr.indexOf('husk') !== -1 || 
+            typeStr.indexOf('stray') !== -1 || typeStr.indexOf('silverfish') !== -1 ||
+            typeStr.indexOf('blaze') !== -1 || typeStr.indexOf('ghast') !== -1 ||
+            typeStr.indexOf('hoglin') !== -1 || typeStr.indexOf('piglin_brute') !== -1 ||
+            typeStr.indexOf('warden') !== -1 || typeStr.indexOf('wither') !== -1 ||
+            typeStr.indexOf('guardian') !== -1 || typeStr.indexOf('shulker') !== -1 ||
+            typeStr.indexOf('monster') !== -1) {
+            return true
+        }
+    } catch (e3) {}
+    return false
+}
+
+// -----------------------------------------------------------------------------
+// 2. DÉSACTIVATION DU PVP & PROTECTION DES PNJ DANS LES CLAIMS DE L'ONU
+// (Les monstres hostiles PEUVENT être tués par les joueurs !)
+// -----------------------------------------------------------------------------
+
+// Blocage du coup/clic gauche sur les PNJ ou entre joueurs (AttackEntityEvent)
 try {
     NativeEvents.onEvent(Java.loadClass('net.neoforged.neoforge.event.entity.player.AttackEntityEvent'), function(event) {
         try {
@@ -469,23 +456,24 @@ try {
             var level = target.level ? (typeof target.level === 'function' ? target.level() : target.level) : null
 
             if (isPositionInOnuClaim(level, tx, tz)) {
-                // 1. PVP Désactivé
+                // 1. Autoriser d'attaquer et tuer les monstres / mobs hostiles
+                if (isHostileMob(target)) {
+                    return // Attaque permise !
+                }
+
+                // 2. PVP Désactivé
                 if (target.isPlayer && target.isPlayer()) {
                     event.setCanceled(true)
-                    sendClaimMsg(player, 'Zone Neutre Internationale : Le combat entre joueurs (PVP) est STRICTEMENT DÉSACTIVÉ dans les territoires de l\'ONU !', '§c')
+                    sendClaimMsg(player, 'Zone Neutre : Le combat entre joueurs (PVP) est STRICTEMENT DÉSACTIVÉ dans les claims de l\'ONU !', '§c')
                     try { player.playSound('minecraft:entity.villager.no', 1.0, 1.0) } catch (ve) {}
                     return
                 }
 
-                // 2. PVE / PNJ totalement invulnérables
-                var typeStr = target.getType ? target.getType().toString().toLowerCase() : ''
-                var isHostile = (typeStr.indexOf('zombie') !== -1 || typeStr.indexOf('skeleton') !== -1 || typeStr.indexOf('creeper') !== -1 || typeStr.indexOf('spider') !== -1)
-                if (!isHostile) {
-                    event.setCanceled(true)
-                    sendClaimMsg(player, 'Zone Neutre Internationale : Les PNJ et personnels de l\'ONU sont TOTALEMENT INVULNÉRABLES !', '§c')
-                    try { player.playSound('minecraft:entity.villager.no', 1.0, 1.0) } catch (ve) {}
-                    return
-                }
+                // 3. PVE Pacifique / PNJ protégés
+                event.setCanceled(true)
+                sendClaimMsg(player, 'Zone Neutre : Les PNJ et animaux sont protégés dans les claims de l\'ONU !', '§c')
+                try { player.playSound('minecraft:entity.villager.no', 1.0, 1.0) } catch (ve) {}
+                return
             }
         } catch (ae) {}
     })
@@ -509,29 +497,18 @@ try {
 
             var victimInOnu = isPositionInOnuClaim(level, ex, ez)
 
-            var source = event.getSource()
-            var attacker = source ? (source.getEntity ? source.getEntity() : (source.getDirectEntity ? source.getDirectEntity() : null)) : null
-            var attackerInOnu = false
-            if (attacker) {
-                var ax = Number(attacker.getX ? attacker.getX() : attacker.x)
-                var az = Number(attacker.getZ ? attacker.getZ() : attacker.z)
-                attackerInOnu = isPositionInOnuClaim(level, ax, az)
-            }
-
-            if (victimInOnu || attackerInOnu) {
-                var typeStr = entity.getType ? entity.getType().toString().toLowerCase() : ''
-                var isHostile = (typeStr.indexOf('zombie') !== -1 || typeStr.indexOf('skeleton') !== -1 || typeStr.indexOf('creeper') !== -1 || typeStr.indexOf('spider') !== -1)
-
-                if (!isHostile) {
-                    event.setCanceled(true)
-                    event.setAmount(0)
-                    return
-                } else if (attackerInOnu && !victimInOnu) {
-                    // Tir depuis l'intérieur du sanctuaire ONU vers l'extérieur
-                    event.setCanceled(true)
-                    event.setAmount(0)
-                    return
+            // Seules les victimes dans les claims réels de l'ONU sont protégées.
+            // Le PvP et le PvE sont 100% actifs partout ailleurs sur la carte !
+            if (victimInOnu) {
+                // 1. Les monstres hostiles peuvent subir des dégâts et être tués
+                if (isHostileMob(entity)) {
+                    return // Dégâts autorisés sur les monstres !
                 }
+
+                // 2. Joueurs et PNJ protégés dans les claims ONU
+                event.setCanceled(true)
+                event.setAmount(0)
+                return
             }
         } catch (de) {}
     })
@@ -554,22 +531,12 @@ EntityEvents.beforeHurt(function(event) {
 
         var victimInOnu = isPositionInOnuClaim(level, ex, ez)
 
-        var source = event.getSource()
-        var attacker = source ? (source.getEntity ? source.getEntity() : null) : null
-        var attackerInOnu = false
-        if (attacker) {
-            var ax = Number(attacker.getX ? attacker.getX() : attacker.x)
-            var az = Number(attacker.getZ ? attacker.getZ() : attacker.z)
-            attackerInOnu = isPositionInOnuClaim(level, ax, az)
-        }
-
-        if (victimInOnu || attackerInOnu) {
-            var typeStr = entity.getType ? entity.getType().toString().toLowerCase() : ''
-            var isHostile = (typeStr.indexOf('zombie') !== -1 || typeStr.indexOf('skeleton') !== -1 || typeStr.indexOf('creeper') !== -1 || typeStr.indexOf('spider') !== -1)
-            if (!isHostile) {
-                event.setDamage(0)
-                event.cancel()
+        if (victimInOnu) {
+            if (isHostileMob(entity)) {
+                return // Dégâts autorisés sur les monstres !
             }
+            event.setDamage(0)
+            event.cancel()
         }
     } catch (e) {}
 })
@@ -586,9 +553,6 @@ BlockEvents.broken(function(event) {
 
         if (isBlockInOnuHub(level, pos.getX(), pos.getZ())) {
             var player = event.player
-            if (player && player.hasPermissions(2)) {
-                return // Les administrateurs OP peuvent construire et modifier
-            }
             event.cancel()
             if (player) {
                 sendClaimMsg(player, 'Zone Internationale : La destruction de blocs est strictement interdite dans le complexe de l\'ONU !', '§c')
@@ -611,9 +575,6 @@ BlockEvents.placed(function(event) {
 
         if (isBlockInOnuHub(level, pos.getX(), pos.getZ())) {
             var player = event.player
-            if (player && player.hasPermissions(2)) {
-                return // Les administrateurs OP peuvent construire et modifier
-            }
             event.cancel()
             if (player) {
                 sendClaimMsg(player, 'Zone Internationale : La pose de blocs est strictement interdite dans le sanctuaire de l\'ONU !', '§c')
@@ -631,7 +592,7 @@ BlockEvents.placed(function(event) {
 ItemEvents.rightClicked(function(event) {
     try {
         var player = event.player
-        if (!player || player.hasPermissions(2)) return
+        if (!player) return
         var item = event.item
         if (!item || item.isEmpty()) return
 
@@ -664,9 +625,18 @@ LevelEvents.beforeExplosion(function(event) {
 })
 
 // -----------------------------------------------------------------------------
-// 4. INITIALISATION
+// 4. INITIALISATION & RECHARGEMENT (/reload)
 // -----------------------------------------------------------------------------
 ServerEvents.loaded(function(event) {
     claimOnuChunks(event.server)
     cleanupUnauthorizedOnuZoneClaims(event.server)
+})
+
+var onuReloadTriggered = false
+ServerEvents.tick(function(event) {
+    if (!onuReloadTriggered && event.server) {
+        onuReloadTriggered = true
+        claimOnuChunks(event.server)
+        cleanupUnauthorizedOnuZoneClaims(event.server)
+    }
 })

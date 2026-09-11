@@ -42,11 +42,10 @@ function isChunkInOnu200Radius(chunkX, chunkZ) {
     if (minZ > hz) closestZ = minZ
     else if (maxZ < hz) closestZ = maxZ
 
-    var dx = closestX - hx
-    var dz = closestZ - hz
-    var distSq = dx * dx + dz * dz
-    if (distSq <= 40000) return true
-    if (Math.abs(dx) <= 200 && Math.abs(dz) <= 200) return true
+    var dx = Math.abs(closestX - hx)
+    var dz = Math.abs(closestZ - hz)
+    // Périmètre carré de 200 blocs autour du hub (-204, -172)
+    if (dx <= 200 && dz <= 200) return true
     return false
 }
 
@@ -67,7 +66,7 @@ function isPositionInOnuClaim(level, blockX, blockZ) {
         var chunkX = bx >> 4
         var chunkZ = bz >> 4
 
-        // 1. Vérification dynamique via FTB Chunks (priorité absolue)
+        // Vérification 100% dynamique via FTB Chunks (chunks claimés manuellement en mod admin)
         try {
             var chunksApi = Java.loadClass('dev.ftb.mods.ftbchunks.api.FTBChunksAPI').api()
             if (chunksApi && chunksApi.isManagerLoaded()) {
@@ -93,16 +92,12 @@ function isPositionInOnuClaim(level, blockX, blockZ) {
                             if (teamIdStr === 'cb440140-1d45-4eff-9b10-2bab3d457d63') return true
                         }
                     }
-                    // Si le chunk est sauvage ou appartient à une autre nation, ce n'est PAS l'ONU
                     return false
                 }
             }
         } catch (apiErr) {}
 
-        // 2. Cache de secours (uniquement pour les 16 chunks officiels de l'ONU : cx -14..-11, cz -12..-9)
-        if (chunkX >= -14 && chunkX <= -11 && chunkZ >= -12 && chunkZ <= -9) {
-            return true
-        }
+        return false
     } catch (e) {}
     return false
 }
@@ -243,58 +238,12 @@ function claimOnuChunks(server) {
         var teamData = chunkMgr.getOrCreateData(onuTeam)
         if (!teamData) return
 
-        // Augmenter largement les quotas de l'ONU
-        try { teamData.setExtraClaimChunks(100) } catch (eq) {}
-        try { teamData.setExtraForceLoadChunks(100) } catch (ef) {}
+        // Augmenter largement les quotas de l'ONU pour les claims manuels en mod admin
+        try { teamData.setExtraClaimChunks(500) } catch (eq) {}
+        try { teamData.setExtraForceLoadChunks(500) } catch (ef) {}
 
-        var Level = Java.loadClass('net.minecraft.world.level.Level')
-        var ChunkDimPosClass = Java.loadClass('dev.ftb.mods.ftblibrary.math.ChunkDimPos')
-        var overworldDim = Level.OVERWORLD
-        // Libérer les anciens claims éventuels à (0, 0) si l'ONU les possédait
-        for (var oldCx = -2; oldCx <= 1; oldCx++) {
-            for (var oldCz = -2; oldCz <= 1; oldCz++) {
-                var oldPos = new ChunkDimPosClass(overworldDim, oldCx, oldCz)
-                var oldClaim = chunkMgr.getChunk(oldPos)
-                if (oldClaim) {
-                    var oldOwner = oldClaim.getTeamData().getTeam()
-                    if (oldOwner && oldOwner.getId().equals(onuTeam.getId())) {
-                        try { oldClaim.unclaim(src, false) } catch (uOld) {}
-                    }
-                }
-            }
-        }
-
-        // Revendiquer les 16 chunks (4x4) centrés sur X: -204, Z: -172 (cx: -14..-11, cz: -12..-9)
-        var claimedCount = 0
-        for (var cx = -14; cx <= -11; cx++) {
-            for (var cz = -12; cz <= -9; cz++) {
-                var pos = new ChunkDimPosClass(overworldDim, cx, cz)
-                var existingClaim = chunkMgr.getChunk(pos)
-
-                if (existingClaim) {
-                    var ownerTeam = existingClaim.getTeamData().getTeam()
-                    if (ownerTeam && ownerTeam.getId().equals(onuTeam.getId())) {
-                        if (!existingClaim.isActuallyForceLoaded()) {
-                            try { teamData.forceLoad(src, pos, false, false) } catch (fe) {}
-                        }
-                        claimedCount++
-                        continue
-                    } else {
-                        // Éjection de tout squat civil ou militaire dans le sanctuaire ONU
-                        try { existingClaim.unclaim(src, false) } catch (ue) {}
-                    }
-                }
-
-                try {
-                    teamData.claim(src, pos, false)
-                    try { teamData.forceLoad(src, pos, false, false) } catch (fle) {}
-                    claimedCount++
-                } catch (claimErr) {
-                    console.error('[ONU Claims] Erreur claim (' + cx + ', ' + cz + ') : ' + claimErr)
-                }
-            }
-        }
-        console.info('[ONU Claims] ' + claimedCount + '/16 chunks du Hub ONU (-204, -172) revendiqués et sécurisés.')
+        // Les chunks de l'ONU sont claimés manuellement en mod admin.
+        // On ne force plus de grille fixe et on ne libère aucun chunk claimé par l'ONU.
     } catch (err) {
         console.error('[ONU Claims] Erreur claimOnuChunks : ' + err)
     }
@@ -548,34 +497,18 @@ try {
 
             var victimInOnu = isPositionInOnuClaim(level, ex, ez)
 
-            var source = event.getSource()
-            var attacker = source ? (source.getEntity ? source.getEntity() : (source.getDirectEntity ? source.getDirectEntity() : null)) : null
-            var attackerInOnu = false
-            if (attacker) {
-                var ax = Number(attacker.getX ? attacker.getX() : attacker.x)
-                var az = Number(attacker.getZ ? attacker.getZ() : attacker.z)
-                attackerInOnu = isPositionInOnuClaim(level, ax, az)
-            }
-
-            if (victimInOnu || attackerInOnu) {
+            // Seules les victimes dans les claims réels de l'ONU sont protégées.
+            // Le PvP et le PvE sont 100% actifs partout ailleurs sur la carte !
+            if (victimInOnu) {
                 // 1. Les monstres hostiles peuvent subir des dégâts et être tués
                 if (isHostileMob(entity)) {
                     return // Dégâts autorisés sur les monstres !
                 }
 
-                // 2. Tir depuis l'intérieur des claims ONU vers l'extérieur : bloqué
-                if (attackerInOnu && !victimInOnu) {
-                    event.setCanceled(true)
-                    event.setAmount(0)
-                    return
-                }
-
-                // 3. Joueurs et PNJ protégés dans les claims ONU
-                if (victimInOnu) {
-                    event.setCanceled(true)
-                    event.setAmount(0)
-                    return
-                }
+                // 2. Joueurs et PNJ protégés dans les claims ONU
+                event.setCanceled(true)
+                event.setAmount(0)
+                return
             }
         } catch (de) {}
     })
@@ -598,16 +531,7 @@ EntityEvents.beforeHurt(function(event) {
 
         var victimInOnu = isPositionInOnuClaim(level, ex, ez)
 
-        var source = event.getSource()
-        var attacker = source ? (source.getEntity ? source.getEntity() : null) : null
-        var attackerInOnu = false
-        if (attacker) {
-            var ax = Number(attacker.getX ? attacker.getX() : attacker.x)
-            var az = Number(attacker.getZ ? attacker.getZ() : attacker.z)
-            attackerInOnu = isPositionInOnuClaim(level, ax, az)
-        }
-
-        if (victimInOnu || attackerInOnu) {
+        if (victimInOnu) {
             if (isHostileMob(entity)) {
                 return // Dégâts autorisés sur les monstres !
             }
@@ -629,9 +553,6 @@ BlockEvents.broken(function(event) {
 
         if (isBlockInOnuHub(level, pos.getX(), pos.getZ())) {
             var player = event.player
-            if (player && player.isCreative && player.isCreative()) {
-                return // Seuls les administrateurs en mode Créatif peuvent modifier le Hub ONU
-            }
             event.cancel()
             if (player) {
                 sendClaimMsg(player, 'Zone Internationale : La destruction de blocs est strictement interdite dans le complexe de l\'ONU !', '§c')
@@ -654,9 +575,6 @@ BlockEvents.placed(function(event) {
 
         if (isBlockInOnuHub(level, pos.getX(), pos.getZ())) {
             var player = event.player
-            if (player && player.isCreative && player.isCreative()) {
-                return // Seuls les administrateurs en mode Créatif peuvent modifier le Hub ONU
-            }
             event.cancel()
             if (player) {
                 sendClaimMsg(player, 'Zone Internationale : La pose de blocs est strictement interdite dans le sanctuaire de l\'ONU !', '§c')
@@ -674,7 +592,7 @@ BlockEvents.placed(function(event) {
 ItemEvents.rightClicked(function(event) {
     try {
         var player = event.player
-        if (!player || (player.isCreative && player.isCreative())) return
+        if (!player) return
         var item = event.item
         if (!item || item.isEmpty()) return
 
@@ -707,9 +625,18 @@ LevelEvents.beforeExplosion(function(event) {
 })
 
 // -----------------------------------------------------------------------------
-// 4. INITIALISATION
+// 4. INITIALISATION & RECHARGEMENT (/reload)
 // -----------------------------------------------------------------------------
 ServerEvents.loaded(function(event) {
     claimOnuChunks(event.server)
     cleanupUnauthorizedOnuZoneClaims(event.server)
+})
+
+var onuReloadTriggered = false
+ServerEvents.tick(function(event) {
+    if (!onuReloadTriggered && event.server) {
+        onuReloadTriggered = true
+        claimOnuChunks(event.server)
+        cleanupUnauthorizedOnuZoneClaims(event.server)
+    }
 })
