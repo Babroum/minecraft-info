@@ -8,7 +8,7 @@
 // 4. Système d'appel aux armes automatique en cas de déclaration de guerre.
 // =============================================================================
 
-var ALLIANCE_TIMEOUT_MS = 15 * 60 * 1000 // 15 minutes pour répondre à l'appel aux armes
+var ALLIANCE_TIMEOUT_MS = 5 * 60 * 1000 // 5 minutes pour répondre à l'appel aux armes (ou rupture automatique)
 var ALLIANCES_CACHE = null
 
 /**
@@ -372,8 +372,32 @@ function triggerCallToArms(server, warId, callingTeamId, enemyTeamId) {
             expiresAt: Date.now() + ALLIANCE_TIMEOUT_MS
         }
 
-        notifyTeam(allyTeam, 'Appel aux Armes', '§c⚠ Votre allié §e' + callingName + ' §cest en guerre contre §e' + enemyName + ' §c!', '§4')
-        notifyTeam(allyTeam, 'Appel aux Armes', 'Honorez le pacte : §a/war join ' + warId + ' §fou refusez : §c/war decline ' + warId + ' §7(Refuser brisera l\'alliance).', '§e')
+        try {
+            var btnJoin = Component.literal('  §a§l[✔ REJOINDRE LA GUERRE]')
+                .clickRunCommand('/war join ' + warId)
+                .hover(Component.literal('§aEntrer en guerre aux côtés de votre allié ' + callingName))
+            var btnDecline = Component.literal('  §c§l[✖ ROMPRE L\'ALLIANCE]')
+                .clickRunCommand('/war decline ' + warId)
+                .hover(Component.literal('§cRefuser de soutenir votre allié et briser immédiatement l\'alliance'))
+
+            var online = allyTeam.getOnlineMembers()
+            if (online && !online.isEmpty()) {
+                var it = online.iterator()
+                while (it.hasNext()) {
+                    var p = it.next()
+                    if (p) {
+                        sendMsg(p, 'Appel aux Armes', '§c⚠ Votre allié §e' + callingName + ' §cest entré en guerre contre §e' + enemyName + ' §c!', '§4')
+                        sendMsg(p, 'Appel aux Armes', 'Vous devez faire un choix dans les 5 minutes (ou l\'alliance sera dissoute d\'office) :', '§e')
+                        p.tell(btnJoin.append(btnDecline))
+                    }
+                }
+            } else {
+                notifyTeam(allyTeam, 'Appel aux Armes', '§c⚠ Votre allié §e' + callingName + ' §cest en guerre contre §e' + enemyName + ' §c! Rejoignez avec /war join ' + warId + ' ou refusez avec /war decline ' + warId, '§4')
+            }
+        } catch (e) {
+            notifyTeam(allyTeam, 'Appel aux Armes', '§c⚠ Votre allié §e' + callingName + ' §cest en guerre contre §e' + enemyName + ' §c!', '§4')
+            notifyTeam(allyTeam, 'Appel aux Armes', 'Honorez le pacte : §a/war join ' + warId + ' §fou refusez : §c/war decline ' + warId + ' §7(Refuser ou ignorer brisera l\'alliance).', '§e')
+        }
     }
 }
 
@@ -390,7 +414,7 @@ function handleCallToArmsResponse(player, warId, accept) {
     var teamIdStr = team.getId().toString()
     var call = pendingCallsToArms[teamIdStr]
 
-    if (!call || call.warId !== warId) {
+    if (!call || String(call.warId) !== String(warId)) {
         sendMsg(player, 'Guerre', 'Aucun appel aux armes actif pour ce conflit.', '§c')
         return 0
     }
@@ -404,8 +428,36 @@ function handleCallToArmsResponse(player, warId, accept) {
         broadcastMsg(server, 'Guerre', 'La nation alliée §e' + team.getName().getString() + ' §frejoint le conflit aux côtés de ses alliés !', '§c')
         return 1
     } else {
-        breakAlliance(server, UUID.fromString(call.callingTeamId), team.getId(), 'defection')
+        var UUIDClass = Java.loadClass('java.util.UUID')
+        breakAlliance(server, UUIDClass.fromString(call.callingTeamId), team.getId(), 'defection')
+        broadcastMsg(server, 'Diplomatie', 'La nation §e' + team.getName().getString() + ' §fa refusé de soutenir son allié §6' + getTeamDisplayName(server, call.callingTeamId) + ' §f: l\'alliance est rompue pour défection !', '§c')
         return 1
+    }
+}
+
+/**
+ * Vérification continue de l'expiration des appels aux armes
+ * Si un allié ignore l'appel au-delà de 5 minutes, l'alliance est rompue d'office
+ */
+function checkCallsToArmsExpiration(server) {
+    if (!server) return
+    var now = Date.now()
+    var UUIDClass = Java.loadClass('java.util.UUID')
+    for (var allyIdStr in pendingCallsToArms) {
+        var call = pendingCallsToArms[allyIdStr]
+        if (call && now > call.expiresAt) {
+            delete pendingCallsToArms[allyIdStr]
+            try {
+                var allyTeam = getTeamById(server, allyIdStr)
+                var callingTeam = getTeamById(server, call.callingTeamId)
+                if (allyTeam && callingTeam) {
+                    breakAlliance(server, UUIDClass.fromString(call.callingTeamId), allyTeam.getId(), 'defection')
+                    broadcastMsg(server, 'Diplomatie', 'La nation §e' + allyTeam.getName().getString() + ' §fn\'a pas répondu à l\'appel aux armes de §6' + callingTeam.getName().getString() + ' §f: l\'alliance est dissoute d\'office pour défection !', '§c')
+                }
+            } catch (err) {
+                console.error('[Alliance] Erreur checkCallsToArmsExpiration : ' + err)
+            }
+        }
     }
 }
 

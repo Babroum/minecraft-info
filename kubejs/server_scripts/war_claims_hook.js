@@ -4,6 +4,7 @@
 // =============================================================================
 
 var warBypassedPlayers = {} // { [playerUuidStr]: true }
+var playerWarBypassExpiry = {} // { [playerUuidStr]: timestamp }
 
 /**
  * Vérifie si le joueur est un administrateur en mode Créatif (bâtisseur/staff)
@@ -92,9 +93,10 @@ function setPlayerWarBypass(player, enable) {
                 chunkMgr.setBypassProtection(pUuid, true)
             }
             warBypassedPlayers[uuidStr] = true
+            playerWarBypassExpiry[uuidStr] = Date.now() + 15000 // Fenêtre de siège de 15 secondes
         } else {
             delete warBypassedPlayers[uuidStr]
-            // Révocation systématique du bypass (aucun passe-droit créatif/admin sur les claims)
+            delete playerWarBypassExpiry[uuidStr]
             chunkMgr.setBypassProtection(pUuid, false)
         }
     } catch (e) {
@@ -173,6 +175,9 @@ ServerEvents.tick(function(event) {
         var server = event.server
         if (!server || server.getTickCount() % 20 !== 0) return
 
+        var now = Date.now()
+        var isRaid = (typeof isRaidHourActive === 'function' && isRaidHourActive())
+
         var players = server.getPlayerList().getPlayers()
         for (var i = 0; i < players.size(); i++) {
             var p = players.get(i)
@@ -184,23 +189,28 @@ ServerEvents.tick(function(event) {
 
             var pUuid = (typeof getPlayerUUID === 'function') ? getPlayerUUID(p) : (p.getUUID ? p.getUUID() : p.getUuid())
             var uuidStr = pUuid ? pUuid.toString() : null
+            if (!uuidStr) continue
 
-            if (shouldAllowWarAction(p, lvl, px, pz)) {
+            // Si Raid Hours actives et joueur physiquement en territoire ennemi
+            if (isRaid && shouldAllowWarAction(p, lvl, px, pz)) {
                 setPlayerWarBypass(p, true)
             } else {
-                if (uuidStr && warBypassedPlayers[uuidStr]) {
-                    setPlayerWarBypass(p, false)
-                }
-                // S'assurer que le bypass FTB Chunks est bien désactivé pour tous les joueurs en dehors de la guerre
-                try {
-                    var chunksApi = Java.loadClass('dev.ftb.mods.ftbchunks.api.FTBChunksAPI').api()
-                    if (chunksApi && chunksApi.isManagerLoaded()) {
-                        var chunkMgr = chunksApi.getManager()
-                        if (chunkMgr && pUuid && chunkMgr.getBypassProtection(pUuid)) {
-                            chunkMgr.setBypassProtection(pUuid, false)
-                        }
+                // Si hors Raid Hours ou fenêtre active de 15s expirée, révoquer le bypass
+                var expiry = playerWarBypassExpiry[uuidStr] || 0
+                if (!isRaid || now > expiry) {
+                    if (warBypassedPlayers[uuidStr]) {
+                        setPlayerWarBypass(p, false)
                     }
-                } catch (be) {}
+                    try {
+                        var chunksApi = Java.loadClass('dev.ftb.mods.ftbchunks.api.FTBChunksAPI').api()
+                        if (chunksApi && chunksApi.isManagerLoaded()) {
+                            var chunkMgr = chunksApi.getManager()
+                            if (chunkMgr && pUuid && chunkMgr.getBypassProtection(pUuid)) {
+                                chunkMgr.setBypassProtection(pUuid, false)
+                            }
+                        }
+                    } catch (be) {}
+                }
             }
         }
     } catch (te) {}
@@ -254,6 +264,7 @@ BlockEvents.broken(function(event) {
         if (attackingTeam && typeof isNationAtWarWith === 'function' && isNationAtWarWith(server, attackingTeam.getId(), defendingTeam.getId())) {
             if (typeof isRaidHourActive === 'function' && isRaidHourActive()) {
                 // MINAGE AUTORISÉ DANS LES CHUNKS ENNEMIS PENDANT LES RAID HOURS !
+                setPlayerWarBypass(player, true)
                 return
             } else {
                 sendMsg(player, 'Guerre', 'Le minage en territoire ennemi n\'est autorisé que pendant les Raid Hours (18h-22h) ! Tapez §e/war raidhours force §cpour tester en tant que Staff.', '§c')
@@ -313,6 +324,7 @@ BlockEvents.placed(function(event) {
         if (attackingTeam && typeof isNationAtWarWith === 'function' && isNationAtWarWith(server, attackingTeam.getId(), defendingTeam.getId())) {
             if (typeof isRaidHourActive === 'function' && isRaidHourActive()) {
                 // Pose autorisée en Raid Hours pour le siège
+                setPlayerWarBypass(player, true)
                 return
             } else {
                 sendMsg(player, 'Guerre', 'La pose de blocs en territoire ennemi n\'est autorisée qu\'en Raid Hours (18h-22h) ! Tapez §e/war raidhours force §cpour tester en tant que Staff.', '§c')

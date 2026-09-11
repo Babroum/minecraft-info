@@ -1,6 +1,6 @@
 {
 	"11c8ec3b-8fc1-49f2-8605-862c677be994": {
-		"active_minutes": 47,
+		"active_minutes": 17,
 		"in_debt": false,
 		"debt_active_minutes": 0,
 		"last_cycle_paid_at": 1789125028448,
@@ -14,7 +14,7 @@
 		"last_tax_amount": 0
 	},
 	"d80ad29e-60a1-480e-9781-8964ed0a0398": {
-		"active_minutes": 43,
+		"active_minutes": 10,
 		"in_debt": false,
 		"debt_active_minutes": 0,
 		"last_cycle_paid_at": 1789125268453,

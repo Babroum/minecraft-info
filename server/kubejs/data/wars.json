@@ -50,5 +50,57 @@
 		"startedAt": 1789125382154,
 		"peaceRequestedBy": null,
 		"endedAt": 1789126343202
+	},
+	"3": {
+		"id": "3",
+		"status": "ENDED",
+		"requesterUuid": "137b73c3-8c48-3eb6-be1a-5c230d6e1dea",
+		"attackerName": "France",
+		"defenderName": "guiguilapute",
+		"attackerLeader": "11c8ec3b-8fc1-49f2-8605-862c677be994",
+		"defenderLeader": "d80ad29e-60a1-480e-9781-8964ed0a0398",
+		"attackers": [
+			"11c8ec3b-8fc1-49f2-8605-862c677be994"
+		],
+		"defenders": [
+			"d80ad29e-60a1-480e-9781-8964ed0a0398"
+		],
+		"attackerNames": [
+			"France"
+		],
+		"defenderNames": [
+			"guiguilapute"
+		],
+		"costPaid": 2500,
+		"createdAt": 1789130020706,
+		"startedAt": 1789130028787,
+		"peaceRequestedBy": null,
+		"endedAt": 1789130105344
+	},
+	"4": {
+		"id": "4",
+		"status": "ENDED",
+		"requesterUuid": "137b73c3-8c48-3eb6-be1a-5c230d6e1dea",
+		"attackerName": "France",
+		"defenderName": "guiguilapute",
+		"attackerLeader": "11c8ec3b-8fc1-49f2-8605-862c677be994",
+		"defenderLeader": "d80ad29e-60a1-480e-9781-8964ed0a0398",
+		"attackers": [
+			"11c8ec3b-8fc1-49f2-8605-862c677be994"
+		],
+		"defenders": [
+			"d80ad29e-60a1-480e-9781-8964ed0a0398"
+		],
+		"attackerNames": [
+			"France"
+		],
+		"defenderNames": [
+			"guiguilapute"
+		],
+		"costPaid": 2500,
+		"createdAt": 1789130174940,
+		"startedAt": 1789130182221,
+		"peaceRequestedBy": null,
+		"endedAt": 1789130193368
 	}
 }

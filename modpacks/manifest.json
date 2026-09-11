@@ -349,7 +349,7 @@
     },
     {
       "file": "data/nation_taxes.json",
-      "sha256": "4139d235b420f80ee3c672cd7c5ab5a93e901bd2c41aa62ca22c9ab97b0f3516"
+      "sha256": "2ee4854474d8847fe94f018d031a37c6b5ea406089030dc7fe93ff701a3332bc"
     },
     {
       "file": "data/onu_teleport.json",
@@ -361,7 +361,7 @@
     },
     {
       "file": "server_scripts/alliance_system.js",
-      "sha256": "8adcbdd63fa90a600d66d51a57e79a39546b3fd61551df4f6734561c6c840139"
+      "sha256": "31f8c70efd6cf4c13ed49c914bd32b0b1869603fddef19952e1cbd6e0e41416d"
     },
     {
       "file": "server_scripts/dimension_blocker.js",
@@ -433,7 +433,7 @@
     },
     {
       "file": "server_scripts/war_claims_hook.js",
-      "sha256": "db04a7f4cf668c640e80b770aeef59d71782ec3ff7663ec4b16a6eb8eb1d3bb1"
+      "sha256": "90685a23e70f6a436dd61743411ea87e59f735f9c941a57cdc59299f130f8204"
     },
     {
       "file": "server_scripts/war_raidhours.js",
@@ -441,7 +441,7 @@
     },
     {
       "file": "server_scripts/war_system.js",
-      "sha256": "325a2473bf60227523fb34ffa0c39561d682969fc82ab0bcf3d749a94e302d49"
+      "sha256": "7b6c08071c45082105d63070bdcdf057fed2f52d89a7a86fb7e092c45ccb0ec0"
     },
     {
       "file": "startup_scripts/economy_items.js",

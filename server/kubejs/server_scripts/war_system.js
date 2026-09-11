@@ -252,6 +252,24 @@ function joinWarCoalition(server, warId, allyTeamId, callingTeamIdStr) {
     }
 
     saveWarsRegistry(server, wars)
+
+    // Rupture immédiate de toute alliance avec une nation du camp adverse (Règle : pas d'alliance entre belligérants opposés)
+    try {
+        var opposingCamp = (w.attackers.indexOf(allyStr) !== -1) ? w.defenders : w.attackers
+        var UUIDClass = Java.loadClass('java.util.UUID')
+        for (var e = 0; e < opposingCamp.length; e++) {
+            var enemyIdStr = opposingCamp[e]
+            if (typeof isAllied === 'function' && isAllied(server, allyTeamId, enemyIdStr)) {
+                if (typeof breakAlliance === 'function') {
+                    breakAlliance(server, allyTeamId, UUIDClass.fromString(enemyIdStr), 'cross_war')
+                    broadcastMsg(server, 'Diplomatie', 'L\'alliance entre §e' + allyName + ' §fet §e' + getTeamDisplayName(server, enemyIdStr) + ' §fa été rompue car elles s\'affrontent dans la guerre #' + w.id + ' !', '§c')
+                }
+            }
+        }
+    } catch (crossErr) {
+        console.error('[WarSystem] Erreur rupture alliance croisée : ' + crossErr)
+    }
+
     return true
 }
 
@@ -288,19 +306,32 @@ function requestWarDeclaration(player, targetQuery) {
         return 0
     }
 
+    // Vérifier si une demande est déjà en attente entre ces deux nations
+    var warsCheck = loadWarsRegistry(server)
+    for (var wId in warsCheck) {
+        var wCheck = getWar(warsCheck, wId)
+        if (wCheck && wCheck.status === 'PENDING_ADMIN') {
+            if (wCheck.attackerLeader === team.getId().toString() && wCheck.defenderLeader === targetTeam.getId().toString()) {
+                sendMsg(player, 'Guerre', 'Une déclaration de guerre #' + wCheck.id + ' contre cette nation est déjà en attente d\'approbation par le Staff.', '§e')
+                return 0
+            }
+        }
+    }
+
+    // Débit des frais de déclaration de guerre (obligatoire pour déclarer)
+    var costPaid = false
+    if (typeof withdrawNationMoney === 'function') {
+        costPaid = withdrawNationMoney(team, player, WAR_COST)
+    }
+    if (!costPaid) {
+        sendMsg(player, 'Guerre', 'Fonds insuffisants ! La déclaration de guerre coûte ' + WAR_COST + ' R au Trésor national de votre pays.', '§c')
+        return 0
+    }
+
     // Trahison / rupture automatique de l'alliance si les deux nations étaient alliées
     if (typeof isAllied === 'function' && isAllied(server, team.getId(), targetTeam.getId())) {
         if (typeof breakAlliance === 'function') {
             breakAlliance(server, team.getId(), targetTeam.getId(), 'war_declaration')
-        }
-    }
-
-    // Débit des frais de déclaration de guerre (gratuit pour les admins/OP en test)
-    if (!isOp && typeof withdrawNationMoney === 'function') {
-        var success = withdrawNationMoney(team, player, WAR_COST)
-        if (!success) {
-            sendMsg(player, 'Guerre', 'Fonds insuffisants ! La déclaration de guerre coûte ' + WAR_COST + ' R au Trésor national.', '§c')
-            return 0
         }
     }
 
@@ -311,7 +342,7 @@ function requestWarDeclaration(player, targetQuery) {
 
     var newWar = {
         id: warId,
-        status: isOp ? 'ACTIVE' : 'PENDING_ADMIN',
+        status: 'PENDING_ADMIN', // Toujours en attente de validation admin
         requesterUuid: player.getStringUuid ? player.getStringUuid() : player.uuid.toString(),
         attackerName: atkName,
         defenderName: defName,
@@ -321,34 +352,17 @@ function requestWarDeclaration(player, targetQuery) {
         defenders: [targetTeam.getId().toString()],
         attackerNames: [atkName],
         defenderNames: [defName],
-        costPaid: isOp ? 0 : WAR_COST,
+        costPaid: WAR_COST,
         createdAt: Date.now(),
-        startedAt: isOp ? Date.now() : null,
+        startedAt: null,
         peaceRequestedBy: null
     }
     setWar(wars, warId, newWar)
-
     saveWarsRegistry(server, wars)
 
-    if (isOp) {
-        broadcastMsg(server, 'Guerre', 'Guerre déclarée (# ' + warId + ') : §e' + atkName + ' §fcontre §e' + defName + ' §f! Les hostilités sont immédiatement ouvertes.', '§c')
-        if (typeof triggerCallToArms === 'function') {
-            var wEntry = getWar(wars, warId)
-            if (wEntry) {
-                var aTeam = getTeamById(server, wEntry.attackerLeader)
-                var bTeam = getTeamById(server, wEntry.defenderLeader)
-                if (aTeam && bTeam) {
-                    triggerCallToArms(server, warId, aTeam.getId(), bTeam.getId())
-                    triggerCallToArms(server, warId, bTeam.getId(), aTeam.getId())
-                }
-            }
-        }
-        return 1
-    }
+    sendMsg(player, 'Guerre', 'Demande de guerre #' + warId + ' contre §e' + defName + ' §fsoumise au Staff (' + WAR_COST + ' R débités). En attente d\'approbation admin.', '§a')
 
-    sendMsg(player, 'Guerre', 'Demande de guerre #' + warId + ' contre §e' + defName + ' §fsoumise au Staff (' + WAR_COST + ' R débités).', '§a')
-
-    // Diffusion de l'alerte Staff avec boutons cliquables
+    // Alerte Staff interactive avec boutons cliquables envoyée à tous les OPs en ligne
     var staffMsg = Component.literal('§7[§6Staff§7] §fDemande de guerre §e#' + warId + ' §f: §e' + atkName + ' §fVS §e' + defName + ' §7| ')
     try {
         var btnApprove = Component.literal('§a§l[ACCEPTER]')
@@ -356,13 +370,22 @@ function requestWarDeclaration(player, targetQuery) {
             .hover(Component.literal('§aCliquer pour valider la guerre #' + warId))
         var btnReject = Component.literal('§c§l[REFUSER]')
             .clickRunCommand('/war reject ' + warId)
-            .hover(Component.literal('§cCliquer pour refuser la guerre #' + warId))
+            .hover(Component.literal('§cCliquer pour refuser et rembourser la guerre #' + warId))
 
         staffMsg = staffMsg.append(btnApprove).append(Component.literal(' ')).append(btnReject)
     } catch (e) {
         staffMsg = Component.literal('§7[§6Staff§7] §fDemande de guerre #' + warId + ' : §e' + atkName + ' §fVS §e' + defName + ' §f(Tapez §a/war approve ' + warId + '§f)')
     }
 
+    try {
+        var playerList = server.getPlayerList().getPlayers()
+        for (var i = 0; i < playerList.size(); i++) {
+            var staffP = playerList.get(i)
+            if (staffP && staffP.hasPermissions(2)) {
+                staffP.tell(staffMsg)
+            }
+        }
+    } catch (pe) {}
     server.tell(staffMsg)
     return 1
 }
@@ -548,9 +571,9 @@ function rejectWar(server, warQuery, reason) {
     if (!w) return false
 
     var wars = loadWarsRegistry(server)
-    var refund = Math.floor(w.costPaid * 0.8) // Remboursement partiel
+    var refund = w.costPaid || WAR_COST // Remboursement 100% intégral
     var aTeam = getTeamById(server, w.attackerLeader)
-    if (aTeam && typeof depositNationMoneyDirect === 'function') {
+    if (aTeam && refund > 0 && typeof depositNationMoneyDirect === 'function') {
         depositNationMoneyDirect(aTeam, refund)
     }
 
@@ -559,7 +582,7 @@ function rejectWar(server, warQuery, reason) {
 
     var nameA = w.attackerName || getTeamDisplayName(server, w.attackerLeader)
     var nameB = w.defenderName || getTeamDisplayName(server, w.defenderLeader)
-    broadcastMsg(server, 'Staff', 'La demande de guerre #' + w.id + ' de §e' + nameA + ' §fcontre §e' + nameB + ' §fa été rejetée (' + refund + ' R restitués).', '§e')
+    broadcastMsg(server, 'Staff', 'La demande de guerre #' + w.id + ' de §e' + nameA + ' §fcontre §e' + nameB + ' §fa été rejetée (' + refund + ' R remboursés intégralement).', '§e')
     return true
 }
 
@@ -582,32 +605,42 @@ function handleWarPeace(player, targetQuery) {
 
     var war = null
     var isForce = false
+    var subAction = null
 
-    // 1. Si une cible ou commande spécifique est fournie
+    // 1. Analyse des arguments passés
     if (targetQuery && targetQuery.trim() !== '') {
-        var q = targetQuery.trim().toLowerCase()
-        if (q === 'force' || q === 'admin') {
+        var parts = targetQuery.trim().split(/\s+/)
+        var firstWord = parts[0].toLowerCase()
+
+        if (firstWord === 'force' || firstWord === 'admin') {
             if (isOp) {
                 isForce = true
             } else {
                 sendMsg(player, 'Diplomatie', 'Seuls les administrateurs peuvent forcer la paix.', '§c')
                 return 0
             }
-        } else if (q === 'accept' || q === 'yes' || q === 'oui') {
-            var activeWarsA = getTeamActiveWars(server, team.getId())
-            if (activeWarsA.length > 0) war = activeWarsA[0]
-        } else {
-            var tTeam = findTeamByNameOrPlayer(server, targetQuery)
+        } else if (firstWord === 'accept' || firstWord === 'yes' || firstWord === 'oui') {
+            subAction = 'accept'
+        } else if (firstWord === 'reject' || firstWord === 'decline' || firstWord === 'refuse' || firstWord === 'non') {
+            subAction = 'reject'
+        } else if (firstWord === 'cancel' || firstWord === 'annuler') {
+            subAction = 'cancel'
+        }
+
+        // Si une nation spécifique est indiquée en 2e mot ou si ce n'était pas un mot-clé
+        var nationQuery = subAction ? parts.slice(1).join(' ') : targetQuery.trim()
+        if (nationQuery) {
+            var tTeam = findTeamByNameOrPlayer(server, nationQuery)
             if (tTeam) {
                 war = findActiveWarBetween(server, team.getId(), tTeam.getId())
             }
             if (!war) {
-                war = findWarQuery(server, targetQuery, false)
+                war = findWarQuery(server, nationQuery, false)
             }
         }
     }
 
-    // 2. Si aucune cible ou si "force", prend la guerre active de l'équipe
+    // 2. Si aucune guerre trouvée par argument, chercher la guerre active de la nation
     if (!war) {
         var activeWars = getTeamActiveWars(server, team.getId())
         if (activeWars.length === 1) {
@@ -631,8 +664,49 @@ function handleWarPeace(player, targetQuery) {
     var myCamp = isAttackerCamp ? 'attackers' : 'defenders'
     var opposingCamp = isAttackerCamp ? 'defenders' : 'attackers'
 
-    // Cas 1 : Forcé par un OP/Admin OU le camp adverse a déjà proposé la paix
-    if (isForce || war.peaceRequestedBy === opposingCamp) {
+    // Cas d'annulation par le camp émetteur
+    if (subAction === 'cancel') {
+        if (war.peaceRequestedBy === myCamp) {
+            war.peaceRequestedBy = null
+            var warsC = loadWarsRegistry(server)
+            setWar(warsC, war.id, war)
+            saveWarsRegistry(server, warsC)
+            sendMsg(player, 'Diplomatie', 'Votre proposition de paix a été annulée.', '§e')
+            return 1
+        } else {
+            sendMsg(player, 'Diplomatie', 'Vous n\'avez aucune proposition de paix en cours à annuler.', '§c')
+            return 0
+        }
+    }
+
+    // Cas de refus par le camp récepteur
+    if (subAction === 'reject') {
+        if (war.peaceRequestedBy === opposingCamp) {
+            war.peaceRequestedBy = null
+            var warsR = loadWarsRegistry(server)
+            setWar(warsR, war.id, war)
+            saveWarsRegistry(server, warsR)
+
+            sendMsg(player, 'Diplomatie', 'Vous avez rejeté la proposition de paix adverse.', '§c')
+            var opposingLeaderIdR = isAttackerCamp ? war.defenderLeader : war.attackerLeader
+            var oppTeamR = getTeamById(server, opposingLeaderIdR)
+            if (oppTeamR) {
+                notifyTeam(oppTeamR, 'Diplomatie', '§e' + team.getName().getString() + ' §ca rejeté votre proposition de paix. La guerre continue !', '§c')
+            }
+            return 1
+        } else {
+            sendMsg(player, 'Diplomatie', 'Aucune proposition de paix adverse en attente à refuser.', '§c')
+            return 0
+        }
+    }
+
+    // Cas de signature / acceptation de la paix
+    if (isForce || war.peaceRequestedBy === opposingCamp || subAction === 'accept') {
+        if (!isForce && war.peaceRequestedBy !== opposingCamp) {
+            sendMsg(player, 'Diplomatie', 'Le camp adverse n\'a pas encore proposé la paix. Utilisez §e/war peace §apour faire une proposition.', '§c')
+            return 0
+        }
+
         war.status = 'ENDED'
         war.endedAt = Date.now()
         war.peaceRequestedBy = null
@@ -645,21 +719,7 @@ function handleWarPeace(player, targetQuery) {
         broadcastMsg(server, 'Diplomatie', 'Le traité de paix entre §e' + nameA + ' §fet §e' + nameB + ' §fa été ratifié ! Fin des hostilités.', '§a')
         return 1
     } else if (war.peaceRequestedBy === myCamp) {
-        if (isOp) {
-            // Un administrateur peut immédiatement ratifier la paix pour son propre camp
-            war.status = 'ENDED'
-            war.endedAt = Date.now()
-            war.peaceRequestedBy = null
-            var warsOp = loadWarsRegistry(server)
-            setWar(warsOp, war.id, war)
-            saveWarsRegistry(server, warsOp)
-
-            var nameAOp = war.attackerName || getTeamDisplayName(server, war.attackerLeader)
-            var nameBOp = war.defenderName || getTeamDisplayName(server, war.defenderLeader)
-            broadcastMsg(server, 'Diplomatie', 'Le traité de paix entre §e' + nameAOp + ' §fet §e' + nameBOp + ' §fa été ratifié d\'urgence ! Fin des hostilités.', '§a')
-            return 1
-        }
-        sendMsg(player, 'Diplomatie', 'Votre camp a déjà proposé la paix. En attente de la ratification adverse.', '§e')
+        sendMsg(player, 'Diplomatie', 'Votre camp a déjà proposé la paix. En attente de l\'acceptation adverse (Tapez §e/war peace cancel §cpour annuler).', '§e')
         return 1
     } else {
         // Initier la proposition de paix
@@ -668,7 +728,7 @@ function handleWarPeace(player, targetQuery) {
         setWar(wars2, war.id, war)
         saveWarsRegistry(server, wars2)
 
-        sendMsg(player, 'Diplomatie', 'Proposition de paix transmise au camp adverse.', '§a')
+        sendMsg(player, 'Diplomatie', 'Proposition de paix transmise au camp adverse. Tapez §e/war peace cancel §7pour annuler.', '§a')
         var opposingLeaderId = isAttackerCamp ? war.defenderLeader : war.attackerLeader
         var oppTeam = getTeamById(server, opposingLeaderId)
         if (oppTeam) {
@@ -681,24 +741,18 @@ function handleWarPeace(player, targetQuery) {
                         if (p) {
                             sendMsg(p, 'Diplomatie', '§6' + team.getName().getString() + ' §avous propose un traité de paix pour cesser la guerre !', '§a')
                             var acceptComp = Component.literal('  §a§l[✔ ACCEPTER LA PAIX]')
-                                .withStyle(function(s) {
-                                    return s.withColor(Java.loadClass('net.minecraft.ChatFormatting').GREEN)
-                                            .withBold(true)
-                                            .withClickEvent(new (Java.loadClass('net.minecraft.network.chat.ClickEvent'))(
-                                                Java.loadClass('net.minecraft.network.chat.ClickEvent$Action').RUN_COMMAND,
-                                                '/war peace'
-                                            ))
-                                            .withHoverEvent(new (Java.loadClass('net.minecraft.network.chat.HoverEvent'))(
-                                                Java.loadClass('net.minecraft.network.chat.HoverEvent$Action').SHOW_TEXT,
-                                                Component.literal('§aCliquez pour accepter la paix et arrêter la guerre immédiatement.')
-                                            ))
-                                })
-                            p.tell(acceptComp)
+                                .clickRunCommand('/war peace accept')
+                                .hover(Component.literal('§aCliquez pour accepter la paix et arrêter la guerre'))
+                            var rejectComp = Component.literal('  §c§l[✖ REFUSER]')
+                                .clickRunCommand('/war peace reject')
+                                .hover(Component.literal('§cCliquez pour refuser la proposition de paix'))
+
+                            p.tell(acceptComp.append(rejectComp))
                         }
                     }
                 }
             } catch (clickErr) {
-                notifyTeam(oppTeam, 'Diplomatie', '§aLe camp adverse propose un cessez-le-feu ! Tapez §e/war peace §apour signer le traité de paix.', '§a')
+                notifyTeam(oppTeam, 'Diplomatie', '§aLe camp adverse propose la paix ! Tapez §e/war peace accept §apour signer, ou §c/war peace reject §cpour refuser.', '§a')
             }
         }
         return 1
