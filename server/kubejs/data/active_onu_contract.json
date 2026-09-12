@@ -1,0 +1,21 @@
+{
+	"id": "CT-METALLURGIE-2-117",
+	"title": "Développement Électronique & Réseaux",
+	"lore": "Achat de circuits électroniques et métaux rares.",
+	"items": [
+		{
+			"id": "mekanism:basic_control_circuit",
+			"count": 32,
+			"name": "Circuit de Contrôle de Base"
+		},
+		{
+			"id": "mekanism:ingot_osmium",
+			"count": 64,
+			"name": "Lingot d'Osmium"
+		}
+	],
+	"reward": 4200,
+	"driverCutPercent": 10,
+	"openedAt": 1789138842531,
+	"status": "OPEN"
+}

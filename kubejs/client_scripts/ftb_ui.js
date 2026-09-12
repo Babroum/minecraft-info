@@ -383,7 +383,7 @@ function openNationDashboardScreen(nationData) {
         var screenNoNation = createButtonListScreen('🌍 Statut : Citoyen Indépendant', false, function(panel, self) {
             var btn1 = createTextButton(
                 panel,
-                '§e🚩 Fonder ou Rejoindre une Nation (Appuyez sur O)',
+                '§e🚩 Fonder / Rejoindre : /ftbteams party create ou join',
                 'minecraft:white_banner',
                 function(mBtn) {}
             )

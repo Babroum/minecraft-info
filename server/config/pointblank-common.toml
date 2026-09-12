@@ -58,14 +58,14 @@ bulletsBreakGlassEnabled = true
 #Modifier to adjust damage dealt by hitscan weapons
 # Default: 1.0
 # Range: 0.1 ~ 10.0
-hitscanDamageModifier = 0.45
+hitscanDamageModifier = 1.0
 #Sets the crosshair type.
 #Allowed Values: DEFAULT, VANILLA, DISABLED
 crosshair = "DEFAULT"
 #Modifier to adjust damage dealt by headshot.
 # Default: 3.0
 # Range: 1.0 ~ 10.0
-headshotDamageModifier = 1.6
+headshotDamageModifier = 2.5
 #Enables gore effects
 goreEnabled = true
 #Enables gore hit sounds

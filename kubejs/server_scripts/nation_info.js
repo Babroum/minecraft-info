@@ -10,7 +10,7 @@ function showNationOverview(player) {
 
     if (!team) {
         sendMsg(player, 'Nation', 'Statut : Citoyen Indépendant (sans nation).', '§e')
-        sendMsg(player, 'Aide', 'Appuyez sur §eO §fpour fonder/rejoindre une nation, et §eM §fpour la carte des chunks.', '§7')
+        sendMsg(player, 'Aide', 'Fonder : §e/ftbteams party create <nom> §7| Rejoindre : §e/ftbteams party join <nom> §7| Carte : §eM', '§7')
         player.sendData('open_nation_dashboard', { json: JSON.stringify({ hasNation: false }) })
         return 1
     }
