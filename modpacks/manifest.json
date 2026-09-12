@@ -15,6 +15,10 @@
       "sha256": "139ad7696462c89c03eea463f805abffa552526c5dadaadae221dd9624cb197c"
     },
     {
+      "file": "InventoryProfilesNext-neoforge-1.21.1-2.2.5.jar",
+      "sha256": "05f1b8660f74f543fba61d4ce7cf8632d4c69a95b7c15b1a6fd442be2e397ca6"
+    },
+    {
       "file": "Jade-1.21.1-NeoForge-15.10.6.jar",
       "sha256": "276f1f65a20d04f536989c4f311949d770b52c440c23c2b904a08860f3c93810"
     },
@@ -45,6 +49,10 @@
     {
       "file": "better-advanced-tooltips-2101.1.0-build.5.jar",
       "sha256": "0f76d46f2f18eb67e67c7974170d7b27deb66473396461c8dc50d6949de1449b"
+    },
+    {
+      "file": "configured-neoforge-1.21.1-2.6.3.jar",
+      "sha256": "421ffd2604b5487cbdb284d1eb5d1cb8a7d28f3ff84d5b4bda25e0a579282a15"
     },
     {
       "file": "create-1.21.1-6.0.10.jar",
@@ -91,6 +99,10 @@
       "sha256": "791c5538751dd3015ef3a2ce92d98719e1a28a48ebbd817b78506771256654cd"
     },
     {
+      "file": "kotlinforforge-5.12.0-all.jar",
+      "sha256": "2785a4dd6de5c6c56065fd8eb789c82771bd2ee773c30794c23160a3b2c39139"
+    },
+    {
       "file": "kubejs-create-neoforge-2101.3.1-build.18.jar",
       "sha256": "9051fd08349850cb9b28845554246ef4f2c976892835a704ee27dcb7c8bfd7a1"
     },
@@ -105,6 +117,10 @@
     {
       "file": "lcompat-1.21-0.1.2a.jar",
       "sha256": "af72ad83c4661fd0e5bed7b2c1313cb3ea0109bc8ec628e36f289545f247e033"
+    },
+    {
+      "file": "libIPN-neoforge-1.21.1-6.6.3.jar",
+      "sha256": "98f061ba69d31764fa10ab7810ca49062633e107a6b261ba3b66dc25ba5fef7b"
     },
     {
       "file": "lightmanscurrency-1.21-2.3.0.5.jar",
@@ -145,6 +161,14 @@
     {
       "file": "sodium-neoforge-0.8.13+mc1.21.1.jar",
       "sha256": "575d187b15328d7bddd8a9b1bee64333c22c14735f5780ec49eac0cd5503c08d"
+    },
+    {
+      "file": "sophisticatedbackpacks-1.21.1-3.26.3.2158.jar",
+      "sha256": "3690359cc3bb2aa43e40db6ca047ca7d5feda5141c8b9fd647c4355678e971e2"
+    },
+    {
+      "file": "sophisticatedcore-1.21.1-1.5.1.2341.jar",
+      "sha256": "f627b497fc0a2b50da9f20b77e13073df9245718660259d8f559aa184c4418a1"
     },
     {
       "file": "voicechat-neoforge-1.21.1-2.6.22.jar",
@@ -325,15 +349,15 @@
     },
     {
       "file": "client_scripts/ftb_ui.js",
-      "sha256": "50a69b4a86f016a336ebb024719ae6f91696046679670994529a8d9fbba2f6f1"
+      "sha256": "2de38a80639bc46c309eab298a2bf6682cca47bed9da19b8facfa396b125f85a"
     },
     {
       "file": "data/active_onu_contract.json",
-      "sha256": "2ca8db425ebb3d28a482b82ae049f1b00959846df0fc7b74574c4609c342bc48"
+      "sha256": "a44f4072e609a3a31663bc6d2b8ee4a2aca0be0642a02b02d6254f0943a40612"
     },
     {
       "file": "data/alliances.json",
-      "sha256": "aaab8f2af9e92bafc7aa152345e6e42189a6c2393b49f48e2c65455e41538862"
+      "sha256": "d1b94931b1b30a551ef2092d767b37055126adfd49bc906618d2da126c1d572a"
     },
     {
       "file": "data/c/tags/item/coins.json",
@@ -345,11 +369,15 @@
     },
     {
       "file": "data/nation_homes.json",
-      "sha256": "409ac8e55c8d959bda888d663ee60bb5a7a42c420364125dadba34571f2b9894"
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
     },
     {
       "file": "data/nation_taxes.json",
-      "sha256": "2ee4854474d8847fe94f018d031a37c6b5ea406089030dc7fe93ff701a3332bc"
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+    },
+    {
+      "file": "data/onu_market_data.json",
+      "sha256": "e74aca5f304f1cd41c7ee353d96ea834c4d808db128e960f2e84e8bf45c915c1"
     },
     {
       "file": "data/onu_teleport.json",
@@ -357,11 +385,15 @@
     },
     {
       "file": "data/wars.json",
-      "sha256": "ba91f7155c3f1edbdd58505b2686fd82bfb022e3cd8f4b88f900e23d3373f71b"
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
     },
     {
       "file": "server_scripts/alliance_system.js",
       "sha256": "31f8c70efd6cf4c13ed49c914bd32b0b1869603fddef19952e1cbd6e0e41416d"
+    },
+    {
+      "file": "server_scripts/backpack_recipes.js",
+      "sha256": "671728ed7a4188255cece343f30a76a3197b791038e91a7c510aef9734ecc16b"
     },
     {
       "file": "server_scripts/dimension_blocker.js",
@@ -405,7 +437,7 @@
     },
     {
       "file": "server_scripts/nation_info.js",
-      "sha256": "c0f3b3fbc5994ae1d2e1cfea1da19d9284efaf97e379325d4fa6e4f4e82bf101"
+      "sha256": "817a145f3ac3d6d2e7ea274f50478b26d2f9df4937516db5b0ecdb170b4c669a"
     },
     {
       "file": "server_scripts/onu_claims.js",

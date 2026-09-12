@@ -1,1 +1,14 @@
-{}
+{
+	"e78eaabc-b739-4099-9dd7-953e0c9da0f5": {
+		"home": {
+			"dim": "minecraft:overworld",
+			"x": -1524.9,
+			"y": 64,
+			"z": -1528.1,
+			"yaw": 19.1,
+			"pitch": 17.4,
+			"setBy": "Babroum",
+			"setAt": 1789241475843
+		}
+	}
+}
