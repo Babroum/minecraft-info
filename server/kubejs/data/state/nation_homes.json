@@ -1,0 +1,58 @@
+{
+	"e78eaabc-b739-4099-9dd7-953e0c9da0f5": {
+		"home": {
+			"dim": "minecraft:overworld",
+			"x": -1524.9,
+			"y": 64,
+			"z": -1528.1,
+			"yaw": 19.1,
+			"pitch": 17.4,
+			"setBy": "Babroum",
+			"setAt": 1789241475843
+		}
+	},
+	"a23cf78a-8793-4151-842b-89b5dea2035e": {
+		"home": {
+			"dim": "minecraft:overworld",
+			"x": -446.6,
+			"y": 69,
+			"z": -168.6,
+			"yaw": -16,
+			"pitch": 29.8,
+			"setBy": "croksie",
+			"setAt": 1789308756225
+		},
+		"ally_home": {
+			"dim": "minecraft:overworld",
+			"x": -445.3,
+			"y": 69,
+			"z": -171,
+			"yaw": -55.2,
+			"pitch": 32.3,
+			"setBy": "croksie",
+			"setAt": 1789310341733
+		}
+	},
+	"029b6d7c-5bc3-4c83-8919-13ad41ce3c20": {
+		"home": {
+			"dim": "minecraft:overworld",
+			"x": -422.1,
+			"y": 70.4,
+			"z": -151.4,
+			"yaw": -114.3,
+			"pitch": 26.5,
+			"setBy": "nitram",
+			"setAt": 1789308891326
+		},
+		"ally_home": {
+			"dim": "minecraft:overworld",
+			"x": -425.1,
+			"y": 65,
+			"z": -146,
+			"yaw": -2,
+			"pitch": 18.1,
+			"setBy": "nitram",
+			"setAt": 1789310353563
+		}
+	}
+}

@@ -393,6 +393,14 @@ function deliverOnuContract(player) {
     // Versement de la prime du chauffeur en billets
     givePlayerBanknotes(player, driverCut)
 
+    // Enregistrement des statistiques pour les Leaderboards mondiaux
+    if (typeof TW_RecordOnuDelivery === 'function') {
+        try {
+            var pUuid = (player.getUuid ? player.getUuid() : (player.uuid ? player.uuid : null))
+            TW_RecordOnuDelivery(team.getId().toString(), pUuid ? pUuid.toString() : null, player.getName().getString(), totalReward)
+        } catch (eLb) {}
+    }
+
     // Clôture du contrat
     contract.status = 'COMPLETED'
     contract.completedByPlayer = player.getName().getString()
@@ -407,6 +415,11 @@ function deliverOnuContract(player) {
     // Annonce triomphale sur tout le serveur
     broadcastMsg(server, 'ONU', '§aL\'appel d\'offres régulier §e' + contract.title + ' §aa été remporté par §6' + team.getName().getString() + ' §a(livré par §e' + player.getName().getString() + '§a) !', '§2')
     broadcastMsg(server, 'ONU', '§aRémunération : §e' + nationReward + ' R §aversés au Trésor National + §e' + driverCut + ' R §ade prime chauffeur.', '§a')
+
+    // Mise à jour immédiate des classements
+    if (typeof TW_UpdateLeaderboards === 'function') {
+        try { TW_UpdateLeaderboards(server) } catch (eUp) {}
+    }
 
     // Si configuré pour relancer immédiatement, sinon attend la fin du timer de 3h
     if (cfg.rerollImmediatelyOnCompletion) {

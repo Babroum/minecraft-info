@@ -174,8 +174,15 @@ function deleteNationHome(arg1, arg2) {
 }
 
 function setNationAllyHome(team, player) {
+    if (!player && team && team.isPlayer && team.isPlayer()) {
+        player = team
+        team = null
+    }
     if (!player) return 0
     try {
+        if (!team && typeof getPlayerNationTeam === 'function') {
+            team = getPlayerNationTeam(player)
+        }
         if (!team) {
             sendMsg(player, 'Alliance', 'Vous devez faire partie d\'une nation pour établir une Ambassade.', '§c')
             return 0
@@ -235,7 +242,18 @@ function setNationAllyHome(team, player) {
 }
 
 function deleteNationAllyHome(team, player) {
-    if (!team || !player) return 0
+    if (!player && team && team.isPlayer && team.isPlayer()) {
+        player = team
+        team = null
+    }
+    if (!player) return 0
+    if (!team && typeof getPlayerNationTeam === 'function') {
+        team = getPlayerNationTeam(player)
+    }
+    if (!team) {
+        sendMsg(player, 'Alliance', 'Vous devez appartenir à une nation.', '§c')
+        return 0
+    }
     if (!canManageNation(team, player)) {
         sendMsg(player, 'Alliance', 'Seuls les Leaders et Ministres peuvent supprimer l\'Ambassade des alliés.', '§c')
         return 0

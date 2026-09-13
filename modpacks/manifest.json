@@ -340,8 +340,40 @@
       "sha256": "0408b74ef1b408af2c54ab62d78fdbde05fdf5765faf2ad2896bf791f510c86d"
     },
     {
-      "file": "client_scripts/ftb_ui.js",
-      "sha256": "1d6d9f0d8408052d0872fa1390d1bb6fde44f2004e9ebfedab8b5d464a246c72"
+      "file": "client_scripts/misc/currency_tooltips.js",
+      "sha256": "71aaa019ce2060b746cfd56cf36258f6b8edb7243fb71d6810545e83fccabaf9"
+    },
+    {
+      "file": "client_scripts/ui/components/widgets.js",
+      "sha256": "8e2f499837b581dcf97bc647a23e6481aa805ae8839bdf09ae95c693a95015b3"
+    },
+    {
+      "file": "client_scripts/ui/core/01_theme.js",
+      "sha256": "23309fdf4be311d1fa5dd759e909437c3cc7bb89e1bf8af6129b1d043edf639d"
+    },
+    {
+      "file": "client_scripts/ui/core/02_router.js",
+      "sha256": "51b7127e3b1e3d2510bd64110b6433dabbc2569ebe814276d1ef5e1af4dbbc73"
+    },
+    {
+      "file": "client_scripts/ui/core/03_base_screen.js",
+      "sha256": "bf0d6571c1fa6609deb05d03a717ac10a621647cbfb4dfa1ea1a4a0b24255296"
+    },
+    {
+      "file": "client_scripts/ui/screens/nation_screen.js",
+      "sha256": "3c5cf5e56876fa416e36768c8445bafc2209fd4edfd6cf12520ef099a4afc6d1"
+    },
+    {
+      "file": "client_scripts/ui/screens/onu_contracts_screen.js",
+      "sha256": "8f8ce21bba616b94b08568adde0465e710ac4f0615a317888505bd03839c5d88"
+    },
+    {
+      "file": "client_scripts/ui/screens/onu_market_screen.js",
+      "sha256": "b629481a0268eeba016c9095d33b55833f0c1d18d4a2dc8f4f63704de884ae33"
+    },
+    {
+      "file": "client_scripts/ui/screens/war_registry_screen.js",
+      "sha256": "2a4beafbc1cf3224d7c9499365f0ece14437e71b920756201fd7cf8e87e7affe"
     },
     {
       "file": "config/general.json",
@@ -428,16 +460,24 @@
       "sha256": "4263c2525af2b18f4c0554f908dd824238b7e8f40a5ca8d5cf9cc7147012d5e2"
     },
     {
+      "file": "server_scripts/00_core/05_leaderboard_exporter.js",
+      "sha256": "111340a6eb074650fa198bb8de0c5c87f4c68439f7ca29228208ff3a58cbcff5"
+    },
+    {
+      "file": "server_scripts/00_core/ui_bridge.js",
+      "sha256": "c3fb63ccc55279d13fb4066cb117293659a1ecc7e96901a548f450f11548aba9"
+    },
+    {
       "file": "server_scripts/10_economy/nation_bank.js",
       "sha256": "0494c192c2d72843073f27e230db2741eb0fef8891983a9b6c8055502d6e105a"
     },
     {
       "file": "server_scripts/10_economy/onu_contracts.js",
-      "sha256": "d1d7ea2dda4e06ec36e6a868a12094b5f06cb40c9d697f2ec905e9c63a9ca4a0"
+      "sha256": "579eca366f96de2bea29e152ae58d608863535c3f4a11baf4765546b3930ff93"
     },
     {
       "file": "server_scripts/10_economy/onu_market.js",
-      "sha256": "9368568f4f378653178ffacb109b6350f3d453b15ef89dcc7b310d1f38e7cfe7"
+      "sha256": "56315855ecd3dc445ac9d82600f73a0ff8903e880b781d274defd0f0a93ee457"
     },
     {
       "file": "server_scripts/10_economy/territory_tax.js",
@@ -449,19 +489,19 @@
     },
     {
       "file": "server_scripts/20_military/war_claims.js",
-      "sha256": "7b68a3046bd72f2253b8ac147b1d31c30574869883bb8c0afbd77c15847087f6"
+      "sha256": "76e120a4192f4987eb020ab6ae40a280dc3690f86865925fd2463a920da77925"
     },
     {
       "file": "server_scripts/20_military/war_engine.js",
-      "sha256": "68df6cb444f17cadf7e7495baf5a8685344027030ab325e94145a60824446e08"
+      "sha256": "02bab7402a8aa1404a8daad2b0c8bd92c2ac2a8e0c45e039b830af02650e842b"
     },
     {
       "file": "server_scripts/20_military/war_flag.js",
-      "sha256": "6a101099b651a13e20f15a2693641552ca916330a388267f08be55dcf266ae88"
+      "sha256": "89bf1c99339cf5bc36b3104eeaa883c92e8972ae5de7c7989de807c89fa9f259"
     },
     {
       "file": "server_scripts/20_military/war_raidhours.js",
-      "sha256": "02bb51575f532c72ebaecd081d7c6c26b69d160d4206fe333f3ce5a2debaedca"
+      "sha256": "288cb7ca170271af7410c0a1ebb6467fc58f6c9fd886a5533d2fb0927d9bc38d"
     },
     {
       "file": "server_scripts/20_military/war_sanctuary.js",
@@ -473,7 +513,7 @@
     },
     {
       "file": "server_scripts/30_nation/nation_homes.js",
-      "sha256": "7441e2a11ab943db580b08c49f0ae43717933619d89da9c42a155f6df6c5cbd5"
+      "sha256": "d5684fd0d3e38ccdb71502305f192b18fd511282468e15330136b2db08d03773"
     },
     {
       "file": "server_scripts/30_nation/nation_info.js",
@@ -496,6 +536,10 @@
       "sha256": "10155a680610f24b1a2da88840919fc5eea0e229df33d5a439dfaa90d0e953d6"
     },
     {
+      "file": "server_scripts/40_rules/pvp_tracker.js",
+      "sha256": "d0cdbc1bd5ed4b513b92c63828b6d7b25c5ec538a9a050334aaada6652341769"
+    },
+    {
       "file": "server_scripts/40_rules/vehicle_rules.js",
       "sha256": "cc4446a3a3d3ab4c82f84e9d1eeb13f076a763f41a6c678f34e3e7dc260696a2"
     },
@@ -513,7 +557,7 @@
     },
     {
       "file": "server_scripts/90_commands/unified_commands.js",
-      "sha256": "86557857f80221b796fefc4038c30773c42c9182e33303ab500ca5870fe626fd"
+      "sha256": "76f93c8aedeca20f22fc13255c914c549543160dd90c598f7ee901f2b51c65cb"
     },
     {
       "file": "server_scripts/main.js",

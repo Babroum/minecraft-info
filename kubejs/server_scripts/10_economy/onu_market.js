@@ -734,6 +734,7 @@ function openMarketGUI(player) {
 
     var jsonStr = JSON.stringify(payload)
     player.sendData('open_onu_market', { json: jsonStr })
+    return 1
 }
 
 // -----------------------------------------------------------------------------

@@ -1,26 +1,31 @@
 {
-	"id": "CT-METALLURGIE-2-103",
-	"templateId": "CT-METALLURGIE-2",
-	"title": "Développement Électronique & Réseaux",
-	"lore": "Achat de circuits électroniques et métaux rares.",
+	"id": "CT-AGRO-2-211",
+	"templateId": "CT-AGRO-2",
+	"title": "Plan Mondial Contre la Famine",
+	"lore": "Approvisionnement massif en féculents et légumes de conservation.",
 	"items": [
 		{
-			"id": "mekanism:basic_control_circuit",
+			"id": "farmersdelight:potato_crate",
 			"count": 32,
-			"name": "Circuit de Contrôle de Base"
+			"name": "Caisse de Pommes de Terre"
 		},
 		{
-			"id": "mekanism:ingot_osmium",
-			"count": 64,
-			"name": "Lingot d'Osmium"
+			"id": "farmersdelight:carrot_crate",
+			"count": 32,
+			"name": "Caisse de Carottes"
+		},
+		{
+			"id": "farmersdelight:cabbage_crate",
+			"count": 32,
+			"name": "Caisse de Choux"
 		}
 	],
-	"reward": 4200,
-	"driverCutPercent": 10,
-	"openedAt": 1789301427695,
-	"expiresAt": 1789312227695,
-	"status": "COMPLETED",
-	"completedByPlayer": "croksie",
-	"completedByTeam": "Test",
-	"completedAt": 1789303754535
+	"reward": 2500,
+	"driverCutPercent": 15,
+	"openedAt": 1789312280145,
+	"expiresAt": 1789323080145,
+	"status": "OPEN",
+	"completedByPlayer": null,
+	"completedByTeam": null,
+	"completedAt": null
 }

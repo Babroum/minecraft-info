@@ -19,6 +19,129 @@ const DATAPACKS_DIR = path.resolve(MODPACKS_DIR, "datapacks");
 const KUBEJS_DIR = path.resolve(ROOT_DIR, "kubejs");
 const MANIFEST_PATH = path.resolve(MODPACKS_DIR, "manifest.json");
 
+// --- Chemins Serveur & Données KubeJS ---
+const SERVER_DIR = path.resolve(ROOT_DIR, "server");
+const SERVER_DATA_DIR = path.resolve(SERVER_DIR, "kubejs/data");
+const ROOT_DATA_DIR = path.resolve(KUBEJS_DIR, "data");
+const FTB_PARTY_DIR = path.resolve(SERVER_DIR, "world/ftbteams/party");
+
+// --- Leaderboards Cache & Helpers ---
+let leaderboardCache = {
+  timestamp: 0,
+  data: null,
+};
+const LEADERBOARD_CACHE_TTL_MS = 30 * 1000; // 30 secondes de cache en mémoire
+
+function loadLeaderboards() {
+  const now = Date.now();
+  if (leaderboardCache.data && (now - leaderboardCache.timestamp) < LEADERBOARD_CACHE_TTL_MS) {
+    return leaderboardCache.data;
+  }
+
+  const primaryFile = path.join(SERVER_DATA_DIR, "leaderboards.json");
+  const fallbackFile = path.join(ROOT_DATA_DIR, "leaderboards.json");
+
+  let parsed = null;
+  for (const candidate of [primaryFile, fallbackFile]) {
+    if (fs.existsSync(candidate)) {
+      try {
+        const raw = fs.readFileSync(candidate, "utf-8");
+        if (raw && raw.trim() && raw.trim() !== "{}") {
+          parsed = JSON.parse(raw);
+          break;
+        }
+      } catch (e) {
+        console.error("Erreur lecture " + candidate + ":", e.message);
+      }
+    }
+  }
+
+  if (parsed && Array.isArray(parsed.nations)) {
+    leaderboardCache = { timestamp: now, data: parsed };
+    return parsed;
+  }
+
+  // Fallback si leaderboards.json n'est pas encore généré par KubeJS
+  const fallback = buildFallbackLeaderboards();
+  leaderboardCache = { timestamp: now, data: fallback };
+  return fallback;
+}
+
+function buildFallbackLeaderboards() {
+  const nations = [];
+
+  // Lecture à chaud des équipes FTB Teams (.snbt) si existantes
+  if (fs.existsSync(FTB_PARTY_DIR)) {
+    try {
+      const files = fs.readdirSync(FTB_PARTY_DIR);
+      for (const file of files) {
+        if (!file.endsWith(".snbt")) continue;
+        const filePath = path.join(FTB_PARTY_DIR, file);
+        const content = fs.readFileSync(filePath, "utf-8");
+
+        const idMatch = content.match(/id:\s*"([^"]+)"/);
+        const nameMatch = content.match(/"ftbteams:display_name":\s*"([^"]+)"/);
+        const colorMatch = content.match(/"ftbteams:color":\s*"([^"]+)"/);
+        const ownerMatch = content.match(/owner:\s*"([^"]+)"/);
+
+        const ranksMatch = content.match(/ranks:\s*\{([^}]+)\}/s);
+        let memberCount = 1;
+        if (ranksMatch && ranksMatch[1]) {
+          memberCount = ranksMatch[1].split("\n").filter((l) => l.includes(":")).length || 1;
+        }
+
+        const id = idMatch ? idMatch[1] : file.replace(".snbt", "");
+        const name = nameMatch ? nameMatch[1] : "Nation " + id.slice(0, 6);
+        const color = colorMatch ? colorMatch[1] : "#FFD700";
+
+        nations.push({
+          id,
+          name,
+          color,
+          leader: "Leader",
+          leaderUuid: ownerMatch ? ownerMatch[1] : null,
+          membersCount: memberCount,
+          onlineCount: 0,
+          treasury: 0,
+          formattedTreasury: "0 R",
+          claimedChunks: 0,
+          ctfWins: 0,
+          ctfDefenses: 0,
+          warsWon: 0,
+          warsLost: 0,
+          activeWars: 0,
+          onuDeliveriesCount: 0,
+          onuDeliveriesValue: 0,
+          weeklyStreak: 0,
+          weeklyPoints: 0,
+          powerScore: memberCount * 25,
+        });
+      }
+    } catch (e) {
+      console.error("Erreur lecture dossier FTB teams:", e);
+    }
+  }
+
+  const sortCopy = (arr, fn) => [...arr].sort(fn);
+
+  const categories = {
+    power: sortCopy(nations, (a, b) => b.powerScore - a.powerScore),
+    wealth: sortCopy(nations, (a, b) => b.treasury - a.treasury),
+    military: sortCopy(nations, (a, b) => (b.ctfWins * 3 + b.ctfDefenses * 2 + b.warsWon * 5) - (a.ctfWins * 3 + a.ctfDefenses * 2 + a.warsWon * 5)),
+    territory: sortCopy(nations, (a, b) => b.claimedChunks - a.claimedChunks),
+    onu: sortCopy(nations, (a, b) => b.onuDeliveriesCount - a.onuDeliveriesCount),
+    players_onu: [],
+    players_pvp: [],
+  };
+
+  return {
+    lastUpdated: Date.now(),
+    nations: categories.power,
+    players: [],
+    categories,
+  };
+}
+
 // --- Auth storage ---
 const ACCOUNTS_PATH = path.resolve(__dirname, "accounts.json");
 const SESSIONS_PATH = path.resolve(__dirname, "sessions.json");
@@ -295,6 +418,77 @@ async function handleRequest(req, res) {
     return sendError(res, 405, "Méthode non autorisée");
   }
 
+  // ===== LEADERBOARDS ENDPOINTS =====
+
+  // 1. GET /api/leaderboards/summary (Top 3 de chaque catégorie pour widgets launcher)
+  if (pathname === "/api/leaderboards/summary") {
+    const data = loadLeaderboards();
+    const categories = data.categories || {};
+    return sendJson(res, 200, {
+      status: "ok",
+      lastUpdated: data.lastUpdated,
+      summary: {
+        power: (categories.power || []).slice(0, 3),
+        wealth: (categories.wealth || []).slice(0, 3),
+        military: (categories.military || []).slice(0, 3),
+        territory: (categories.territory || []).slice(0, 3),
+        onu: (categories.onu || []).slice(0, 3),
+        players_onu: (categories.players_onu || []).slice(0, 3),
+        players_pvp: (categories.players_pvp || []).slice(0, 3),
+      }
+    });
+  }
+
+  // 2. GET /api/leaderboards/nations (Liste complète des nations classées)
+  if (pathname === "/api/leaderboards/nations") {
+    const data = loadLeaderboards();
+    return sendJson(res, 200, {
+      status: "ok",
+      lastUpdated: data.lastUpdated,
+      total: (data.nations || []).length,
+      nations: data.nations || []
+    });
+  }
+
+  // 3. GET /api/leaderboards/players (Liste complète des joueurs classés)
+  if (pathname === "/api/leaderboards/players") {
+    const data = loadLeaderboards();
+    return sendJson(res, 200, {
+      status: "ok",
+      lastUpdated: data.lastUpdated,
+      total: (data.players || []).length,
+      players: data.players || []
+    });
+  }
+
+  // 4. GET /api/leaderboards ou GET /api/leaderboard (Tri par catégorie + pagination)
+  if (pathname === "/api/leaderboards" || pathname === "/api/leaderboard") {
+    const data = loadLeaderboards();
+    const categories = data.categories || {};
+    const availableCategories = Object.keys(categories);
+
+    const category = parsedUrl.searchParams.get("category") || parsedUrl.searchParams.get("sort") || "power";
+    const page = Math.max(1, parseInt(parsedUrl.searchParams.get("page") || "1", 10));
+    const limit = Math.max(1, Math.min(100, parseInt(parsedUrl.searchParams.get("limit") || "10", 10)));
+
+    const selectedList = categories[category] || data.nations || [];
+    const total = selectedList.length;
+    const startIndex = (page - 1) * limit;
+    const paginatedResults = selectedList.slice(startIndex, startIndex + limit);
+
+    return sendJson(res, 200, {
+      status: "ok",
+      lastUpdated: data.lastUpdated,
+      category,
+      availableCategories,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit) || 1,
+      results: paginatedResults
+    });
+  }
+
   // 1. Endpoint Manifest JSON
   if (pathname === "/manifest.json") {
     if (!fs.existsSync(MANIFEST_PATH)) {
@@ -434,6 +628,12 @@ async function handleRequest(req, res) {
         resourcepacks: "/resourcepacks/:filename",
         datapacks: "/datapacks/:filename",
         kubejs: "/kubejs/*",
+        leaderboards: {
+          all: "GET /api/leaderboards?category=power&limit=10&page=1",
+          nations: "GET /api/leaderboards/nations",
+          players: "GET /api/leaderboards/players",
+          summary: "GET /api/leaderboards/summary"
+        },
         auth: {
           register: "POST /auth/register",
           login: "POST /auth/login",

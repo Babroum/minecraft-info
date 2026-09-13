@@ -190,6 +190,26 @@ ServerEvents.commandRegistry(function(event) {
                         return 0
                     })
                 )
+                // /nation setallyhome
+                .then(Commands.literal('setallyhome')
+                    .executes(function(ctx) {
+                        var p = getPlayer(ctx)
+                        if (!p) return 0
+                        if (typeof setNationAllyHome === 'function') return setNationAllyHome(null, p)
+                        sendMsg(p, 'Alliance', 'Module nation_homes indisponible.', '§c')
+                        return 0
+                    })
+                )
+                // /nation delallyhome
+                .then(Commands.literal('delallyhome')
+                    .executes(function(ctx) {
+                        var p = getPlayer(ctx)
+                        if (!p) return 0
+                        if (typeof deleteNationAllyHome === 'function') return deleteNationAllyHome(null, p)
+                        sendMsg(p, 'Alliance', 'Module nation_homes indisponible.', '§c')
+                        return 0
+                    })
+                )
                 // /nation altar [set|info]
                 .then(Commands.literal('altar')
                     .then(Commands.literal('set')
@@ -279,6 +299,40 @@ ServerEvents.commandRegistry(function(event) {
             if (typeof showNationOverview === 'function') return showNationOverview(p)
             return 0
         })
+    )
+    event.register(
+        Commands.literal('setallyhome').executes(function(ctx) {
+            var p = getPlayer(ctx)
+            if (!p) return 0
+            if (typeof setNationAllyHome === 'function') return setNationAllyHome(null, p)
+            return 0
+        })
+    )
+    event.register(
+        Commands.literal('delallyhome').executes(function(ctx) {
+            var p = getPlayer(ctx)
+            if (!p) return 0
+            if (typeof deleteNationAllyHome === 'function') return deleteNationAllyHome(null, p)
+            return 0
+        })
+    )
+    event.register(
+        Commands.literal('allyhome')
+            .then(Commands.argument('nation', StringArgumentType.string())
+                .executes(function(ctx) {
+                    var p = getPlayer(ctx)
+                    if (!p) return 0
+                    if (typeof teleportToAllyHome === 'function') {
+                        return teleportToAllyHome(p, StringArgumentType.getString(ctx, 'nation'))
+                    }
+                    return 0
+                })
+            )
+            .executes(function(ctx) {
+                var p = getPlayer(ctx)
+                if (p) sendMsg(p, 'Aide', 'Usage : §e/allyhome <nom_nation>', '§7')
+                return 0
+            })
     )
 
     // =========================================================================
@@ -371,21 +425,54 @@ ServerEvents.commandRegistry(function(event) {
                         return 0
                     })
                 )
-                // /war accept [cible]
+                // /war accept [cible] & /war approve [cible]
                 .then(Commands.literal('accept')
                     .then(Commands.argument('cible', StringArgumentType.greedyString())
                         .executes(function(ctx) {
-                            var p = getPlayer(ctx)
+                            var p = ctx.source.player
                             var s = ctx.source.server
+                            var query = StringArgumentType.getString(ctx, 'cible')
                             if (typeof approveWar === 'function') {
-                                return approveWar(s, StringArgumentType.getString(ctx, 'cible')) ? 1 : 0
+                                var ok = approveWar(s, query)
+                                if (p && !ok) sendMsg(p, 'Staff', 'Aucune demande de guerre en attente trouvée pour : ' + query, '§c')
+                                return ok ? 1 : 0
                             }
                             return 0
                         })
                     )
                     .executes(function(ctx) {
+                        var p = ctx.source.player
                         var s = ctx.source.server
-                        if (typeof approveWar === 'function') return approveWar(s, null) ? 1 : 0
+                        if (typeof approveWar === 'function') {
+                            var ok = approveWar(s, null)
+                            if (p && !ok) sendMsg(p, 'Staff', 'Aucune demande de guerre en attente.', '§c')
+                            return ok ? 1 : 0
+                        }
+                        return 0
+                    })
+                )
+                .then(Commands.literal('approve')
+                    .then(Commands.argument('cible', StringArgumentType.greedyString())
+                        .executes(function(ctx) {
+                            var p = ctx.source.player
+                            var s = ctx.source.server
+                            var query = StringArgumentType.getString(ctx, 'cible')
+                            if (typeof approveWar === 'function') {
+                                var ok = approveWar(s, query)
+                                if (p && !ok) sendMsg(p, 'Staff', 'Aucune demande de guerre en attente trouvée pour : ' + query, '§c')
+                                return ok ? 1 : 0
+                            }
+                            return 0
+                        })
+                    )
+                    .executes(function(ctx) {
+                        var p = ctx.source.player
+                        var s = ctx.source.server
+                        if (typeof approveWar === 'function') {
+                            var ok = approveWar(s, null)
+                            if (p && !ok) sendMsg(p, 'Staff', 'Aucune demande de guerre en attente.', '§c')
+                            return ok ? 1 : 0
+                        }
                         return 0
                     })
                 )
@@ -393,32 +480,50 @@ ServerEvents.commandRegistry(function(event) {
                 .then(Commands.literal('decline')
                     .then(Commands.argument('cible', StringArgumentType.greedyString())
                         .executes(function(ctx) {
+                            var p = ctx.source.player
                             var s = ctx.source.server
+                            var query = StringArgumentType.getString(ctx, 'cible')
                             if (typeof rejectWar === 'function') {
-                                return rejectWar(s, StringArgumentType.getString(ctx, 'cible')) ? 1 : 0
+                                var ok = rejectWar(s, query)
+                                if (p && !ok) sendMsg(p, 'Staff', 'Aucune demande de guerre en attente trouvée pour : ' + query, '§c')
+                                return ok ? 1 : 0
                             }
                             return 0
                         })
                     )
                     .executes(function(ctx) {
+                        var p = ctx.source.player
                         var s = ctx.source.server
-                        if (typeof rejectWar === 'function') return rejectWar(s, null) ? 1 : 0
+                        if (typeof rejectWar === 'function') {
+                            var ok = rejectWar(s, null)
+                            if (p && !ok) sendMsg(p, 'Staff', 'Aucune demande de guerre en attente.', '§c')
+                            return ok ? 1 : 0
+                        }
                         return 0
                     })
                 )
                 .then(Commands.literal('reject')
                     .then(Commands.argument('cible', StringArgumentType.greedyString())
                         .executes(function(ctx) {
+                            var p = ctx.source.player
                             var s = ctx.source.server
+                            var query = StringArgumentType.getString(ctx, 'cible')
                             if (typeof rejectWar === 'function') {
-                                return rejectWar(s, StringArgumentType.getString(ctx, 'cible')) ? 1 : 0
+                                var ok = rejectWar(s, query)
+                                if (p && !ok) sendMsg(p, 'Staff', 'Aucune demande de guerre en attente trouvée pour : ' + query, '§c')
+                                return ok ? 1 : 0
                             }
                             return 0
                         })
                     )
                     .executes(function(ctx) {
+                        var p = ctx.source.player
                         var s = ctx.source.server
-                        if (typeof rejectWar === 'function') return rejectWar(s, null) ? 1 : 0
+                        if (typeof rejectWar === 'function') {
+                            var ok = rejectWar(s, null)
+                            if (p && !ok) sendMsg(p, 'Staff', 'Aucune demande de guerre en attente.', '§c')
+                            return ok ? 1 : 0
+                        }
                         return 0
                     })
                 )
@@ -456,7 +561,7 @@ ServerEvents.commandRegistry(function(event) {
                     .then(Commands.literal('on')
                         .requires(function(source) { return source.hasPermission(2) })
                         .executes(function(ctx) {
-                            if (typeof setForcedRaidHoursState === 'function') setForcedRaidHoursState(true)
+                            if (typeof setForcedRaidHoursState === 'function') setForcedRaidHoursState(true, ctx.source.server)
                             broadcastMsg(ctx.source.server, 'Raid Hours', 'Les Raid Hours ont été ACTIVÉES par le Staff ! Les claims ennemis sont vulnérables au minage/siège.', '§c')
                             return 1
                         })
@@ -464,7 +569,7 @@ ServerEvents.commandRegistry(function(event) {
                     .then(Commands.literal('off')
                         .requires(function(source) { return source.hasPermission(2) })
                         .executes(function(ctx) {
-                            if (typeof setForcedRaidHoursState === 'function') setForcedRaidHoursState(false)
+                            if (typeof setForcedRaidHoursState === 'function') setForcedRaidHoursState(false, ctx.source.server)
                             broadcastMsg(ctx.source.server, 'Raid Hours', 'Les Raid Hours ont été DÉSACTIVÉES par le Staff. Claims sécurisés.', '§a')
                             return 1
                         })
@@ -472,7 +577,7 @@ ServerEvents.commandRegistry(function(event) {
                     .then(Commands.literal('auto')
                         .requires(function(source) { return source.hasPermission(2) })
                         .executes(function(ctx) {
-                            if (typeof setForcedRaidHoursState === 'function') setForcedRaidHoursState(null)
+                            if (typeof setForcedRaidHoursState === 'function') setForcedRaidHoursState(null, ctx.source.server)
                             var p = getPlayer(ctx)
                             if (p) sendMsg(p, 'Raid Hours', 'Mode automatique rétabli (selon les horaires configurés).', '§a')
                             return 1
@@ -577,6 +682,57 @@ ServerEvents.commandRegistry(function(event) {
                     if (typeof showCurrentOnuContract === 'function') showCurrentOnuContract(p)
                     if (typeof showWeeklyContractStatus === 'function') showWeeklyContractStatus(p)
                     return 1
+                })
+            )
+            .then(Commands.literal('contrat')
+                .executes(function(ctx) {
+                    var p = getPlayer(ctx)
+                    if (!p) return 0
+                    if (typeof showCurrentOnuContract === 'function') showCurrentOnuContract(p)
+                    if (typeof showWeeklyContractStatus === 'function') showWeeklyContractStatus(p)
+                    return 1
+                })
+            )
+            .then(Commands.literal('contrats')
+                .executes(function(ctx) {
+                    var p = getPlayer(ctx)
+                    if (!p) return 0
+                    if (typeof showCurrentOnuContract === 'function') showCurrentOnuContract(p)
+                    if (typeof showWeeklyContractStatus === 'function') showWeeklyContractStatus(p)
+                    return 1
+                })
+            )
+            // /onu regular & /onu objectif (Appel d'offres régulier 3h uniquement)
+            .then(Commands.literal('regular')
+                .then(Commands.literal('deliver')
+                    .executes(function(ctx) {
+                        var p = getPlayer(ctx)
+                        if (!p) return 0
+                        if (typeof deliverOnuContract === 'function') return deliverOnuContract(p)
+                        return 0
+                    })
+                )
+                .executes(function(ctx) {
+                    var p = getPlayer(ctx)
+                    if (!p) return 0
+                    if (typeof showCurrentOnuContract === 'function') return showCurrentOnuContract(p)
+                    return 0
+                })
+            )
+            .then(Commands.literal('objectif')
+                .then(Commands.literal('deliver')
+                    .executes(function(ctx) {
+                        var p = getPlayer(ctx)
+                        if (!p) return 0
+                        if (typeof deliverOnuContract === 'function') return deliverOnuContract(p)
+                        return 0
+                    })
+                )
+                .executes(function(ctx) {
+                    var p = getPlayer(ctx)
+                    if (!p) return 0
+                    if (typeof showCurrentOnuContract === 'function') return showCurrentOnuContract(p)
+                    return 0
                 })
             )
             .then(Commands.literal('weekly')
@@ -813,6 +969,24 @@ ServerEvents.commandRegistry(function(event) {
                         return 0
                     })
                 )
+                // /ally sethome
+                .then(Commands.literal('sethome')
+                    .executes(function(ctx) {
+                        var p = getPlayer(ctx)
+                        if (!p) return 0
+                        if (typeof setNationAllyHome === 'function') return setNationAllyHome(null, p)
+                        return 0
+                    })
+                )
+                // /ally delhome
+                .then(Commands.literal('delhome')
+                    .executes(function(ctx) {
+                        var p = getPlayer(ctx)
+                        if (!p) return 0
+                        if (typeof deleteNationAllyHome === 'function') return deleteNationAllyHome(null, p)
+                        return 0
+                    })
+                )
                 // /ally cta [accept|decline] <nation>
                 .then(Commands.literal('cta')
                     .then(Commands.literal('accept')
@@ -965,17 +1139,17 @@ ServerEvents.commandRegistry(function(event) {
             // /waradmin raidhours force <on|off|auto>
             .then(Commands.literal('raidhours')
                 .then(Commands.literal('on').executes(function(ctx) {
-                    if (typeof setForcedRaidHoursState === 'function') setForcedRaidHoursState(true)
+                    if (typeof setForcedRaidHoursState === 'function') setForcedRaidHoursState(true, ctx.source.server)
                     broadcastMsg(ctx.source.server, 'Raid Hours', 'Les Raid Hours ont été ACTIVÉES par le Staff !', '§c')
                     return 1
                 }))
                 .then(Commands.literal('off').executes(function(ctx) {
-                    if (typeof setForcedRaidHoursState === 'function') setForcedRaidHoursState(false)
+                    if (typeof setForcedRaidHoursState === 'function') setForcedRaidHoursState(false, ctx.source.server)
                     broadcastMsg(ctx.source.server, 'Raid Hours', 'Les Raid Hours ont été DÉSACTIVÉES par le Staff.', '§a')
                     return 1
                 }))
                 .then(Commands.literal('auto').executes(function(ctx) {
-                    if (typeof setForcedRaidHoursState === 'function') setForcedRaidHoursState(null)
+                    if (typeof setForcedRaidHoursState === 'function') setForcedRaidHoursState(null, ctx.source.server)
                     var p = getPlayer(ctx)
                     if (p) sendMsg(p, 'Raid Hours', 'Mode automatique rétabli.', '§a')
                     return 1

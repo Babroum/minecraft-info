@@ -105,6 +105,90 @@ function setPlayerWarBypass(player, enable) {
 }
 
 /**
+ * Révoque immédiatement le bypass FTB Chunks de guerre pour TOUS les joueurs connectés
+ */
+function revokeAllWarBypasses(server) {
+    if (!server) return
+    try {
+        warBypassedPlayers = {}
+        playerWarBypassExpiry = {}
+
+        var chunksApi = null
+        try {
+            chunksApi = Java.loadClass('dev.ftb.mods.ftbchunks.api.FTBChunksAPI').api()
+        } catch (ce) {}
+        var chunkMgr = (chunksApi && chunksApi.isManagerLoaded()) ? chunksApi.getManager() : null
+
+        var players = server.getPlayerList().getPlayers()
+        for (var i = 0; i < players.size(); i++) {
+            var p = players.get(i)
+            if (!p) continue
+            var pUuid = (typeof getPlayerUUID === 'function') ? getPlayerUUID(p) : (p.getUUID ? p.getUUID() : p.getUuid())
+            if (chunkMgr && pUuid && !p.isCreative()) {
+                try {
+                    chunkMgr.setBypassProtection(pUuid, false)
+                } catch (pe) {}
+            }
+        }
+    } catch (err) {
+        console.error('[WarClaims] Erreur revokeAllWarBypasses : ' + err)
+    }
+}
+
+/**
+ * Synchronise les permissions d'explosion FTB Chunks selon l'état des guerres et des Raid Hours
+ */
+function updateWarExplosionPermissions(server) {
+    if (!server) return
+    try {
+        var wars = (typeof loadWarsRegistry === 'function') ? loadWarsRegistry(server) : null
+        if (!wars) return
+
+        var isRaid = (typeof isRaidHourActive === 'function' && isRaidHourActive())
+        var FTBChunksProperties = Java.loadClass('dev.ftb.mods.ftbchunks.api.FTBChunksProperties')
+
+        // Identifier les équipes en guerre formelle active
+        var teamsInActiveWar = {}
+        for (var id in wars) {
+            var w = (typeof getWar === 'function') ? getWar(wars, id) : wars[id]
+            if (!w || w.type !== 'WAR' || w.status !== 'ACTIVE') continue
+
+            var atkId = w.attackerTeamId || w.attackerLeader
+            var defId = w.defenderTeamId || w.defenderLeader
+            if (atkId) teamsInActiveWar[String(atkId)] = true
+            if (defId) teamsInActiveWar[String(defId)] = true
+        }
+
+        var teamsApi = Java.loadClass('dev.ftb.mods.ftbteams.api.FTBTeamsAPI').api()
+        if (!teamsApi || !teamsApi.isManagerLoaded()) return
+        var mgr = teamsApi.getManager()
+        if (!mgr) return
+
+        var allTeams = mgr.getTeams()
+        var it = allTeams.iterator()
+        while (it.hasNext()) {
+            var team = it.next()
+            if (!team) continue
+            var tIdStr = String(team.getId())
+
+            // L'ONU reste toujours 100% protégée contre les explosions
+            var shortName = team.getShortName ? String(team.getShortName()).toLowerCase() : ''
+            if (shortName === 'onu' || tIdStr === 'cb440140-1d45-4eff-9b10-2bab3d457d63') {
+                try { team.setProperty(FTBChunksProperties.ALLOW_EXPLOSIONS, false) } catch (pe1) {}
+                continue
+            }
+
+            var shouldAllow = isRaid && (teamsInActiveWar[tIdStr] === true)
+            try {
+                team.setProperty(FTBChunksProperties.ALLOW_EXPLOSIONS, shouldAllow)
+            } catch (pe2) {}
+        }
+    } catch (err) {
+        console.error('[WarClaims] Erreur updateWarExplosionPermissions : ' + err)
+    }
+}
+
+/**
  * Détermine si une action de guerre (minage / pose / interaction) est autorisée sur ce bloc
  */
 function shouldAllowWarAction(player, level, blockX, blockZ) {
@@ -169,9 +253,28 @@ BlockEvents.leftClicked(function(event) {
         if (!player || player.isFake()) return
         var level = event.level
         if (!level || level.isClientSide()) return
+        var server = level.server
         var pos = event.block.getPos()
         var bx = pos.getX()
+        var by = pos.getY()
         var bz = pos.getZ()
+
+        // Détection de frappe directe sur l'Autel ou l'Étendard adverse
+        if (typeof loadAltarsData === 'function') {
+            var altars = loadAltarsData()
+            for (var tId in altars) {
+                var a = altars[tId]
+                if (a && a.x === bx && (by >= a.y && by <= (a.y + 2)) && a.z === bz) {
+                    if (typeof tryStealFlag === 'function') {
+                        var stolen = tryStealFlag(server, player, tId, a)
+                        if (stolen) {
+                            event.cancel()
+                            return
+                        }
+                    }
+                }
+            }
+        }
 
         if (shouldAllowWarAction(player, level, bx, bz)) {
             setPlayerWarBypass(player, true)
@@ -186,45 +289,50 @@ if (typeof TW_Scheduler !== 'undefined' && TW_Scheduler.register) {
             if (!server) return
 
             var now = Date.now()
-            var isRaid = (typeof isRaidHourActive === 'function' && isRaidHourActive())
 
+            // Synchroniser les permissions d'explosion FTB Chunks (guerres actives + Raid Hours)
+            try {
+                updateWarExplosionPermissions(server)
+            } catch (uepErr) {}
 
-        var players = server.getPlayerList().getPlayers()
-        for (var i = 0; i < players.size(); i++) {
-            var p = players.get(i)
-            if (!p || p.isFake()) continue
-            var lvl = p.level
-            if (!lvl) continue
-            var px = Math.floor(p.x)
-            var pz = Math.floor(p.z)
+            var players = server.getPlayerList().getPlayers()
+            for (var i = 0; i < players.size(); i++) {
+                var p = players.get(i)
+                if (!p || p.isFake()) continue
+                var lvl = p.level
+                if (!lvl) continue
+                var px = Math.floor(p.x)
+                var pz = Math.floor(p.z)
 
-            var pUuid = (typeof getPlayerUUID === 'function') ? getPlayerUUID(p) : (p.getUUID ? p.getUUID() : p.getUuid())
-            var uuidStr = pUuid ? pUuid.toString() : null
-            if (!uuidStr) continue
+                var pUuid = (typeof getPlayerUUID === 'function') ? getPlayerUUID(p) : (p.getUUID ? p.getUUID() : p.getUuid())
+                var uuidStr = pUuid ? pUuid.toString() : null
+                if (!uuidStr) continue
 
-            // Si Raid Hours actives et joueur physiquement en territoire ennemi
-            if (isRaid && shouldAllowWarAction(p, lvl, px, pz)) {
-                setPlayerWarBypass(p, true)
-            } else {
-                // Si hors Raid Hours ou fenêtre active de 15s expirée, révoquer le bypass
-                var expiry = playerWarBypassExpiry[uuidStr] || 0
-                if (!isRaid || now > expiry) {
-                    if (warBypassedPlayers[uuidStr]) {
-                        setPlayerWarBypass(p, false)
-                    }
-                    try {
-                        var chunksApi = Java.loadClass('dev.ftb.mods.ftbchunks.api.FTBChunksAPI').api()
-                        if (chunksApi && chunksApi.isManagerLoaded()) {
-                            var chunkMgr = chunksApi.getManager()
-                            if (chunkMgr && pUuid && chunkMgr.getBypassProtection(pUuid)) {
-                                chunkMgr.setBypassProtection(pUuid, false)
-                            }
+                var allowAction = shouldAllowWarAction(p, lvl, px, pz)
+
+                // Si action de guerre autorisée (Conflit CTF actif ou Siège en Raid Hours)
+                if (allowAction) {
+                    setPlayerWarBypass(p, true)
+                } else {
+                    // Si action non autorisée et fenêtre de 15s expirée, révoquer le bypass
+                    var expiry = playerWarBypassExpiry[uuidStr] || 0
+                    if (now > expiry || !warBypassedPlayers[uuidStr]) {
+                        if (warBypassedPlayers[uuidStr]) {
+                            setPlayerWarBypass(p, false)
                         }
-                    } catch (be) {}
+                        try {
+                            var chunksApi = Java.loadClass('dev.ftb.mods.ftbchunks.api.FTBChunksAPI').api()
+                            if (chunksApi && chunksApi.isManagerLoaded()) {
+                                var chunkMgr = chunksApi.getManager()
+                                if (chunkMgr && pUuid && !p.isCreative() && chunkMgr.getBypassProtection(pUuid)) {
+                                    chunkMgr.setBypassProtection(pUuid, false)
+                                }
+                            }
+                        } catch (be) {}
+                    }
                 }
             }
-        }
-    } catch (te) {}
+        } catch (te) {}
     })
 }
 
@@ -235,6 +343,10 @@ PlayerEvents.loggedOut(function(event) {
         if (player) setPlayerWarBypass(player, false)
     } catch (e) {}
 })
+
+// =============================================================================
+// BLOCS ÉVÉNEMENTS : GESTION DES DÉGÂTS DE SIÈGE & BYPASS FTB
+// =============================================================================
 
 // -----------------------------------------------------------------------------
 // 2. CONTRÔLE STRICT DU MINAGE (BlockEvents.broken)
@@ -252,14 +364,18 @@ BlockEvents.broken(function(event) {
         var by = pos.getY()
         var bz = pos.getZ()
 
-        // Protection de l'Autel National contre la destruction
+        // Protection de l'Autel National et de son Étendard contre la destruction
         if (typeof loadAltarsData === 'function') {
             var altars = loadAltarsData()
             for (var tId in altars) {
                 var a = altars[tId]
-                if (a && a.x === bx && a.y === by && a.z === bz) {
+                if (a && a.x === bx && (by >= a.y && by <= (a.y + 2)) && a.z === bz) {
                     event.cancel()
-                    sendMsg(player, 'Autel National', 'L\'Autel National est indestructible tant qu\'il est enregistré ! (/nation altar)', '§c')
+                    if (typeof tryStealFlag === 'function') {
+                        var stolen = tryStealFlag(server, player, tId, a)
+                        if (stolen) return
+                    }
+                    sendMsg(player, 'Autel National', 'L\'Autel National et son Étendard sont scellés et protégés ! (/nation altar)', '§c')
                     return
                 }
             }
@@ -459,7 +575,13 @@ LevelEvents.beforeExplosion(function(event) {
             return
         }
 
-        // Pendant les Raid Hours : vérifier l'origine de l'explosion
+        var isRaid = (typeof isRaidHourActive === 'function' && isRaidHourActive())
+        if (!isRaid) {
+            event.cancel()
+            return
+        }
+
+        // Si l'explosion a un auteur joueur identifié
         var exploder = event.exploder
         var attackingPlayer = null
         if (exploder) {
@@ -474,24 +596,21 @@ LevelEvents.beforeExplosion(function(event) {
             }
         }
 
-        var isRaid = (typeof isRaidHourActive === 'function' && isRaidHourActive())
-
-        if (!isRaid) {
-            event.cancel()
-            return
-        }
-
         if (attackingPlayer) {
             var attackingTeam = (typeof getPlayerNationTeam === 'function') ? getPlayerNationTeam(attackingPlayer) : null
-            if (!attackingTeam || !isNationAtWarWith(server, attackingTeam.getId(), defendingTeam.getId())) {
-                sendMsg(attackingPlayer, 'Défense', 'Cette nation n\'est pas votre ennemie de guerre déclarée ! Dégâts impossibles.', '§c')
-                event.cancel()
-                return
+            if (attackingTeam && String(attackingTeam.getId()) !== String(defendingTeam.getId())) {
+                if (!isNationAtWarWith(server, attackingTeam.getId(), defendingTeam.getId())) {
+                    sendMsg(attackingPlayer, 'Défense', 'Cette nation n\'est pas votre ennemie de guerre déclarée ! Dégâts impossibles.', '§c')
+                    event.cancel()
+                    return
+                }
             }
-            // Ennemi confirmé en période de Raid Hours : DÉGÂTS D'EXPLOSION AUTORISÉS !
         }
+        // Guerre active confirmée en période de Raid Hours : DÉGÂTS D'EXPLOSION 100% AUTORISÉS !
     } catch (err) {
-        console.error('[WarClaimsHook] Erreur beforeExplosion : ' + err)
+        if (String(err).indexOf('EventExit') === -1) {
+            console.error('[WarClaimsHook] Erreur beforeExplosion : ' + err)
+        }
     }
 })
 

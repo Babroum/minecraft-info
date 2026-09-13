@@ -41,6 +41,9 @@ function getRaidHoursStatusText() {
     return status + '§f' + mode + ' [Créneau: ' + RAID_CONFIG.startHour + 'h00 - ' + RAID_CONFIG.endHour + 'h00]'
 }
 
-function setForcedRaidHoursState(state) {
+function setForcedRaidHoursState(state, server) {
     RAID_CONFIG.forceState = state
+    if (server && typeof updateWarExplosionPermissions === 'function') {
+        updateWarExplosionPermissions(server)
+    }
 }

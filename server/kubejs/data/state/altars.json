@@ -1,0 +1,30 @@
+{
+	"a23cf78a-8793-4151-842b-89b5dea2035e": {
+		"teamId": "a23cf78a-8793-4151-842b-89b5dea2035e",
+		"teamName": "Test",
+		"x": -448,
+		"y": 69,
+		"z": -169,
+		"dimension": "minecraft:overworld",
+		"blockId": "minecraft:lodestone",
+		"status": "AT_BASE",
+		"carrierUuid": null,
+		"carrierName": null,
+		"dropPos": null,
+		"updatedAt": 1789310402732
+	},
+	"029b6d7c-5bc3-4c83-8919-13ad41ce3c20": {
+		"teamId": "029b6d7c-5bc3-4c83-8919-13ad41ce3c20",
+		"teamName": "test2",
+		"x": -421,
+		"y": 65,
+		"z": -147,
+		"dimension": "minecraft:overworld",
+		"blockId": "minecraft:short_grass",
+		"status": "AT_BASE",
+		"carrierUuid": null,
+		"carrierName": null,
+		"dropPos": null,
+		"updatedAt": 1789313470051
+	}
+}

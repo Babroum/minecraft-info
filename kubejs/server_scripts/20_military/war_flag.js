@@ -49,6 +49,34 @@ function hasNationAltar(teamId) {
 }
 
 /**
+ * Pose physiquement un bloc d'Étendard au-dessus de l'Autel
+ */
+function spawnPhysicalFlagBlock(server, altar) {
+    if (!server || !altar || altar.x === undefined) return
+    try {
+        var dim = altar.dimension || 'minecraft:overworld'
+        var flagY = altar.y + 1
+        server.runCommandSilent('execute in ' + dim + ' run setblock ' + altar.x + ' ' + flagY + ' ' + altar.z + ' minecraft:red_banner')
+    } catch (e) {
+        console.error('[WarFlag] Erreur spawnPhysicalFlagBlock : ' + e)
+    }
+}
+
+/**
+ * Retire le bloc d'Étendard au-dessus de l'Autel
+ */
+function removePhysicalFlagBlock(server, altar) {
+    if (!server || !altar || altar.x === undefined) return
+    try {
+        var dim = altar.dimension || 'minecraft:overworld'
+        var flagY = altar.y + 1
+        server.runCommandSilent('execute in ' + dim + ' run setblock ' + altar.x + ' ' + flagY + ' ' + altar.z + ' minecraft:air')
+    } catch (e) {
+        console.error('[WarFlag] Erreur removePhysicalFlagBlock : ' + e)
+    }
+}
+
+/**
  * Réinitialise l'autel d'une nation à son état sécurisé à la base
  */
 function resetNationAltarFlag(server, teamId) {
@@ -62,6 +90,9 @@ function resetNationAltarFlag(server, teamId) {
         altars[sId].dropPos = null
         altars[sId].updatedAt = Date.now()
         saveAltarsData(altars)
+        if (server) {
+            removePhysicalFlagBlock(server, altars[sId])
+        }
     }
 }
 
@@ -70,7 +101,7 @@ function resetNationAltarFlag(server, teamId) {
  */
 function createFlagItem(defendingTeamId, defendingTeamName, conflictId) {
     var defName = defendingTeamName || 'Nation'
-    return Item.of('minecraft:black_banner', {
+    return Item.of('minecraft:red_banner', {
         display: {
             Name: '{"text":"Étendard National : ' + defName + '","color":"gold","bold":true}',
             Lore: [
@@ -99,6 +130,13 @@ function hasPlayerNationFlag(player) {
                 var nbt = item.getNbt ? item.getNbt() : item.nbt
                 if (nbt) {
                     if (nbt.NationFlag === true || nbt.NationFlag === 1 || nbt.contains('NationFlag')) {
+                        return true
+                    }
+                }
+                var itemId = item.getId ? item.getId() : ''
+                if (itemId.indexOf('banner') !== -1) {
+                    var nameStr = (item.getName ? item.getName().getString() : '')
+                    if (nameStr.indexOf('Étendard National') !== -1 || nameStr.indexOf('Etendard National') !== -1) {
                         return true
                     }
                 }
@@ -143,7 +181,18 @@ function removePlayerNationFlag(player) {
             var item = inv.getItem(i)
             if (item && !item.isEmpty()) {
                 var nbt = item.getNbt ? item.getNbt() : item.nbt
+                var isFlag = false
                 if (nbt && (nbt.NationFlag === true || nbt.NationFlag === 1 || nbt.contains('NationFlag'))) {
+                    isFlag = true
+                }
+                var itemId = item.getId ? item.getId() : ''
+                if (itemId.indexOf('banner') !== -1) {
+                    var nameStr = (item.getName ? item.getName().getString() : '')
+                    if (nameStr.indexOf('Étendard National') !== -1 || nameStr.indexOf('Etendard National') !== -1) {
+                        isFlag = true
+                    }
+                }
+                if (isFlag) {
                     inv.setItem(i, Item.empty)
                 }
             }
@@ -369,6 +418,13 @@ function handleFlagCaptureAtOnu(player) {
         resolveConflictVictory(server, activeConflict.id, playerTeam.getId())
     }
 
+    if (typeof TW_RecordCtfCapture === 'function') {
+        try {
+            var pUuid = (player.getUuid ? player.getUuid() : (player.uuid ? player.uuid : null))
+            TW_RecordCtfCapture(playerTeam.getId().toString(), pUuid ? pUuid.toString() : null, player.getName().getString())
+        } catch (eCtf) {}
+    }
+
     broadcastMsg(server, 'Victoire ONU', '§6' + player.getName().getString() + ' §aa livré l\'Étendard ennemi au Hub de l\'ONU ! §a§lCAPTURE VALIDÉE !', '§2')
 
     try {
@@ -414,7 +470,7 @@ BlockEvents.rightClicked(function(event) {
             }
         }
 
-        // B. Clic sur un Autel National
+        // B. Clic sur un Autel National ou sur l'Étendard posé au-dessus
         var altars = loadAltarsData()
         var hitTeamId = null
         var hitAltar = null
@@ -422,7 +478,8 @@ BlockEvents.rightClicked(function(event) {
         for (var tId in altars) {
             var alt = altars[tId]
             if (!alt) continue
-            if (alt.x === bx && alt.y === by && alt.z === bz) {
+            // Détection sur le bloc autel (y) ET sur toute la hauteur de la bannière posée dessus (y+1, y+2)
+            if (alt.x === bx && (by >= alt.y && by <= (alt.y + 2)) && alt.z === bz) {
                 hitTeamId = tId
                 hitAltar = alt
                 break
@@ -444,83 +501,101 @@ BlockEvents.rightClicked(function(event) {
 
         // 2. Clic sur un autel adverse
         if (playerTeam) {
-            // Vérifier s'il y a un conflit actif où playerTeam est ATTAQUANT et hitTeamId est DÉFENSEUR
-            var wars = (typeof loadWarsRegistry === 'function') ? loadWarsRegistry(server) : null
-            var conflict = null
-            if (wars) {
-                for (var id in wars) {
-                    var w = (typeof getWar === 'function') ? getWar(wars, id) : wars[id]
-                    if (!w || w.type !== 'CONFLICT') continue
-                    if (w.status !== 'ACTIVE' && w.status !== 'COUNTDOWN') continue
-
-                    var atkId = w.attackerTeamId || w.attackerLeader
-                    var defId = w.defenderTeamId || w.defenderLeader
-
-                    if (atkId === pTeamId && defId === hitTeamId) {
-                        conflict = w
-                        break
-                    }
-                }
-            }
-
-            if (conflict) {
-                event.cancel()
-                if (conflict.status === 'COUNTDOWN') {
-                    sendMsg(player, 'Conflit', 'Le préavis est toujours en cours ! Début de l\'assaut dans quelques instants.', '§e')
-                    return
-                }
-
-                if (conflict.status === 'ACTIVE') {
-                    if (hitAltar.status === 'AT_BASE') {
-                        // VOL RÉUSSI DU DRAPEAU !
-                        var flagItem = createFlagItem(hitTeamId, hitAltar.teamName, conflict.id)
-                        player.give(flagItem)
-
-                        hitAltar.status = 'STOLEN'
-                        hitAltar.carrierUuid = player.getStringUuid ? player.getStringUuid() : player.uuid.toString()
-                        hitAltar.carrierName = player.getName().getString()
-                        hitAltar.updatedAt = Date.now()
-                        saveAltarsData(altars)
-
-                        conflict.flagCarrierUuid = hitAltar.carrierUuid
-                        conflict.carrierTeamId = pTeamId
-                        if (typeof saveWarsRegistry === 'function') saveWarsRegistry(server, wars)
-
-                        // Appliquer Glowing
-                        try {
-                            server.runCommandSilent('effect give ' + player.getName().getString() + ' minecraft:glowing 300 0 true')
-                        } catch (ee) {}
-
-                        broadcastMsg(server, 'ALERTE ÉTENDARD', '§c§l' + player.getName().getString() + ' §f(§6' + playerTeam.getName().getString() + '§f) a VOLÉ l\'Étendard de §6' + hitAltar.teamName + '§f ! Il tente de le ramener à l\'ONU !', '§4')
-
-                        try {
-                            var pList = server.getPlayerList().getPlayers()
-                            for (var j = 0; j < pList.size(); j++) {
-                                var op = pList.get(j)
-                                if (op) op.playNotifySound('minecraft:entity.elder_guardian.curse', 'master', 0.8, 1.0)
-                            }
-                        } catch (se2) {}
-
-                        return
-                    } else if (hitAltar.status === 'STOLEN') {
-                        sendMsg(player, 'Conflit', 'L\'Étendard a déjà été extrait par ' + (hitAltar.carrierName || 'un allié') + ' !', '§e')
-                        return
-                    } else if (hitAltar.status === 'DROPPED') {
-                        sendMsg(player, 'Conflit', 'L\'Étendard est tombé au sol ! Retrouvez-le avant les défenseurs.', '§e')
-                        return
-                    }
-                }
-            } else {
-                // Non concerné ou défenseur essayant de cliquer sur l'autel attaquant
-                event.cancel()
-                sendMsg(player, 'Autel', 'Cet Autel National n\'est pas accessible. Votre rôle est de défendre votre propre base !', '§7')
-                return
-            }
+            event.cancel()
+            tryStealFlag(server, player, hitTeamId, hitAltar)
+            return
         }
     } catch (err) {
         console.error('[WarFlag] Erreur rightClicked autel : ' + err)
     }
 })
+
+/**
+ * Tente de voler le drapeau d'une nation ennemie (clic droit ou attaque)
+ */
+function tryStealFlag(server, player, hitTeamId, hitAltar) {
+    if (!server || !player || !hitAltar) return false
+    var playerTeam = (typeof getPlayerNationTeam === 'function') ? getPlayerNationTeam(player) : null
+    if (!playerTeam) {
+        sendMsg(player, 'Autel', 'Vous devez appartenir à une nation pour interagir avec cet Autel.', '§c')
+        return false
+    }
+    var pTeamId = playerTeam.getId().toString()
+
+    var wars = (typeof loadWarsRegistry === 'function') ? loadWarsRegistry(server) : null
+    var conflict = null
+    if (wars) {
+        for (var id in wars) {
+            var w = (typeof getWar === 'function') ? getWar(wars, id) : wars[id]
+            if (!w || w.type !== 'CONFLICT') continue
+            if (w.status !== 'ACTIVE' && w.status !== 'COUNTDOWN') continue
+
+            var atkId = w.attackerTeamId || w.attackerLeader
+            var defId = w.defenderTeamId || w.defenderLeader
+
+            if (atkId === pTeamId && defId === hitTeamId) {
+                conflict = w
+                break
+            }
+        }
+    }
+
+    if (!conflict) {
+        sendMsg(player, 'Autel', 'Cet Autel National n\'est pas la cible d\'un conflit actif contre votre nation.', '§7')
+        return false
+    }
+
+    if (conflict.status === 'COUNTDOWN') {
+        sendMsg(player, 'Conflit', 'Le préavis est toujours en cours ! Début de l\'assaut dans quelques instants.', '§e')
+        return false
+    }
+
+    if (conflict.status === 'ACTIVE') {
+        if (hitAltar.status === 'AT_BASE') {
+            // VOL RÉUSSI DU DRAPEAU !
+            removePhysicalFlagBlock(server, hitAltar)
+
+            var flagItem = createFlagItem(hitTeamId, hitAltar.teamName, conflict.id)
+            player.give(flagItem)
+
+            hitAltar.status = 'STOLEN'
+            hitAltar.carrierUuid = player.getStringUuid ? player.getStringUuid() : player.uuid.toString()
+            hitAltar.carrierName = player.getName().getString()
+            hitAltar.updatedAt = Date.now()
+            var altars = loadAltarsData()
+            altars[hitTeamId] = hitAltar
+            saveAltarsData(altars)
+
+            conflict.flagCarrierUuid = hitAltar.carrierUuid
+            conflict.carrierTeamId = pTeamId
+            if (typeof saveWarsRegistry === 'function') saveWarsRegistry(server, wars)
+
+            // Appliquer Glowing
+            try {
+                server.runCommandSilent('effect give ' + player.getName().getString() + ' minecraft:glowing 300 0 true')
+            } catch (ee) {}
+
+            broadcastMsg(server, 'ALERTE ÉTENDARD', '§c§l' + player.getName().getString() + ' §f(§6' + playerTeam.getName().getString() + '§f) a VOLÉ l\'Étendard de §6' + hitAltar.teamName + '§f ! Il tente de le ramener à l\'ONU !', '§4')
+
+            try {
+                var pList = server.getPlayerList().getPlayers()
+                for (var j = 0; j < pList.size(); j++) {
+                    var op = pList.get(j)
+                    if (op) op.playNotifySound('minecraft:entity.elder_guardian.curse', 'master', 0.8, 1.0)
+                }
+            } catch (se2) {}
+
+            return true
+        } else if (hitAltar.status === 'STOLEN') {
+            sendMsg(player, 'Conflit', 'L\'Étendard a déjà été extrait par ' + (hitAltar.carrierName || 'un allié') + ' !', '§e')
+            return false
+        } else if (hitAltar.status === 'DROPPED') {
+            sendMsg(player, 'Conflit', 'L\'Étendard est tombé au sol ! Retrouvez-le avant les défenseurs.', '§e')
+            return false
+        }
+    }
+    return false
+}
 
 // -----------------------------------------------------------------------------
 // 2. INTERACTION PNJ ONU AVEC LE DRAPEAU (ItemEvents.entityInteracted)
@@ -704,6 +779,7 @@ if (typeof TW_Scheduler !== 'undefined' && TW_Scheduler.register) {
                                 alt.dropPos = null
                                 alt.updatedAt = Date.now()
                                 saveAltarsData(altars)
+                                spawnPhysicalFlagBlock(server, alt)
 
                                 broadcastMsg(server, 'DÉFENSE HÉROÏQUE', '§a§lDRAPEAU SÉCURISÉ ! §6' + nearP.getName().getString() + ' §aa touché leur Étendard au sol ! Il est immédiatement retourné à leur Autel National !', '§2')
 

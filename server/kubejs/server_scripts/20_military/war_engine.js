@@ -428,7 +428,6 @@ function requestWarDeclaration(player, targetQuery) {
             }
         }
     } catch (pe) {}
-    server.tell(staffMsg)
     return 1
 }
 
@@ -530,7 +529,24 @@ function forceStopWar(server, player, targetQuery) {
         var wars = loadWarsRegistry(server)
         setWar(wars, w.id, w)
         saveWarsRegistry(server, wars)
-        broadcastMsg(server, 'Guerre', 'Le conflit #' + w.id + ' a été arrêté par les arbitres fédéraux.', '§6')
+
+        if (w.type === 'CONFLICT') {
+            if (typeof resetNationAltarFlag === 'function') {
+                resetNationAltarFlag(server, w.defenderTeamId || w.defenderLeader)
+            }
+            if (typeof removeAllConflictFlags === 'function') {
+                removeAllConflictFlags(server, w.id)
+            }
+        }
+
+        if (typeof revokeAllWarBypasses === 'function') {
+            revokeAllWarBypasses(server)
+        }
+        if (typeof updateWarExplosionPermissions === 'function') {
+            updateWarExplosionPermissions(server)
+        }
+
+        broadcastMsg(server, 'Guerre', 'Le conflit/guerre #' + w.id + ' a été arrêté par les arbitres fédéraux.', '§6')
         return 1
     }
     if (player) sendMsg(player, 'Guerre', 'Guerre introuvable : "' + targetQuery + '".', '§c')
@@ -759,6 +775,14 @@ function handleWarPeace(player, targetQuery) {
 
         var nameA = war.attackerName || getTeamDisplayName(server, war.attackerLeader)
         var nameB = war.defenderName || getTeamDisplayName(server, war.defenderLeader)
+
+        if (typeof revokeAllWarBypasses === 'function') {
+            revokeAllWarBypasses(server)
+        }
+        if (typeof updateWarExplosionPermissions === 'function') {
+            updateWarExplosionPermissions(server)
+        }
+
         broadcastMsg(server, 'Diplomatie', 'Le traité de paix entre §e' + nameA + ' §fet §e' + nameB + ' §fa été ratifié ! Fin des hostilités.', '§a')
         return 1
     } else if (war.peaceRequestedBy === myCamp) {
@@ -869,10 +893,16 @@ function requestConflict(player, targetQuery) {
         }
     }
 
-    // 2b. Condition CTF : La nation cible (défenseur) doit posséder un Autel National configuré
-    if (typeof hasNationAltar === 'function' && !hasNationAltar(targetTeam.getId())) {
-        sendMsg(player, 'Conflit', 'La nation cible §e' + targetTeam.getName().getString() + ' §cn\'a pas encore configuré son Autel National (/nation setaltar) ! Impossible d\'engager un Conflit CTF.', '§c')
-        return 0
+    // 2b. Condition CTF : Les deux nations doivent posséder un Autel National configuré (/nation setaltar)
+    if (typeof hasNationAltar === 'function') {
+        if (!hasNationAltar(team.getId())) {
+            sendMsg(player, 'Conflit', 'Votre nation n\'a pas encore configuré son Autel National (/nation setaltar) ! Impossible d\'engager un Conflit.', '§c')
+            return 0
+        }
+        if (!hasNationAltar(targetTeam.getId())) {
+            sendMsg(player, 'Conflit', 'La nation cible §e' + targetTeam.getName().getString() + ' §cn\'a pas encore configuré son Autel National (/nation setaltar) ! Impossible d\'engager un Conflit CTF.', '§c')
+            return 0
+        }
     }
 
     // 3. Condition financière : chaque banque doit avoir au moins 250 R
@@ -1002,11 +1032,18 @@ function resolveConflictVictory(server, conflictId, winnerTeamId) {
     if (typeof removeAllConflictFlags === 'function') {
         removeAllConflictFlags(server, c.id)
     }
+    if (typeof revokeAllWarBypasses === 'function') {
+        revokeAllWarBypasses(server)
+    }
 
     var winnerName = winnerTeam.getName().getString()
     var loserName = (c.attackerTeamId === winnerTeam.getId().toString()) ? c.defenderName : c.attackerName
 
     broadcastMsg(server, 'Victoire Conflit #' + c.id, '§6' + winnerName + ' §aa remporté le Conflit contre §e' + loserName + ' §a! La prime de §6' + pool + ' R §adu pot commun a été versée à leur Trésor national !', '§2')
+
+    if (typeof TW_UpdateLeaderboards === 'function') {
+        try { TW_UpdateLeaderboards(server) } catch (eLb) {}
+    }
 
     try {
         var pList = server.getPlayerList().getPlayers()
@@ -1051,9 +1088,16 @@ function resolveConflictDefensiveVictory(server, conflictId) {
     if (typeof removeAllConflictFlags === 'function') {
         removeAllConflictFlags(server, c.id)
     }
+    if (typeof revokeAllWarBypasses === 'function') {
+        revokeAllWarBypasses(server)
+    }
 
     var defName = defTeam.getName().getString()
     broadcastMsg(server, 'Victoire Conflit #' + c.id, '§6' + defName + ' §aa vaillamment repoussé l\'assaut et protégé son Étendard pendant 60 minutes ! §a§lVICTOIRE DÉFENSIVE ! §fLa prime de §6' + pool + ' R §fdu pot commun a été versée à leur Trésor national !', '§2')
+
+    if (typeof TW_UpdateLeaderboards === 'function') {
+        try { TW_UpdateLeaderboards(server) } catch (eLb) {}
+    }
 
     try {
         var pListD = server.getPlayerList().getPlayers()
@@ -1089,6 +1133,9 @@ function resolveConflictDraw(server, conflictId) {
     if (typeof removeAllConflictFlags === 'function') {
         removeAllConflictFlags(server, c.id)
     }
+    if (typeof revokeAllWarBypasses === 'function') {
+        revokeAllWarBypasses(server)
+    }
 
     broadcastMsg(server, 'Conflit #' + c.id, 'Le match entre §e' + c.attackerName + ' §fet §e' + c.defenderName + ' §fse termine par un §eMATCH NUL§f. Le pot de §6' + pool + ' R §fest conservé par l\'ONU.', '§6')
 
@@ -1123,6 +1170,9 @@ function cancelConflict(server, conflictId, refundBoth, reason) {
     if (typeof removeAllConflictFlags === 'function') {
         removeAllConflictFlags(server, c.id)
     }
+    if (typeof revokeAllWarBypasses === 'function') {
+        revokeAllWarBypasses(server)
+    }
 
     setWar(wars, c.id, c)
     saveWarsRegistry(server, wars)
@@ -1156,7 +1206,19 @@ function checkConflictsTick(server) {
                 w.lastReminderMinute = 60
                 changed = true
 
-                broadcastMsg(server, 'Conflit #' + w.id, '§c§lLE CONFLIT COMMENCE ! §fL\'affrontement entre §e' + w.attackerName + ' §fet §e' + w.defenderName + ' §fest désormais §c§lACTIF§f pour §e60 minutes§f ! La casse manuelle est autorisée pour forcer le passage.', '§c')
+                // Matérialiser l'Étendard physique sur l'autel du défenseur
+                var defAltarPosMsg = ''
+                try {
+                    var defAltar = (typeof getNationAltar === 'function') ? getNationAltar(w.defenderTeamId) : null
+                    if (defAltar) {
+                        if (typeof spawnPhysicalFlagBlock === 'function') {
+                            spawnPhysicalFlagBlock(server, defAltar)
+                        }
+                        defAltarPosMsg = ' §7(Autel ennemi en §eX: ' + defAltar.x + ', Y: ' + (defAltar.y + 1) + ', Z: ' + defAltar.z + '§7)'
+                    }
+                } catch (afe) {}
+
+                broadcastMsg(server, 'Conflit #' + w.id, '§c§lLE CONFLIT COMMENCE ! §fL\'affrontement entre §e' + w.attackerName + ' §fet §e' + w.defenderName + ' §fest désormais §c§lACTIF§f pour §e60 minutes§f !' + defAltarPosMsg, '§c')
                 try {
                     var pList = server.getPlayerList().getPlayers()
                     for (var i = 0; i < pList.size(); i++) {

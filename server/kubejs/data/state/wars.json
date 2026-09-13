@@ -1,1 +1,268 @@
-{}
+{
+	"1": {
+		"id": "1",
+		"type": "CONFLICT",
+		"status": "ENDED",
+		"requesterUuid": "137b73c3-8c48-3eb6-be1a-5c230d6e1dea",
+		"attackerName": "Test",
+		"defenderName": "test2",
+		"attackerTeamId": "a23cf78a-8793-4151-842b-89b5dea2035e",
+		"defenderTeamId": "029b6d7c-5bc3-4c83-8919-13ad41ce3c20",
+		"attackerLeader": "a23cf78a-8793-4151-842b-89b5dea2035e",
+		"defenderLeader": "029b6d7c-5bc3-4c83-8919-13ad41ce3c20",
+		"attackers": [
+			"a23cf78a-8793-4151-842b-89b5dea2035e"
+		],
+		"defenders": [
+			"029b6d7c-5bc3-4c83-8919-13ad41ce3c20"
+		],
+		"attackerNames": [
+			"Test"
+		],
+		"defenderNames": [
+			"test2"
+		],
+		"escrowPool": 500,
+		"costPaidPerTeam": 250,
+		"createdAt": 1789309005898,
+		"countdownEndsAt": 1789309305898,
+		"startedAt": 1789309306743,
+		"expiresAt": 1789312906743,
+		"winnerTeamId": null,
+		"endReason": null,
+		"flagCarrierUuid": null,
+		"carrierTeamId": null,
+		"lastReminderMinute": 60,
+		"warned1Min": true,
+		"endedAt": 1789310849168
+	},
+	"2": {
+		"id": "2",
+		"type": "WAR",
+		"status": "ENDED",
+		"requesterUuid": "137b73c3-8c48-3eb6-be1a-5c230d6e1dea",
+		"attackerName": "Test",
+		"defenderName": "test2",
+		"attackerLeader": "a23cf78a-8793-4151-842b-89b5dea2035e",
+		"defenderLeader": "029b6d7c-5bc3-4c83-8919-13ad41ce3c20",
+		"attackers": [
+			"a23cf78a-8793-4151-842b-89b5dea2035e"
+		],
+		"defenders": [
+			"029b6d7c-5bc3-4c83-8919-13ad41ce3c20"
+		],
+		"attackerNames": [
+			"Test"
+		],
+		"defenderNames": [
+			"test2"
+		],
+		"costPaid": 2500,
+		"createdAt": 1789309393995,
+		"startedAt": null,
+		"peaceRequestedBy": null,
+		"endedAt": 1789310874802
+	},
+	"3": {
+		"id": "3",
+		"type": "CONFLICT",
+		"status": "ENDED",
+		"requesterUuid": "137b73c3-8c48-3eb6-be1a-5c230d6e1dea",
+		"attackerName": "Test",
+		"defenderName": "test2",
+		"attackerTeamId": "a23cf78a-8793-4151-842b-89b5dea2035e",
+		"defenderTeamId": "029b6d7c-5bc3-4c83-8919-13ad41ce3c20",
+		"attackerLeader": "a23cf78a-8793-4151-842b-89b5dea2035e",
+		"defenderLeader": "029b6d7c-5bc3-4c83-8919-13ad41ce3c20",
+		"attackers": [
+			"a23cf78a-8793-4151-842b-89b5dea2035e"
+		],
+		"defenders": [
+			"029b6d7c-5bc3-4c83-8919-13ad41ce3c20"
+		],
+		"attackerNames": [
+			"Test"
+		],
+		"defenderNames": [
+			"test2"
+		],
+		"escrowPool": 500,
+		"costPaidPerTeam": 250,
+		"createdAt": 1789310485119,
+		"countdownEndsAt": 1789310785119,
+		"startedAt": 1789310785143,
+		"expiresAt": 1789314385143,
+		"winnerTeamId": null,
+		"endReason": null,
+		"flagCarrierUuid": null,
+		"carrierTeamId": null,
+		"lastReminderMinute": 60,
+		"warned1Min": true,
+		"endedAt": 1789310884002
+	},
+	"4": {
+		"id": "4",
+		"type": "CONFLICT",
+		"status": "ENDED",
+		"requesterUuid": "137b73c3-8c48-3eb6-be1a-5c230d6e1dea",
+		"attackerName": "Test",
+		"defenderName": "test2",
+		"attackerTeamId": "a23cf78a-8793-4151-842b-89b5dea2035e",
+		"defenderTeamId": "029b6d7c-5bc3-4c83-8919-13ad41ce3c20",
+		"attackerLeader": "a23cf78a-8793-4151-842b-89b5dea2035e",
+		"defenderLeader": "029b6d7c-5bc3-4c83-8919-13ad41ce3c20",
+		"attackers": [
+			"a23cf78a-8793-4151-842b-89b5dea2035e"
+		],
+		"defenders": [
+			"029b6d7c-5bc3-4c83-8919-13ad41ce3c20"
+		],
+		"attackerNames": [
+			"Test"
+		],
+		"defenderNames": [
+			"test2"
+		],
+		"escrowPool": 500,
+		"costPaidPerTeam": 250,
+		"createdAt": 1789310887188,
+		"countdownEndsAt": 1789311187188,
+		"startedAt": 1789311188142,
+		"expiresAt": 1789314788142,
+		"winnerTeamId": null,
+		"endReason": null,
+		"flagCarrierUuid": null,
+		"carrierTeamId": null,
+		"lastReminderMinute": 60,
+		"warned1Min": true,
+		"endedAt": 1789311326920
+	},
+	"5": {
+		"id": "5",
+		"type": "WAR",
+		"status": "ENDED",
+		"requesterUuid": "137b73c3-8c48-3eb6-be1a-5c230d6e1dea",
+		"attackerName": "Test",
+		"defenderName": "test2",
+		"attackerLeader": "a23cf78a-8793-4151-842b-89b5dea2035e",
+		"defenderLeader": "029b6d7c-5bc3-4c83-8919-13ad41ce3c20",
+		"attackers": [
+			"a23cf78a-8793-4151-842b-89b5dea2035e"
+		],
+		"defenders": [
+			"029b6d7c-5bc3-4c83-8919-13ad41ce3c20"
+		],
+		"attackerNames": [
+			"Test"
+		],
+		"defenderNames": [
+			"test2"
+		],
+		"costPaid": 2500,
+		"createdAt": 1789311369090,
+		"startedAt": 1789311371454,
+		"peaceRequestedBy": null,
+		"endedAt": 1789311462145
+	},
+	"6": {
+		"id": "6",
+		"type": "CONFLICT",
+		"status": "ENDED",
+		"requesterUuid": "137b73c3-8c48-3eb6-be1a-5c230d6e1dea",
+		"attackerName": "Test",
+		"defenderName": "test2",
+		"attackerTeamId": "a23cf78a-8793-4151-842b-89b5dea2035e",
+		"defenderTeamId": "029b6d7c-5bc3-4c83-8919-13ad41ce3c20",
+		"attackerLeader": "a23cf78a-8793-4151-842b-89b5dea2035e",
+		"defenderLeader": "029b6d7c-5bc3-4c83-8919-13ad41ce3c20",
+		"attackers": [
+			"a23cf78a-8793-4151-842b-89b5dea2035e"
+		],
+		"defenders": [
+			"029b6d7c-5bc3-4c83-8919-13ad41ce3c20"
+		],
+		"attackerNames": [
+			"Test"
+		],
+		"defenderNames": [
+			"test2"
+		],
+		"escrowPool": 500,
+		"costPaidPerTeam": 250,
+		"createdAt": 1789311497009,
+		"countdownEndsAt": 1789311797009,
+		"startedAt": 1789311797144,
+		"expiresAt": 1789315397144,
+		"winnerTeamId": null,
+		"endReason": null,
+		"flagCarrierUuid": null,
+		"carrierTeamId": null,
+		"lastReminderMinute": 60,
+		"warned1Min": true,
+		"endedAt": 1789311823594
+	},
+	"7": {
+		"id": "7",
+		"type": "WAR",
+		"status": "ENDED",
+		"requesterUuid": "137b73c3-8c48-3eb6-be1a-5c230d6e1dea",
+		"attackerName": "Test",
+		"defenderName": "test2",
+		"attackerLeader": "a23cf78a-8793-4151-842b-89b5dea2035e",
+		"defenderLeader": "029b6d7c-5bc3-4c83-8919-13ad41ce3c20",
+		"attackers": [
+			"a23cf78a-8793-4151-842b-89b5dea2035e"
+		],
+		"defenders": [
+			"029b6d7c-5bc3-4c83-8919-13ad41ce3c20"
+		],
+		"attackerNames": [
+			"Test"
+		],
+		"defenderNames": [
+			"test2"
+		],
+		"costPaid": 2500,
+		"createdAt": 1789313025032,
+		"startedAt": 1789313026580,
+		"peaceRequestedBy": null,
+		"endedAt": 1789313066128
+	},
+	"8": {
+		"id": "8",
+		"type": "CONFLICT",
+		"status": "ENDED",
+		"requesterUuid": "137b73c3-8c48-3eb6-be1a-5c230d6e1dea",
+		"attackerName": "Test",
+		"defenderName": "test2",
+		"attackerTeamId": "a23cf78a-8793-4151-842b-89b5dea2035e",
+		"defenderTeamId": "029b6d7c-5bc3-4c83-8919-13ad41ce3c20",
+		"attackerLeader": "a23cf78a-8793-4151-842b-89b5dea2035e",
+		"defenderLeader": "029b6d7c-5bc3-4c83-8919-13ad41ce3c20",
+		"attackers": [
+			"a23cf78a-8793-4151-842b-89b5dea2035e"
+		],
+		"defenders": [
+			"029b6d7c-5bc3-4c83-8919-13ad41ce3c20"
+		],
+		"attackerNames": [
+			"Test"
+		],
+		"defenderNames": [
+			"test2"
+		],
+		"escrowPool": 500,
+		"costPaidPerTeam": 250,
+		"createdAt": 1789313110535,
+		"countdownEndsAt": 1789313410535,
+		"startedAt": 1789313411493,
+		"expiresAt": 1789317011493,
+		"winnerTeamId": null,
+		"endReason": null,
+		"flagCarrierUuid": null,
+		"carrierTeamId": null,
+		"lastReminderMinute": 60,
+		"warned1Min": true,
+		"endedAt": 1789313470049
+	}
+}
