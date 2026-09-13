@@ -1,29 +1,24 @@
 {
-	"id": "CT-AGRO-2-211",
-	"templateId": "CT-AGRO-2",
-	"title": "Plan Mondial Contre la Famine",
-	"lore": "Approvisionnement massif en féculents et légumes de conservation.",
+	"id": "CT-METALLURGIE-2-484",
+	"templateId": "CT-METALLURGIE-2",
+	"title": "Développement Électronique & Réseaux",
+	"lore": "Achat de circuits électroniques et métaux rares.",
 	"items": [
 		{
-			"id": "farmersdelight:potato_crate",
+			"id": "mekanism:basic_control_circuit",
 			"count": 32,
-			"name": "Caisse de Pommes de Terre"
+			"name": "Circuit de Contrôle de Base"
 		},
 		{
-			"id": "farmersdelight:carrot_crate",
-			"count": 32,
-			"name": "Caisse de Carottes"
-		},
-		{
-			"id": "farmersdelight:cabbage_crate",
-			"count": 32,
-			"name": "Caisse de Choux"
+			"id": "mekanism:ingot_osmium",
+			"count": 64,
+			"name": "Lingot d'Osmium"
 		}
 	],
-	"reward": 2500,
-	"driverCutPercent": 15,
-	"openedAt": 1789312280145,
-	"expiresAt": 1789323080145,
+	"reward": 4200,
+	"driverCutPercent": 10,
+	"openedAt": 1789333891495,
+	"expiresAt": 1789344691495,
 	"status": "OPEN",
 	"completedByPlayer": null,
 	"completedByTeam": null,

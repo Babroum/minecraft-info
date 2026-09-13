@@ -5,7 +5,7 @@
 
 var ThirdWorldUI = ThirdWorldUI || {};
 
-(function() {
+(function () {
     var ContextMenuItemClass = Java.loadClass('dev.ftb.mods.ftblibrary.ui.ContextMenuItem');
     var ArrayListClass = Java.loadClass('java.util.ArrayList');
     var ComponentClass = Java.loadClass('net.minecraft.network.chat.Component');
@@ -18,7 +18,7 @@ var ThirdWorldUI = ThirdWorldUI || {};
             title: '🏛 Bourse & Marché Mondial de l\'ONU',
             hasSearch: true,
             initialState: marketData || {},
-            populate: function(panel, self, state) {
+            populate: function (panel, self, state) {
                 currentScreenInstance = self;
 
                 // 1. STATUT CONNEXION AU HUB ONU
@@ -28,7 +28,7 @@ var ThirdWorldUI = ThirdWorldUI || {};
                         panel,
                         '§a§l✔ Connecté au Hub Central §7(-204, -172) | Transactions Immédiates',
                         'minecraft:lodestone',
-                        function() {}
+                        function () { }
                     );
                     if (hubHeader) panel.add(hubHeader);
                 } else {
@@ -36,7 +36,7 @@ var ThirdWorldUI = ThirdWorldUI || {};
                         panel,
                         '§e§l📡 Mode Consultation Distante §7(Transactions requises au Hub -204, -172)',
                         'minecraft:beacon',
-                        function() {}
+                        function () { }
                     );
                     if (warnHeader) panel.add(warnHeader);
                 }
@@ -48,7 +48,7 @@ var ThirdWorldUI = ThirdWorldUI || {};
                     panel,
                     walletTitle,
                     'minecraft:gold_ingot',
-                    function() {}
+                    function () { }
                 );
                 if (walletBtn) panel.add(walletBtn);
 
@@ -64,13 +64,13 @@ var ThirdWorldUI = ThirdWorldUI || {};
                 // 4. LISTE DES ARTICLES EN BOURSE
                 var items = (state && state.items) || [];
                 for (var i = 0; i < items.length; i++) {
-                    (function(item) {
+                    (function (item) {
                         var isOutOfStock = (item.currentStock <= 0);
                         var isPrecious = (item.id.indexOf('netherite') !== -1 || item.id.indexOf('diamond') !== -1);
 
                         var titleColor = isPrecious ? '§6§l' : '§b§l';
-                        var stockBadge = isOutOfStock 
-                            ? '§c[RUPTURE] ' 
+                        var stockBadge = isOutOfStock
+                            ? '§c[RUPTURE] '
                             : '§7(Stock: ' + item.currentStock + ') ';
 
                         var trendIndicator = (item.trendColor || '§7') + (item.trendText ? item.trendText.split(' ')[0] : '●') + ' ';
@@ -84,7 +84,7 @@ var ThirdWorldUI = ThirdWorldUI || {};
                             fullTitle,
                             subtitle,
                             item.id,
-                            function(mouseBtn) {
+                            function (mouseBtn) {
                                 openTransactionMenu(self, item, inZone);
                             }
                         );
@@ -115,7 +115,7 @@ var ThirdWorldUI = ThirdWorldUI || {};
             menuItems.add(new ContextMenuItemClass(
                 ComponentClass.literal('§a§l🛒 Acheter 1x §7(' + item.buyPrice + ' R)'),
                 ThirdWorldUI.Theme.resolveIcon(item.id),
-                function() {
+                function () {
                     ThirdWorldUI.Router.sendAction('action_onu_market', { action: 'buy', itemId: item.id, amount: 1 });
                 }
             ));
@@ -123,7 +123,7 @@ var ThirdWorldUI = ThirdWorldUI || {};
             menuItems.add(new ContextMenuItemClass(
                 ComponentClass.literal('§a§l🛒 Acheter 16x §7(' + (item.buyPrice * 16) + ' R)'),
                 ThirdWorldUI.Theme.resolveIcon(item.id),
-                function() {
+                function () {
                     ThirdWorldUI.Router.sendAction('action_onu_market', { action: 'buy', itemId: item.id, amount: 16 });
                 }
             ));
@@ -131,7 +131,7 @@ var ThirdWorldUI = ThirdWorldUI || {};
             menuItems.add(new ContextMenuItemClass(
                 ComponentClass.literal('§a§l🛒 Acheter 64x §7(' + (item.buyPrice * 64) + ' R)'),
                 ThirdWorldUI.Theme.resolveIcon(item.id),
-                function() {
+                function () {
                     ThirdWorldUI.Router.sendAction('action_onu_market', { action: 'buy', itemId: item.id, amount: 64 });
                 }
             ));
@@ -140,7 +140,7 @@ var ThirdWorldUI = ThirdWorldUI || {};
             menuItems.add(new ContextMenuItemClass(
                 ComponentClass.literal('§c§l📦 Vendre 1x §7(+' + item.sellPrice + ' R)'),
                 ThirdWorldUI.Theme.resolveIcon('minecraft:chest'),
-                function() {
+                function () {
                     ThirdWorldUI.Router.sendAction('action_onu_market', { action: 'sell', itemId: item.id, amount: 1 });
                 }
             ));
@@ -148,7 +148,7 @@ var ThirdWorldUI = ThirdWorldUI || {};
             menuItems.add(new ContextMenuItemClass(
                 ComponentClass.literal('§c§l📦 Vendre 16x §7(+' + (item.sellPrice * 16) + ' R)'),
                 ThirdWorldUI.Theme.resolveIcon('minecraft:chest'),
-                function() {
+                function () {
                     ThirdWorldUI.Router.sendAction('action_onu_market', { action: 'sell', itemId: item.id, amount: 16 });
                 }
             ));
@@ -156,16 +156,8 @@ var ThirdWorldUI = ThirdWorldUI || {};
             menuItems.add(new ContextMenuItemClass(
                 ComponentClass.literal('§c§l📦 Vendre 64x §7(+' + (item.sellPrice * 64) + ' R)'),
                 ThirdWorldUI.Theme.resolveIcon('minecraft:chest'),
-                function() {
+                function () {
                     ThirdWorldUI.Router.sendAction('action_onu_market', { action: 'sell', itemId: item.id, amount: 64 });
-                }
-            ));
-
-            menuItems.add(new ContextMenuItemClass(
-                ComponentClass.literal('§6§l📦 VENDRE TOUT MON INVENTAIRE'),
-                ThirdWorldUI.Theme.resolveIcon('minecraft:hopper'),
-                function() {
-                    ThirdWorldUI.Router.sendAction('action_onu_market', { action: 'sell_all', itemId: item.id });
                 }
             ));
 
@@ -176,7 +168,7 @@ var ThirdWorldUI = ThirdWorldUI || {};
     }
 
     // Écouteur réseau pour l'ouverture / rafraîchissement
-    NetworkEvents.dataReceived('open_onu_market', function(event) {
+    NetworkEvents.dataReceived('open_onu_market', function (event) {
         try {
             var data = event.data || event.getData();
             var jsonStr = data.getString ? data.getString('json') : String(data.get('json'));

@@ -1,18 +1,18 @@
 {
 	"stocks": {
 		"minecraft:sand": 1024,
-		"minecraft:clay_ball": 512,
+		"minecraft:clay_ball": 645,
 		"minecraft:quartz": 512,
-		"minecraft:raw_iron": 512,
+		"minecraft:raw_iron": 508,
 		"minecraft:raw_copper": 512,
 		"minecraft:coal": 512,
 		"minecraft:redstone": 512,
 		"minecraft:glowstone_dust": 384,
 		"minecraft:obsidian": 256,
 		"minecraft:leather": 256,
-		"minecraft:slime_ball": 256,
+		"minecraft:slime_ball": 251,
 		"minecraft:ender_pearl": 128,
-		"minecraft:blaze_rod": 128,
+		"minecraft:blaze_rod": 126,
 		"minecraft:ghast_tear": 64,
 		"minecraft:netherite_upgrade_smithing_template": 4
 	},

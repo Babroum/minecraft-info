@@ -30,207 +30,207 @@ var ONU_MARKET_CATALOG = (typeof TW_CONFIG !== 'undefined' && TW_CONFIG.market &
     ? TW_CONFIG.market.catalog
     : [
 
-    // --- Ligne 1 : Minerais, Poudres et Roches de Base ---
-    {
-        id: 'minecraft:sand',
-        name: 'Sable Fin',
-        desc: 'Essentiel pour le verre et le béton, gisement non renouvelable.',
-        targetStock: 1024,
-        currentStock: 1024,
-        basePrice: 2,
-        minPrice: 1,
-        maxPrice: 6,
-        lotSize: 32,
-        slotCol: 1,
-        slotRow: 1
-    },
-    {
-        id: 'minecraft:clay_ball',
-        name: 'Boule d\'Argile',
-        desc: 'Matériau de construction pour briques, céramiques et terracottas.',
-        targetStock: 512,
-        currentStock: 512,
-        basePrice: 3,
-        minPrice: 1,
-        maxPrice: 8,
-        lotSize: 16,
-        slotCol: 2,
-        slotRow: 1
-    },
-    {
-        id: 'minecraft:quartz',
-        name: 'Quartz du Nether',
-        desc: 'Composant électronique pour comparateurs, capteurs et finitions.',
-        targetStock: 512,
-        currentStock: 512,
-        basePrice: 5,
-        minPrice: 2,
-        maxPrice: 15,
-        lotSize: 16,
-        slotCol: 3,
-        slotRow: 1
-    },
-    {
-        id: 'minecraft:raw_iron',
-        name: 'Fer Brut',
-        desc: 'Métal industriel fondamental pour rails, machines et armatures.',
-        targetStock: 512,
-        currentStock: 512,
-        basePrice: 4,
-        minPrice: 2,
-        maxPrice: 12,
-        lotSize: 16,
-        slotCol: 4,
-        slotRow: 1
-    },
-    {
-        id: 'minecraft:raw_copper',
-        name: 'Cuivre Brut',
-        desc: 'Conducteur électrique et composant pour alliages de laiton.',
-        targetStock: 512,
-        currentStock: 512,
-        basePrice: 3,
-        minPrice: 1,
-        maxPrice: 8,
-        lotSize: 16,
-        slotCol: 5,
-        slotRow: 1
-    },
-    {
-        id: 'minecraft:coal',
-        name: 'Charbon Minéral',
-        desc: 'Combustible fossile standard pour hauts fourneaux et chaudières.',
-        targetStock: 512,
-        currentStock: 512,
-        basePrice: 2,
-        minPrice: 1,
-        maxPrice: 6,
-        lotSize: 16,
-        slotCol: 6,
-        slotRow: 1
-    },
-    {
-        id: 'minecraft:redstone',
-        name: 'Poudre de Redstone',
-        desc: 'Matière conductrice pour l\'automatisation et signaux logiques.',
-        targetStock: 512,
-        currentStock: 512,
-        basePrice: 3,
-        minPrice: 1,
-        maxPrice: 9,
-        lotSize: 16,
-        slotCol: 7,
-        slotRow: 1
-    },
+        // --- Ligne 1 : Minerais, Poudres et Roches de Base ---
+        {
+            id: 'minecraft:sand',
+            name: 'Sable Fin',
+            desc: 'Essentiel pour le verre et le béton, gisement non renouvelable.',
+            targetStock: 1024,
+            currentStock: 1024,
+            basePrice: 2,
+            minPrice: 1,
+            maxPrice: 6,
+            lotSize: 32,
+            slotCol: 1,
+            slotRow: 1
+        },
+        {
+            id: 'minecraft:clay_ball',
+            name: 'Boule d\'Argile',
+            desc: 'Matériau de construction pour briques, céramiques et terracottas.',
+            targetStock: 512,
+            currentStock: 512,
+            basePrice: 3,
+            minPrice: 1,
+            maxPrice: 8,
+            lotSize: 16,
+            slotCol: 2,
+            slotRow: 1
+        },
+        {
+            id: 'minecraft:quartz',
+            name: 'Quartz du Nether',
+            desc: 'Composant électronique pour comparateurs, capteurs et finitions.',
+            targetStock: 512,
+            currentStock: 512,
+            basePrice: 5,
+            minPrice: 2,
+            maxPrice: 15,
+            lotSize: 16,
+            slotCol: 3,
+            slotRow: 1
+        },
+        {
+            id: 'minecraft:raw_iron',
+            name: 'Fer Brut',
+            desc: 'Métal industriel fondamental pour rails, machines et armatures.',
+            targetStock: 512,
+            currentStock: 512,
+            basePrice: 4,
+            minPrice: 2,
+            maxPrice: 12,
+            lotSize: 16,
+            slotCol: 4,
+            slotRow: 1
+        },
+        {
+            id: 'minecraft:raw_copper',
+            name: 'Cuivre Brut',
+            desc: 'Conducteur électrique et composant pour alliages de laiton.',
+            targetStock: 512,
+            currentStock: 512,
+            basePrice: 3,
+            minPrice: 1,
+            maxPrice: 8,
+            lotSize: 16,
+            slotCol: 5,
+            slotRow: 1
+        },
+        {
+            id: 'minecraft:coal',
+            name: 'Charbon Minéral',
+            desc: 'Combustible fossile standard pour hauts fourneaux et chaudières.',
+            targetStock: 512,
+            currentStock: 512,
+            basePrice: 2,
+            minPrice: 1,
+            maxPrice: 6,
+            lotSize: 16,
+            slotCol: 6,
+            slotRow: 1
+        },
+        {
+            id: 'minecraft:redstone',
+            name: 'Poudre de Redstone',
+            desc: 'Matière conductrice pour l\'automatisation et signaux logiques.',
+            targetStock: 512,
+            currentStock: 512,
+            basePrice: 3,
+            minPrice: 1,
+            maxPrice: 9,
+            lotSize: 16,
+            slotCol: 7,
+            slotRow: 1
+        },
 
-    // --- Ligne 2 : Composants Rares & Produits Avancés ---
-    {
-        id: 'minecraft:glowstone_dust',
-        name: 'Poudre de Glowstone',
-        desc: 'Poudre luminescente pour câblages d\'énergie et optiques.',
-        targetStock: 384,
-        currentStock: 384,
-        basePrice: 4,
-        minPrice: 2,
-        maxPrice: 12,
-        lotSize: 16,
-        slotCol: 1,
-        slotRow: 2
-    },
-    {
-        id: 'minecraft:obsidian',
-        name: 'Roche d\'Obsidienne',
-        desc: 'Matériau ignifugé à haute densité résistant aux explosions.',
-        targetStock: 256,
-        currentStock: 256,
-        basePrice: 8,
-        minPrice: 4,
-        maxPrice: 24,
-        lotSize: 8,
-        slotCol: 2,
-        slotRow: 2
-    },
-    {
-        id: 'minecraft:leather',
-        name: 'Cuir Tanné',
-        desc: 'Matière première d\'équipement, sacs et harnachements.',
-        targetStock: 256,
-        currentStock: 256,
-        basePrice: 6,
-        minPrice: 2,
-        maxPrice: 18,
-        lotSize: 16,
-        slotCol: 3,
-        slotRow: 2
-    },
-    {
-        id: 'minecraft:slime_ball',
-        name: 'Boule de Slime',
-        desc: 'Polymère visqueux pour pistons collants et colle mécanique.',
-        targetStock: 256,
-        currentStock: 256,
-        basePrice: 8,
-        minPrice: 3,
-        maxPrice: 25,
-        lotSize: 8,
-        slotCol: 4,
-        slotRow: 2
-    },
-    {
-        id: 'minecraft:ender_pearl',
-        name: 'Perle de l\'Ender',
-        desc: 'Artefact dimensionnel pour propulsion et téléportation tactique.',
-        targetStock: 128,
-        currentStock: 128,
-        basePrice: 15,
-        minPrice: 5,
-        maxPrice: 45,
-        lotSize: 4,
-        slotCol: 5,
-        slotRow: 2
-    },
-    {
-        id: 'minecraft:blaze_rod',
-        name: 'Bâton de Blaze',
-        desc: 'Source d\'énergie thermique extrême pour alchimie et générateurs.',
-        targetStock: 128,
-        currentStock: 128,
-        basePrice: 20,
-        minPrice: 8,
-        maxPrice: 60,
-        lotSize: 4,
-        slotCol: 6,
-        slotRow: 2
-    },
-    {
-        id: 'minecraft:ghast_tear',
-        name: 'Larme de Ghast',
-        desc: 'Composant alchimique rare à haute régénération vitale.',
-        targetStock: 64,
-        currentStock: 64,
-        basePrice: 45,
-        minPrice: 18,
-        maxPrice: 120,
-        lotSize: 2,
-        slotCol: 7,
-        slotRow: 2
-    },
+        // --- Ligne 2 : Composants Rares & Produits Avancés ---
+        {
+            id: 'minecraft:glowstone_dust',
+            name: 'Poudre de Glowstone',
+            desc: 'Poudre luminescente pour câblages d\'énergie et optiques.',
+            targetStock: 384,
+            currentStock: 384,
+            basePrice: 4,
+            minPrice: 2,
+            maxPrice: 12,
+            lotSize: 16,
+            slotCol: 1,
+            slotRow: 2
+        },
+        {
+            id: 'minecraft:obsidian',
+            name: 'Roche d\'Obsidienne',
+            desc: 'Matériau ignifugé à haute densité résistant aux explosions.',
+            targetStock: 256,
+            currentStock: 256,
+            basePrice: 8,
+            minPrice: 4,
+            maxPrice: 24,
+            lotSize: 8,
+            slotCol: 2,
+            slotRow: 2
+        },
+        {
+            id: 'minecraft:leather',
+            name: 'Cuir Tanné',
+            desc: 'Matière première d\'équipement, sacs et harnachements.',
+            targetStock: 256,
+            currentStock: 256,
+            basePrice: 6,
+            minPrice: 2,
+            maxPrice: 18,
+            lotSize: 16,
+            slotCol: 3,
+            slotRow: 2
+        },
+        {
+            id: 'minecraft:slime_ball',
+            name: 'Boule de Slime',
+            desc: 'Polymère visqueux pour pistons collants et colle mécanique.',
+            targetStock: 256,
+            currentStock: 256,
+            basePrice: 8,
+            minPrice: 3,
+            maxPrice: 25,
+            lotSize: 8,
+            slotCol: 4,
+            slotRow: 2
+        },
+        {
+            id: 'minecraft:ender_pearl',
+            name: 'Perle de l\'Ender',
+            desc: 'Artefact dimensionnel pour propulsion et téléportation tactique.',
+            targetStock: 128,
+            currentStock: 128,
+            basePrice: 15,
+            minPrice: 5,
+            maxPrice: 45,
+            lotSize: 4,
+            slotCol: 5,
+            slotRow: 2
+        },
+        {
+            id: 'minecraft:blaze_rod',
+            name: 'Bâton de Blaze',
+            desc: 'Source d\'énergie thermique extrême pour alchimie et générateurs.',
+            targetStock: 128,
+            currentStock: 128,
+            basePrice: 20,
+            minPrice: 8,
+            maxPrice: 60,
+            lotSize: 4,
+            slotCol: 6,
+            slotRow: 2
+        },
+        {
+            id: 'minecraft:ghast_tear',
+            name: 'Larme de Ghast',
+            desc: 'Composant alchimique rare à haute régénération vitale.',
+            targetStock: 64,
+            currentStock: 64,
+            basePrice: 45,
+            minPrice: 18,
+            maxPrice: 120,
+            lotSize: 2,
+            slotCol: 7,
+            slotRow: 2
+        },
 
-    // --- Ligne 3 : Exclusivité Stratégique de l'ONU (Inobtenable autrement) ---
-    {
-        id: 'minecraft:netherite_upgrade_smithing_template',
-        name: '🌟 Modèle de Forge Netherite',
-        desc: 'Technologie d\'alliage Netherite scellée par l\'ONU. Inobtenable sur la carte.',
-        targetStock: 4,
-        currentStock: 4,
-        basePrice: 2500,
-        minPrice: 1500,
-        maxPrice: 6000,
-        lotSize: 1,
-        slotCol: 4,
-        slotRow: 3
-    }
-]
+        // --- Ligne 3 : Exclusivité Stratégique de l'ONU (Inobtenable autrement) ---
+        {
+            id: 'minecraft:netherite_upgrade_smithing_template',
+            name: '🌟 Modèle de Forge Netherite',
+            desc: 'Technologie d\'alliage Netherite scellée par l\'ONU. Inobtenable sur la carte.',
+            targetStock: 4,
+            currentStock: 4,
+            basePrice: 2500,
+            minPrice: 1500,
+            maxPrice: 6000,
+            lotSize: 1,
+            slotCol: 4,
+            slotRow: 3
+        }
+    ]
 
 // -----------------------------------------------------------------------------
 // PERSISTANCE & GESTION DES DONNÉES
@@ -361,7 +361,7 @@ function rebalanceMarketStocks(server, silent) {
             var ComponentClass = Java.loadClass('net.minecraft.network.chat.Component')
             var msg = ComponentClass.literal('§8[§bONU§8] §7La Bourse Centrale a actualisé ses cotations. Les stocks mondiaux ont été rééquilibrés.')
             server.getPlayerList().broadcastSystemMessage(msg, false)
-        } catch (be) {}
+        } catch (be) { }
     }
     return changes
 }
@@ -420,7 +420,7 @@ function getMarketItemIdFromStack(stack) {
                 return BuiltInRegistries.ITEM.getKey(item).toString()
             }
         }
-    } catch (e) {}
+    } catch (e) { }
     return ''
 }
 
@@ -441,7 +441,7 @@ function marketCountPlayerItem(player, itemId) {
                 }
             }
         }
-    } catch (e) {}
+    } catch (e) { }
     return count
 }
 
@@ -468,7 +468,7 @@ function marketRemovePlayerItem(player, itemId, countToRemove) {
                 }
             }
         }
-    } catch (e) {}
+    } catch (e) { }
 }
 
 function marketCountPlayerCash(player) {
@@ -489,7 +489,7 @@ function marketCountPlayerCash(player) {
                 }
             }
         }
-    } catch (e) {}
+    } catch (e) { }
     return total
 }
 
@@ -610,7 +610,7 @@ function executeMarketBuy(player, itemId, quantity) {
     if (!isPlayerInOnuMarketZone(player)) {
         player.tell(Text.of('§8[§bONU§8] §cAccès refusé : Le Marché et la Bourse Mondiale de l\'ONU sont situés physiquement au complexe de l\'ONU (-204, -172).'))
         player.tell(Text.of('§8[§bONU§8] §7Rendez-vous sur place pour négocier.'))
-        try { player.playSound('minecraft:block.chest.locked', 1.0, 1.0) } catch (e) {}
+        try { player.playSound('minecraft:block.chest.locked', 1.0, 1.0) } catch (e) { }
         return
     }
 
@@ -623,7 +623,7 @@ function executeMarketBuy(player, itemId, quantity) {
         try {
             player.playSound('minecraft:block.chest.locked', 1.0, 1.0)
             player.sendData('show_toast', { json: JSON.stringify({ type: 'error', title: 'Stock Insuffisant', message: 'Il ne reste que ' + item.currentStock + ' unités.' }) })
-        } catch (e2) {}
+        } catch (e2) { }
         return
     }
 
@@ -634,7 +634,7 @@ function executeMarketBuy(player, itemId, quantity) {
         try {
             player.playSound('minecraft:block.chest.locked', 1.0, 1.0)
             player.sendData('show_toast', { json: JSON.stringify({ type: 'error', title: 'Solde Insuffisant', message: 'Requis: ' + totalCost + ' R (Vous avez: ' + playerCash + ' R)' }) })
-        } catch (e3) {}
+        } catch (e3) { }
         return
     }
 
@@ -647,7 +647,7 @@ function executeMarketBuy(player, itemId, quantity) {
     try {
         player.playSound('minecraft:entity.experience_orb.pickup', 1.0, 1.2)
         player.sendData('show_toast', { json: JSON.stringify({ type: 'info', title: 'Achat Réussi', message: quantity + 'x ' + item.name + ' (' + totalCost + ' R)' }) })
-    } catch (e4) {}
+    } catch (e4) { }
 
     var remainingCash = marketCountPlayerCash(player)
     player.tell(Text.of('§8[§bONU§8] §a✔ Achat effectué : §f' + quantity + 'x ' + item.name + ' §apour §e' + totalCost + ' R §7(Nouveau solde: §e' + remainingCash + ' R§7)'))
@@ -660,7 +660,7 @@ function executeMarketSell(player, itemId, quantity) {
     if (!isPlayerInOnuMarketZone(player)) {
         player.tell(Text.of('§8[§bONU§8] §cAccès refusé : Le Marché et la Bourse Mondiale de l\'ONU sont situés physiquement au complexe de l\'ONU (-204, -172).'))
         player.tell(Text.of('§8[§bONU§8] §7Rendez-vous sur place pour négocier.'))
-        try { player.playSound('minecraft:block.chest.locked', 1.0, 1.0) } catch (e) {}
+        try { player.playSound('minecraft:block.chest.locked', 1.0, 1.0) } catch (e) { }
         return
     }
 
@@ -674,7 +674,7 @@ function executeMarketSell(player, itemId, quantity) {
         try {
             player.playSound('minecraft:block.chest.locked', 1.0, 1.0)
             player.sendData('show_toast', { json: JSON.stringify({ type: 'error', title: 'Article Manquant', message: 'Requis: ' + quantity + ' (Vous avez: ' + itemCount + ')' }) })
-        } catch (e2) {}
+        } catch (e2) { }
         return
     }
 
@@ -688,7 +688,7 @@ function executeMarketSell(player, itemId, quantity) {
     try {
         player.playSound('minecraft:entity.experience_orb.pickup', 1.0, 0.9)
         player.sendData('show_toast', { json: JSON.stringify({ type: 'info', title: 'Vente Validée', message: '+' + totalEarnings + ' R (' + quantity + 'x ' + item.name + ')' }) })
-    } catch (e3) {}
+    } catch (e3) { }
 
     var newCash = marketCountPlayerCash(player)
     player.tell(Text.of('§8[§bONU§8] §c✔ Vente validée : §f' + quantity + 'x ' + item.name + ' §crachetés par l\'ONU pour §a+' + totalEarnings + ' R §7(Nouveau solde: §e' + newCash + ' R§7)'))
@@ -740,7 +740,7 @@ function openMarketGUI(player) {
 // -----------------------------------------------------------------------------
 // GESTION DES ACTIONS RÉSEAU DE LA BOURSE
 // -----------------------------------------------------------------------------
-NetworkEvents.dataReceived('action_onu_market', function(event) {
+NetworkEvents.dataReceived('action_onu_market', function (event) {
     try {
         var player = event.player || event.getEntity()
         if (!player) return
@@ -751,9 +751,9 @@ NetworkEvents.dataReceived('action_onu_market', function(event) {
         var action = JSON.parse(raw)
 
         if (action.action === 'buy') {
-            executeMarketBuy(player, action.itemId, action.count || 1)
+            executeMarketBuy(player, action.itemId, action.amount || 1)
         } else if (action.action === 'sell') {
-            executeMarketSell(player, action.itemId, action.count || 1)
+            executeMarketSell(player, action.itemId, action.amount || 1)
         }
     } catch (e) {
         console.error('[ONU Market] Erreur reception action: ' + e)
@@ -779,12 +779,12 @@ function isEntityMarketNpc(target) {
                 return true
             }
         }
-    } catch (e) {}
+    } catch (e) { }
     return false
 }
 
 try {
-    NativeEvents.onEvent(Java.loadClass('net.neoforged.neoforge.event.entity.player.PlayerInteractEvent$EntityInteract'), function(event) {
+    NativeEvents.onEvent(Java.loadClass('net.neoforged.neoforge.event.entity.player.PlayerInteractEvent$EntityInteract'), function (event) {
         try {
             var target = event.getTarget()
             var player = event.getEntity()
@@ -797,23 +797,23 @@ try {
                     if (InteractionResult && InteractionResult.SUCCESS) {
                         event.setCancellationResult(InteractionResult.SUCCESS)
                     }
-                } catch (re) {}
+                } catch (re) { }
 
                 var handStr = ''
                 try {
                     if (event.getHand) handStr = event.getHand().name()
-                } catch (he) {}
+                } catch (he) { }
 
                 if (handStr === 'MAIN_HAND' || handStr === '') {
                     openMarketGUI(player)
                 }
             }
-        } catch (err) {}
+        } catch (err) { }
     })
-} catch (ne) {}
+} catch (ne) { }
 
 try {
-    NativeEvents.onEvent(Java.loadClass('net.neoforged.neoforge.event.entity.player.PlayerInteractEvent$EntityInteractSpecific'), function(event) {
+    NativeEvents.onEvent(Java.loadClass('net.neoforged.neoforge.event.entity.player.PlayerInteractEvent$EntityInteractSpecific'), function (event) {
         try {
             var target = event.getTarget()
             var player = event.getEntity()
@@ -826,22 +826,22 @@ try {
                     if (InteractionResult && InteractionResult.SUCCESS) {
                         event.setCancellationResult(InteractionResult.SUCCESS)
                     }
-                } catch (re) {}
+                } catch (re) { }
 
                 var handStr = ''
                 try {
                     if (event.getHand) handStr = event.getHand().name()
-                } catch (he) {}
+                } catch (he) { }
 
                 if (handStr === 'MAIN_HAND' || handStr === '') {
                     openMarketGUI(player)
                 }
             }
-        } catch (err) {}
+        } catch (err) { }
     })
-} catch (ne2) {}
+} catch (ne2) { }
 
-ItemEvents.entityInteracted(function(event) {
+ItemEvents.entityInteracted(function (event) {
     try {
         var target = event.target
         var player = event.player
@@ -851,19 +851,19 @@ ItemEvents.entityInteracted(function(event) {
             event.cancel()
             openMarketGUI(player)
         }
-    } catch (e) {}
+    } catch (e) { }
 })
 
 // -----------------------------------------------------------------------------
 // CYCLE PÉRIODIQUE DE RÉÉQUILIBRAGE VIA MASTER SCHEDULER (30 MINUTES)
 // -----------------------------------------------------------------------------
 if (typeof TW_Scheduler !== 'undefined' && TW_Scheduler.register) {
-    TW_Scheduler.register('onu_market_rebalance', ONU_MARKET_CONFIG.rebalanceIntervalTicks || 36000, function(server) {
+    TW_Scheduler.register('onu_market_rebalance', ONU_MARKET_CONFIG.rebalanceIntervalTicks || 36000, function (server) {
         rebalanceMarketStocks(server, false)
     })
 }
 
-ServerEvents.loaded(function(event) {
+ServerEvents.loaded(function (event) {
     loadMarketState()
 })
 

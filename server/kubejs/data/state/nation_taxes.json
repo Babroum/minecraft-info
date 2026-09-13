@@ -1,10 +1,10 @@
 {
 	"e78eaabc-b739-4099-9dd7-953e0c9da0f5": {
-		"active_minutes": 59,
+		"active_minutes": 3,
 		"in_debt": true,
-		"debt_active_minutes": 0,
+		"debt_active_minutes": 8,
 		"last_cycle_paid_at": 1789230441671,
-		"last_tax_amount": 32
+		"last_tax_amount": 5
 	},
 	"a23cf78a-8793-4151-842b-89b5dea2035e": {
 		"active_minutes": 6,
@@ -19,5 +19,19 @@
 		"debt_active_minutes": 0,
 		"last_cycle_paid_at": 1789312040144,
 		"last_tax_amount": 1
+	},
+	"f4163973-8e14-409a-b36a-c0481055b4c1": {
+		"active_minutes": 5,
+		"in_debt": false,
+		"debt_active_minutes": 0,
+		"last_cycle_paid_at": 1789323511493,
+		"last_tax_amount": 0
+	},
+	"a642ef18-0712-49a4-af1a-ae3b19ef3134": {
+		"active_minutes": 46,
+		"in_debt": false,
+		"debt_active_minutes": 0,
+		"last_cycle_paid_at": 1789331491500,
+		"last_tax_amount": 0
 	}
 }
