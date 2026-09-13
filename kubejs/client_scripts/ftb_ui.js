@@ -477,44 +477,19 @@ function openNationDashboardScreen(nationData) {
 function showBankContextMenu(screen, nationData) {
     try {
         var list = new ArrayListClass()
-        list.add(ContextMenuItemClass.title(ComponentClass.literal('§6§lOpérations Bancaires Nationales')))
+        list.add(ContextMenuItemClass.title(ComponentClass.literal('§6§lTrésor National : §a' + (nationData.bankBalance || '0 R'))))
         list.add(ContextMenuItemClass.SEPARATOR)
 
-    list.add(new ContextMenuItemClass(
-        ComponentClass.literal('§a📥 Déposer tout le cash tenu en main'),
-        resolveIcon('minecraft:emerald'),
-        function() {
-            sendClientAction('action_nation_bank', { action: 'deposit_held' })
-        }
-    ))
-
-    list.add(new ContextMenuItemClass(
-        ComponentClass.literal('§a📥 Déposer tous les billets de l\'inventaire'),
-        resolveIcon('minecraft:emerald_block'),
-        function() {
-            sendClientAction('action_nation_bank', { action: 'deposit_all' })
-        }
-    ))
-
-    if (nationData.isOfficer) {
-        list.add(ContextMenuItemClass.SEPARATOR)
         list.add(new ContextMenuItemClass(
-            ComponentClass.literal('§c📤 Retirer 100 R (Ministres/Leader)'),
-            resolveIcon('minecraft:redstone'),
+            ComponentClass.literal('§e🏧 Déposer / Retirer via un ATM'),
+            resolveIcon('minecraft:gold_ingot'),
             function() {
-                sendClientAction('action_nation_bank', { action: 'withdraw', amount: 100 })
+                var p = Client.player
+                if (p) p.tell('§6[ATM] §fPour déposer ou retirer des fonds du Trésor de votre Nation, faites un clic-droit sur un Distributeur Automatique (ATM) dans le monde et sélectionnez le compte de votre Nation.')
             }
         ))
-        list.add(new ContextMenuItemClass(
-            ComponentClass.literal('§c📤 Retirer 500 R (Ministres/Leader)'),
-            resolveIcon('minecraft:redstone_block'),
-            function() {
-                sendClientAction('action_nation_bank', { action: 'withdraw', amount: 500 })
-            }
-        ))
-    }
 
-    screen.openContextMenu(list)
+        screen.openContextMenu(list)
     } catch (errBank) {
         console.error('[FTB Client UI] Erreur dans showBankContextMenu: ' + errBank)
     }

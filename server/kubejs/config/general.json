@@ -1,0 +1,46 @@
+{
+  "server": {
+    "name": "Third World",
+    "version": "1.0.0"
+  },
+  "onu": {
+    "team_uuid": "cb440140-1d45-4eff-9b10-2bab3d457d63",
+    "team_short_name": "onu",
+    "hub": {
+      "dim": "minecraft:overworld",
+      "x": -204,
+      "y": 76,
+      "z": -172,
+      "interaction_radius": 50,
+      "restricted_radius": 200
+    },
+    "teleport": {
+      "public_enabled": false,
+      "dim": "minecraft:overworld",
+      "x": -204.5,
+      "y": 76.0,
+      "z": -172.5,
+      "yaw": 0.0,
+      "pitch": 0.0
+    }
+  },
+  "military": {
+    "war_cost": 2500,
+    "conflict_cost": 250,
+    "conflict_warmup_ms": 300000,
+    "conflict_duration_ms": 3600000,
+    "raid_hours": {
+      "start": 18,
+      "end": 22,
+      "enabled": true
+    }
+  },
+  "currency": {
+    "notes": {
+      "kubejs:billet_1": 1,
+      "kubejs:billet_5": 5,
+      "kubejs:billet_20": 20,
+      "kubejs:billet_100": 100
+    }
+  }
+}

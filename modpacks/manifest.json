@@ -15,10 +15,6 @@
       "sha256": "139ad7696462c89c03eea463f805abffa552526c5dadaadae221dd9624cb197c"
     },
     {
-      "file": "InventoryProfilesNext-neoforge-1.21.1-2.2.5.jar",
-      "sha256": "05f1b8660f74f543fba61d4ce7cf8632d4c69a95b7c15b1a6fd442be2e397ca6"
-    },
-    {
       "file": "Jade-1.21.1-NeoForge-15.10.6.jar",
       "sha256": "276f1f65a20d04f536989c4f311949d770b52c440c23c2b904a08860f3c93810"
     },
@@ -99,10 +95,6 @@
       "sha256": "791c5538751dd3015ef3a2ce92d98719e1a28a48ebbd817b78506771256654cd"
     },
     {
-      "file": "kotlinforforge-5.12.0-all.jar",
-      "sha256": "2785a4dd6de5c6c56065fd8eb789c82771bd2ee773c30794c23160a3b2c39139"
-    },
-    {
       "file": "kubejs-create-neoforge-2101.3.1-build.18.jar",
       "sha256": "9051fd08349850cb9b28845554246ef4f2c976892835a704ee27dcb7c8bfd7a1"
     },
@@ -117,10 +109,6 @@
     {
       "file": "lcompat-1.21-0.1.2a.jar",
       "sha256": "af72ad83c4661fd0e5bed7b2c1313cb3ea0109bc8ec628e36f289545f247e033"
-    },
-    {
-      "file": "libIPN-neoforge-1.21.1-6.6.3.jar",
-      "sha256": "98f061ba69d31764fa10ab7810ca49062633e107a6b261ba3b66dc25ba5fef7b"
     },
     {
       "file": "lightmanscurrency-1.21-2.3.0.5.jar",
@@ -169,6 +157,10 @@
     {
       "file": "sophisticatedcore-1.21.1-1.5.1.2341.jar",
       "sha256": "f627b497fc0a2b50da9f20b77e13073df9245718660259d8f559aa184c4418a1"
+    },
+    {
+      "file": "sophisticatedinventoryinteractions-1.21.1-0.1.13.218.jar",
+      "sha256": "c033c7cddb15e5f97ae2bd7c403cc8f030d0bfbe2cbcfe170e8e217bc5a520c2"
     },
     {
       "file": "voicechat-neoforge-1.21.1-2.6.22.jar",
@@ -349,7 +341,23 @@
     },
     {
       "file": "client_scripts/ftb_ui.js",
-      "sha256": "2de38a80639bc46c309eab298a2bf6682cca47bed9da19b8facfa396b125f85a"
+      "sha256": "1d6d9f0d8408052d0872fa1390d1bb6fde44f2004e9ebfedab8b5d464a246c72"
+    },
+    {
+      "file": "config/general.json",
+      "sha256": "6988b61f7094d2bffd2f5a04ff7f3eb89c8266ba3f6f7ab5de53dc42a8ea13b6"
+    },
+    {
+      "file": "config/market_catalog.json",
+      "sha256": "1742b65433e18be76f15b74cb5bd2475c4ce00dc4e731f238bb9dd87435467dc"
+    },
+    {
+      "file": "config/onu_contracts.json",
+      "sha256": "12e858a98de0f48136642945d32017d3bfc589782de2fc0a2e4d19eb3e6f437c"
+    },
+    {
+      "file": "config/taxes.json",
+      "sha256": "714e255d8318c116816c2b039280352f94a7bc51e07cc2f2e2448bd94bab8472"
     },
     {
       "file": "data/active_onu_contract.json",
@@ -369,111 +377,147 @@
     },
     {
       "file": "data/nation_homes.json",
-      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+      "sha256": "3f3f71b2c34eff6fa47158d72653d728dffd70abe42028748f7e6b180c324390"
     },
     {
       "file": "data/nation_taxes.json",
-      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+      "sha256": "671a6eb276ee85f7e453b031e59d69bc72f08885943e3f80890fd8e3f3bfea50"
     },
     {
       "file": "data/onu_market_data.json",
       "sha256": "e74aca5f304f1cd41c7ee353d96ea834c4d808db128e960f2e84e8bf45c915c1"
     },
     {
+      "file": "data/onu_regular_config.json",
+      "sha256": "652117363a9d03121a744265b147d276a0ccea1eef3e7a617a6f0b17dd92ea48"
+    },
+    {
       "file": "data/onu_teleport.json",
       "sha256": "ba6423bd9ae9bb2810fbc7a729638ccbf623d328de55dcf306f3286ddcb34572"
+    },
+    {
+      "file": "data/onu_weekly_config.json",
+      "sha256": "0dd9af2203dc039b5245ef86caf0b73a2e267888ab2c7838fb9d1d358658a32d"
+    },
+    {
+      "file": "data/onu_weekly.json",
+      "sha256": "57259b7552f3f25dbca38aebb2275c4d54af29caee0b8d46a2f07f990d8016fa"
+    },
+    {
+      "file": "data/sanctuaries.json",
+      "sha256": "c2905db83b88786b1c640255c65dacaf413130fccee684a6d383db9d67a291a5"
     },
     {
       "file": "data/wars.json",
       "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
     },
     {
-      "file": "server_scripts/alliance_system.js",
-      "sha256": "31f8c70efd6cf4c13ed49c914bd32b0b1869603fddef19952e1cbd6e0e41416d"
+      "file": "server_scripts/00_core/01_config_loader.js",
+      "sha256": "6e4f35cd4ea56464f0bcd11751f945268d622ec61a80bc5e59491e75d164f256"
     },
     {
-      "file": "server_scripts/backpack_recipes.js",
+      "file": "server_scripts/00_core/02_storage_engine.js",
+      "sha256": "29ab63f3d2e9e1bcbde10006ae054bfaded087ab37e64753a77261955f717210"
+    },
+    {
+      "file": "server_scripts/00_core/03_ftb_bridge.js",
+      "sha256": "10403362e82f5219c2b70f344cc99d10dae3dda295e585badff4b74a62581068"
+    },
+    {
+      "file": "server_scripts/00_core/04_master_scheduler.js",
+      "sha256": "4263c2525af2b18f4c0554f908dd824238b7e8f40a5ca8d5cf9cc7147012d5e2"
+    },
+    {
+      "file": "server_scripts/10_economy/nation_bank.js",
+      "sha256": "0494c192c2d72843073f27e230db2741eb0fef8891983a9b6c8055502d6e105a"
+    },
+    {
+      "file": "server_scripts/10_economy/onu_contracts.js",
+      "sha256": "d1d7ea2dda4e06ec36e6a868a12094b5f06cb40c9d697f2ec905e9c63a9ca4a0"
+    },
+    {
+      "file": "server_scripts/10_economy/onu_market.js",
+      "sha256": "9368568f4f378653178ffacb109b6350f3d453b15ef89dcc7b310d1f38e7cfe7"
+    },
+    {
+      "file": "server_scripts/10_economy/territory_tax.js",
+      "sha256": "c7e6d8670bec2d947e4038da47ac93fa62b221578f80ee97fae968f4ef4d6147"
+    },
+    {
+      "file": "server_scripts/20_military/alliance_engine.js",
+      "sha256": "b1d74e8011ce6a1ccb8d26f3061b7d2fa11076351a090f97460d14fe8ff8a299"
+    },
+    {
+      "file": "server_scripts/20_military/war_claims.js",
+      "sha256": "7b68a3046bd72f2253b8ac147b1d31c30574869883bb8c0afbd77c15847087f6"
+    },
+    {
+      "file": "server_scripts/20_military/war_engine.js",
+      "sha256": "68df6cb444f17cadf7e7495baf5a8685344027030ab325e94145a60824446e08"
+    },
+    {
+      "file": "server_scripts/20_military/war_flag.js",
+      "sha256": "6a101099b651a13e20f15a2693641552ca916330a388267f08be55dcf266ae88"
+    },
+    {
+      "file": "server_scripts/20_military/war_raidhours.js",
+      "sha256": "02bb51575f532c72ebaecd081d7c6c26b69d160d4206fe333f3ce5a2debaedca"
+    },
+    {
+      "file": "server_scripts/20_military/war_sanctuary.js",
+      "sha256": "b846e7d0b8feb9d1aba3232a7c14815d1163bd0f11cd4466fb19adb29e5d3901"
+    },
+    {
+      "file": "server_scripts/30_nation/nation_chat.js",
+      "sha256": "f635c4de4c6cf841cf62d69c769501e10223a65ca3033f2163418b7448a2616b"
+    },
+    {
+      "file": "server_scripts/30_nation/nation_homes.js",
+      "sha256": "7441e2a11ab943db580b08c49f0ae43717933619d89da9c42a155f6df6c5cbd5"
+    },
+    {
+      "file": "server_scripts/30_nation/nation_info.js",
+      "sha256": "ccfb7112d0630816f56a7c7aaf14574b84bb3a40d1989ca15ac7b8ed344ed370"
+    },
+    {
+      "file": "server_scripts/30_nation/onu_claims.js",
+      "sha256": "ed77a3370af3bb8f9527e0a8953b75b18e499df81b8f0c141816756a059f626d"
+    },
+    {
+      "file": "server_scripts/30_nation/onu_hub.js",
+      "sha256": "cfa51810188fa93fd82b48016f74d065bdd16bfb93dc98c82f2d251031fb4749"
+    },
+    {
+      "file": "server_scripts/40_rules/armor_weight.js",
+      "sha256": "5b81ce7413b5e6342d46cbd770fa22a74be5dacb6925f2601f0499972c5fd72e"
+    },
+    {
+      "file": "server_scripts/40_rules/dimension_rules.js",
+      "sha256": "10155a680610f24b1a2da88840919fc5eea0e229df33d5a439dfaa90d0e953d6"
+    },
+    {
+      "file": "server_scripts/40_rules/vehicle_rules.js",
+      "sha256": "cc4446a3a3d3ab4c82f84e9d1eeb13f076a763f41a6c678f34e3e7dc260696a2"
+    },
+    {
+      "file": "server_scripts/50_recipes/backpack_recipes.js",
       "sha256": "671728ed7a4188255cece343f30a76a3197b791038e91a7c510aef9734ecc16b"
     },
     {
-      "file": "server_scripts/dimension_blocker.js",
-      "sha256": "ac3fe6ea61fd0a91a0ea3a52191431370aaa0bf3cf00d239000921bc22e213d9"
-    },
-    {
-      "file": "server_scripts/dimensional_recipes.js",
+      "file": "server_scripts/50_recipes/dimensional_recipes.js",
       "sha256": "5c862c5aeadb6f0690434ec8a69e924f75529caedfa241e9acacbbfe349c0912"
     },
     {
-      "file": "server_scripts/elytra_disabled.js",
-      "sha256": "902c7ca0b07c7c76326b433dddb5c6fb53f736113ac228986228cc161a4bf490"
-    },
-    {
-      "file": "server_scripts/exo_armor_weight.js",
-      "sha256": "b09e29c83b78154abab048788781f4c6f5f34697d37c383dd08753ad63274539"
-    },
-    {
-      "file": "server_scripts/ftb_helpers.js",
-      "sha256": "8c49078a00cca04bfc0d456acf8b365eb054f8596672b7b5c209dd32ec401656"
-    },
-    {
-      "file": "server_scripts/main.js",
-      "sha256": "2bd394ef37f069bfc82a90e3b70da645c281dfeb109c2a0646e51dbde07cf7b6"
-    },
-    {
-      "file": "server_scripts/military_recipes.js",
+      "file": "server_scripts/50_recipes/military_recipes.js",
       "sha256": "637928e1ce34b3c9394e943691f74b803a787a19cd0fcb6f923a1f483680f996"
     },
     {
-      "file": "server_scripts/nation_bank.js",
-      "sha256": "c25144d79f3e99ec7aebaa9395626b40c3887900a9a49d56fa7786fc321b8475"
+      "file": "server_scripts/90_commands/unified_commands.js",
+      "sha256": "86557857f80221b796fefc4038c30773c42c9182e33303ab500ca5870fe626fd"
     },
     {
-      "file": "server_scripts/nation_chat_tab.js",
-      "sha256": "197d0d73dd2260bdcc324bff744f998eebd2623adab2b78a8c3d186922dd3fb5"
-    },
-    {
-      "file": "server_scripts/nation_homes.js",
-      "sha256": "f5681332a506f846155913b063b519fc99ac7c8dc1dd10b0e41da3a1336adec8"
-    },
-    {
-      "file": "server_scripts/nation_info.js",
-      "sha256": "817a145f3ac3d6d2e7ea274f50478b26d2f9df4937516db5b0ecdb170b4c669a"
-    },
-    {
-      "file": "server_scripts/onu_claims.js",
-      "sha256": "3f2c0cc782dc5c8d95aaec02c47b7d2e2f8b40809b60828a696bdd3584862cb7"
-    },
-    {
-      "file": "server_scripts/onu_contracts.js",
-      "sha256": "55709807dcf674bf533b20ec4fa817076a2f42eb502e682b9cd59fd2c0ba06c0"
-    },
-    {
-      "file": "server_scripts/onu_market.js",
-      "sha256": "31b5302f90e2782c78ff031bf4dc748eb8e5d806b9f1c1bc1cf43ca33d42b59f"
-    },
-    {
-      "file": "server_scripts/onu_teleport.js",
-      "sha256": "2da47a60eb74e53f472b7597eaae1df150addb6671ec2eed7cee66691733c838"
-    },
-    {
-      "file": "server_scripts/territory_tax.js",
-      "sha256": "f4b29d45ea5c8f3aa3b259b6e3d50e2fb43f32163121e5856d457373d8f8f370"
-    },
-    {
-      "file": "server_scripts/war_admin.js",
-      "sha256": "371271d819ef6621486d850ea15517a2e3a44d9351bfc000a4f427d84edc41f2"
-    },
-    {
-      "file": "server_scripts/war_claims_hook.js",
-      "sha256": "90685a23e70f6a436dd61743411ea87e59f735f9c941a57cdc59299f130f8204"
-    },
-    {
-      "file": "server_scripts/war_raidhours.js",
-      "sha256": "e9c1f37c20486801e7b54bc0cacd1fd887c97959047178f3637a15315dc51694"
-    },
-    {
-      "file": "server_scripts/war_system.js",
-      "sha256": "7b6c08071c45082105d63070bdcdf057fed2f52d89a7a86fb7e092c45ccb0ec0"
+      "file": "server_scripts/main.js",
+      "sha256": "bb1cbb0b9af25bfc7fb5d55cce5f02609976fa5cb77120d217b5af0dff19bb63"
     },
     {
       "file": "startup_scripts/economy_items.js",

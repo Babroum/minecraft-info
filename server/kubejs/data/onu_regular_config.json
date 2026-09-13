@@ -1,0 +1,86 @@
+{
+  "cooldownMinutes": 180,
+  "interactionRadius": 50,
+  "rerollImmediatelyOnCompletion": false,
+  "contracts": [
+    {
+      "id": "CT-METALLURGIE-1",
+      "title": "Programme Ferroviaire Transcontinental",
+      "lore": "L'ONU requiert des aciers lourds et rails pour relier les continents.",
+      "reward": 3200,
+      "driverCutPercent": 10,
+      "items": [
+        { "id": "mekanism:ingot_steel", "count": 128, "name": "Lingot d'Acier" },
+        { "id": "create:track", "count": 64, "name": "Voie Ferrée Create" }
+      ]
+    },
+    {
+      "id": "CT-MECANIQUE-1",
+      "title": "Modernisation Industrielle & Automates",
+      "lore": "Fourniture de mécanismes de haute précision pour les centrales publiques.",
+      "reward": 3800,
+      "driverCutPercent": 10,
+      "items": [
+        { "id": "create:precision_mechanism", "count": 32, "name": "Mécanisme de Précision" },
+        { "id": "create:brass_sheet", "count": 64, "name": "Plaque de Laiton" }
+      ]
+    },
+    {
+      "id": "CT-AGRO-1",
+      "title": "Aide Alimentaire Humanitaire",
+      "lore": "Constitution de réserves d'urgence en vivres compressées.",
+      "reward": 2600,
+      "driverCutPercent": 15,
+      "items": [
+        { "id": "farmersdelight:rice_bag", "count": 32, "name": "Sac de Riz" },
+        { "id": "farmersdelight:tomato_crate", "count": 32, "name": "Caisse de Tomates" },
+        { "id": "farmersdelight:onion_crate", "count": 32, "name": "Caisse d'Oignons" }
+      ]
+    },
+    {
+      "id": "CT-METALLURGIE-2",
+      "title": "Développement Électronique & Réseaux",
+      "lore": "Achat de circuits électroniques et métaux rares.",
+      "reward": 4200,
+      "driverCutPercent": 10,
+      "items": [
+        { "id": "mekanism:basic_control_circuit", "count": 32, "name": "Circuit de Contrôle de Base" },
+        { "id": "mekanism:ingot_osmium", "count": 64, "name": "Lingot d'Osmium" }
+      ]
+    },
+    {
+      "id": "CT-AGRO-2",
+      "title": "Plan Mondial Contre la Famine",
+      "lore": "Approvisionnement massif en féculents et légumes de conservation.",
+      "reward": 2500,
+      "driverCutPercent": 15,
+      "items": [
+        { "id": "farmersdelight:potato_crate", "count": 32, "name": "Caisse de Pommes de Terre" },
+        { "id": "farmersdelight:carrot_crate", "count": 32, "name": "Caisse de Carottes" },
+        { "id": "farmersdelight:cabbage_crate", "count": 32, "name": "Caisse de Choux" }
+      ]
+    },
+    {
+      "id": "CT-DEFENSE-1",
+      "title": "Blindage des Zones Sécurisées",
+      "lore": "Laminage de tôles blindées pour la fortification des bases neutres.",
+      "reward": 4500,
+      "driverCutPercent": 10,
+      "items": [
+        { "id": "create:sturdy_sheet", "count": 48, "name": "Tôle d'Obsidienne Robuste" },
+        { "id": "mekanism:ingot_steel", "count": 96, "name": "Lingot d'Acier" }
+      ]
+    },
+    {
+      "id": "CT-ENERGIE-1",
+      "title": "Infrastructure Électrique Haute Tension",
+      "lore": "Achat massif de cuivre raffiné pour les transformateurs mondiaux.",
+      "reward": 3600,
+      "driverCutPercent": 10,
+      "items": [
+        { "id": "minecraft:copper_block", "count": 64, "name": "Bloc de Cuivre" },
+        { "id": "mekanism:alloy_infused", "count": 32, "name": "Alliage Imprégné" }
+      ]
+    }
+  ]
+}

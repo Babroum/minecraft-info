@@ -1,2 +1,2 @@
-// Main server script entry point.
-console.info('[Server] KubeJS server scripts loaded')
+// Third World Server - Point d'entrée KubeJS
+console.info('[Third World] Architecture modulaire chargée avec succès.');

@@ -1,0 +1,28 @@
+{
+	"currentWeekId": "2026-W37",
+	"expiresAt": 1789336799999,
+	"contract": {
+		"id": "HW-FERROVIAIRE-1",
+		"title": "Réseau Ferré Transcontinental",
+		"lore": "Pose des grands axes ferroviaires inter-nations nécessitant acier et rails Create.",
+		"baseReward": 6500,
+		"goals": [
+			{
+				"id": "create:track",
+				"target": 384,
+				"name": "Voies Ferrées Create"
+			},
+			{
+				"id": "mekanism:ingot_steel",
+				"target": 192,
+				"name": "Lingots d'Acier"
+			},
+			{
+				"id": "create:brass_sheet",
+				"target": 96,
+				"name": "Plaques de Laiton"
+			}
+		]
+	},
+	"progress": {}
+}

@@ -1,0 +1,12 @@
+{
+  "playtime_cycle_minutes": 60,
+  "grace_playtime_minutes": 120,
+  "unclaim_percent_on_debt": 0.15,
+  "min_chunks_exempt": 4,
+  "brackets": [
+    { "up_to": 10, "cost_per_chunk": 1 },
+    { "up_to": 30, "cost_per_chunk": 2 },
+    { "up_to": 60, "cost_per_chunk": 5 },
+    { "above": 60, "cost_per_chunk": 10 }
+  ]
+}

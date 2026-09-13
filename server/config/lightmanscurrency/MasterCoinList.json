@@ -29,7 +29,13 @@
       "name": {
         "text": "Robert Coins"
       },
-      "displayType": "lightmanscurrency:coin",
+      "displayType": "lightmanscurrency:number",
+      "displayFormat": {
+        "text": "{value} R"
+      },
+      "displayFormatWordy": {
+        "text": "{value} Robert Coins"
+      },
       "InputType": "DEFAULT",
       "CoreChain": [
         {

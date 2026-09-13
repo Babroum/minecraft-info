@@ -1,0 +1,190 @@
+{
+  "market_settings": {
+    "rebalance_interval_ticks": 36000,
+    "spread_percent": 30,
+    "rebalance_rate": 0.15,
+    "max_distance": 200
+  },
+  "catalog": [
+    {
+      "id": "minecraft:sand",
+      "name": "Sable Fin",
+      "desc": "Essentiel pour le verre et le béton, gisement non renouvelable.",
+      "targetStock": 1024,
+      "basePrice": 2,
+      "minPrice": 1,
+      "maxPrice": 6,
+      "lotSize": 32,
+      "slotCol": 1,
+      "slotRow": 1
+    },
+    {
+      "id": "minecraft:clay_ball",
+      "name": "Boule d'Argile",
+      "desc": "Matériau de construction pour briques, céramiques et terracottas.",
+      "targetStock": 512,
+      "basePrice": 3,
+      "minPrice": 1,
+      "maxPrice": 8,
+      "lotSize": 16,
+      "slotCol": 2,
+      "slotRow": 1
+    },
+    {
+      "id": "minecraft:quartz",
+      "name": "Quartz du Nether",
+      "desc": "Composant électronique pour comparateurs, capteurs et finitions.",
+      "targetStock": 512,
+      "basePrice": 5,
+      "minPrice": 2,
+      "maxPrice": 15,
+      "lotSize": 16,
+      "slotCol": 3,
+      "slotRow": 1
+    },
+    {
+      "id": "minecraft:raw_iron",
+      "name": "Fer Brut",
+      "desc": "Métal industriel fondamental pour rails, machines et armatures.",
+      "targetStock": 512,
+      "basePrice": 4,
+      "minPrice": 2,
+      "maxPrice": 12,
+      "lotSize": 16,
+      "slotCol": 4,
+      "slotRow": 1
+    },
+    {
+      "id": "minecraft:raw_copper",
+      "name": "Cuivre Brut",
+      "desc": "Conducteur électrique et composant pour alliages de laiton.",
+      "targetStock": 512,
+      "basePrice": 3,
+      "minPrice": 1,
+      "maxPrice": 8,
+      "lotSize": 16,
+      "slotCol": 5,
+      "slotRow": 1
+    },
+    {
+      "id": "minecraft:coal",
+      "name": "Charbon Minéral",
+      "desc": "Combustible fossile standard pour hauts fourneaux et chaudières.",
+      "targetStock": 512,
+      "basePrice": 2,
+      "minPrice": 1,
+      "maxPrice": 6,
+      "lotSize": 16,
+      "slotCol": 6,
+      "slotRow": 1
+    },
+    {
+      "id": "minecraft:redstone",
+      "name": "Poudre de Redstone",
+      "desc": "Matière conductrice pour l'automatisation et signaux logiques.",
+      "targetStock": 512,
+      "basePrice": 3,
+      "minPrice": 1,
+      "maxPrice": 9,
+      "lotSize": 16,
+      "slotCol": 7,
+      "slotRow": 1
+    },
+    {
+      "id": "minecraft:glowstone_dust",
+      "name": "Poudre de Glowstone",
+      "desc": "Poudre luminescente pour câblages d'énergie et optiques.",
+      "targetStock": 384,
+      "basePrice": 4,
+      "minPrice": 2,
+      "maxPrice": 12,
+      "lotSize": 16,
+      "slotCol": 1,
+      "slotRow": 2
+    },
+    {
+      "id": "minecraft:obsidian",
+      "name": "Roche d'Obsidienne",
+      "desc": "Matériau ignifugé à haute densité résistant aux explosions.",
+      "targetStock": 256,
+      "basePrice": 8,
+      "minPrice": 4,
+      "maxPrice": 24,
+      "lotSize": 8,
+      "slotCol": 2,
+      "slotRow": 2
+    },
+    {
+      "id": "minecraft:leather",
+      "name": "Cuir Tanné",
+      "desc": "Matière première d'équipement, sacs et harnachements.",
+      "targetStock": 256,
+      "basePrice": 6,
+      "minPrice": 2,
+      "maxPrice": 18,
+      "lotSize": 16,
+      "slotCol": 3,
+      "slotRow": 2
+    },
+    {
+      "id": "minecraft:slime_ball",
+      "name": "Boule de Slime",
+      "desc": "Polymère visqueux pour pistons collants et colle mécanique.",
+      "targetStock": 256,
+      "basePrice": 8,
+      "minPrice": 3,
+      "maxPrice": 25,
+      "lotSize": 8,
+      "slotCol": 4,
+      "slotRow": 2
+    },
+    {
+      "id": "minecraft:ender_pearl",
+      "name": "Perle de l'Ender",
+      "desc": "Artefact dimensionnel pour propulsion et téléportation tactique.",
+      "targetStock": 128,
+      "basePrice": 15,
+      "minPrice": 5,
+      "maxPrice": 45,
+      "lotSize": 4,
+      "slotCol": 5,
+      "slotRow": 2
+    },
+    {
+      "id": "minecraft:blaze_rod",
+      "name": "Bâton de Blaze",
+      "desc": "Source d'énergie thermique extrême pour alchimie et générateurs.",
+      "targetStock": 128,
+      "basePrice": 20,
+      "minPrice": 8,
+      "maxPrice": 60,
+      "lotSize": 4,
+      "slotCol": 6,
+      "slotRow": 2
+    },
+    {
+      "id": "minecraft:ghast_tear",
+      "name": "Larme de Ghast",
+      "desc": "Composant alchimique rare à haute régénération vitale.",
+      "targetStock": 64,
+      "basePrice": 45,
+      "minPrice": 18,
+      "maxPrice": 120,
+      "lotSize": 2,
+      "slotCol": 7,
+      "slotRow": 2
+    },
+    {
+      "id": "minecraft:netherite_upgrade_smithing_template",
+      "name": "🌟 Modèle de Forge Netherite",
+      "desc": "Technologie d'alliage Netherite scellée par l'ONU. Inobtenable sur la carte.",
+      "targetStock": 4,
+      "basePrice": 2500,
+      "minPrice": 1500,
+      "maxPrice": 6000,
+      "lotSize": 1,
+      "slotCol": 4,
+      "slotRow": 3
+    }
+  ]
+}
