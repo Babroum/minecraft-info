@@ -1,0 +1,23 @@
+{
+	"currentWeekId": "2026-W38",
+	"expiresAt": 1789941599999,
+	"contract": {
+		"id": "HW-DEFENSE-1",
+		"title": "Gros Œuvre & Armature Industrielle",
+		"lore": "Fourniture de matériaux renforcés pour les infrastructures lourdes.",
+		"baseReward": 7000,
+		"goals": [
+			{
+				"id": "create:sturdy_sheet",
+				"target": 128,
+				"name": "Tôles d'Obsidienne Robuste"
+			},
+			{
+				"id": "minecraft:iron_block",
+				"target": 64,
+				"name": "Blocs de Fer"
+			}
+		]
+	},
+	"progress": {}
+}

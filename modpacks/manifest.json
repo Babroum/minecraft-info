@@ -345,7 +345,7 @@
     },
     {
       "file": "client_scripts/ui/components/widgets.js",
-      "sha256": "8e2f499837b581dcf97bc647a23e6481aa805ae8839bdf09ae95c693a95015b3"
+      "sha256": "d258e6ddacd35a742cf9fd3bcb76b07b0533e299868bdd5f71d4007a8ff297a7"
     },
     {
       "file": "client_scripts/ui/core/01_theme.js",
@@ -357,7 +357,7 @@
     },
     {
       "file": "client_scripts/ui/core/03_base_screen.js",
-      "sha256": "bf0d6571c1fa6609deb05d03a717ac10a621647cbfb4dfa1ea1a4a0b24255296"
+      "sha256": "2f11eb78dcfcd08116f0f8a48f63413f2f584d989b05a138be7c8c4838bbf4bf"
     },
     {
       "file": "client_scripts/ui/screens/nation_screen.js",
@@ -369,7 +369,7 @@
     },
     {
       "file": "client_scripts/ui/screens/onu_market_screen.js",
-      "sha256": "b629481a0268eeba016c9095d33b55833f0c1d18d4a2dc8f4f63704de884ae33"
+      "sha256": "3c619752fc75e7f32f20a170cc1c8b5aed2a5f520e9b1bb9c2a79c0d17cb13fa"
     },
     {
       "file": "client_scripts/ui/screens/war_registry_screen.js",
@@ -381,11 +381,11 @@
     },
     {
       "file": "config/market_catalog.json",
-      "sha256": "1742b65433e18be76f15b74cb5bd2475c4ce00dc4e731f238bb9dd87435467dc"
+      "sha256": "dc49bbe82c1a152e9aeaad5e0690c4eefabf595a416596f34402b90fe28449be"
     },
     {
       "file": "config/onu_contracts.json",
-      "sha256": "12e858a98de0f48136642945d32017d3bfc589782de2fc0a2e4d19eb3e6f437c"
+      "sha256": "2c102860f6ec52380a4d18d066b6f845bd8d5f9a22c1efc523a8aa7b8e75b607"
     },
     {
       "file": "config/taxes.json",
@@ -477,7 +477,7 @@
     },
     {
       "file": "server_scripts/10_economy/onu_market.js",
-      "sha256": "56315855ecd3dc445ac9d82600f73a0ff8903e880b781d274defd0f0a93ee457"
+      "sha256": "3fa4d599132ca3a394e9e25c96c8a9da9624972ff4bd1044f178cc1e32a54879"
     },
     {
       "file": "server_scripts/10_economy/territory_tax.js",
@@ -557,7 +557,7 @@
     },
     {
       "file": "server_scripts/90_commands/unified_commands.js",
-      "sha256": "76f93c8aedeca20f22fc13255c914c549543160dd90c598f7ee901f2b51c65cb"
+      "sha256": "ab96540856b980c0830575426ad1632c10fb82d2a19232be48e40b304da05f70"
     },
     {
       "file": "server_scripts/main.js",

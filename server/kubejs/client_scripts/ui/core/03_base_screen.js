@@ -34,6 +34,20 @@ var ThirdWorldUI = ThirdWorldUI || {};
                     }
                     return true;
                 },
+                getFilterText: function(widget) {
+                    try {
+                        if (widget && widget.isPermanentHeader) {
+                            return (this.searchBox && this.searchBox.getText) ? this.searchBox.getText().toLowerCase() : '';
+                        }
+                        if (widget && widget.customFilterText) {
+                            return String(widget.customFilterText).toLowerCase();
+                        }
+                        var title = widget ? widget.getTitle() : null;
+                        return title ? title.getString().toLowerCase() : '';
+                    } catch (eFilt) {
+                        return '';
+                    }
+                },
                 addButtons: function(panel) {
                     try {
                         this.screenPanel = panel;

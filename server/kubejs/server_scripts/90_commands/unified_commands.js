@@ -71,27 +71,8 @@ ServerEvents.commandRegistry(function(event) {
                         return 0
                     })
                 )
-                .then(Commands.literal('banque')
-                    .executes(function(ctx) {
-                        var p = getPlayer(ctx)
-                        if (!p) return 0
-                        if (typeof showNationBankStatus === 'function') return showNationBankStatus(p)
-                        if (typeof showNationOverview === 'function') return showNationOverview(p)
-                        return 0
-                    })
-                )
                 // /nation deposit / /nation deposer
                 .then(Commands.literal('deposit')
-                    .executes(function(ctx) {
-                        var p = getPlayer(ctx)
-                        if (p) {
-                            sendMsg(p, 'Banque', 'Les dépôts se font désormais exclusivement via les Distributeurs Automatiques (ATMs).', '§e')
-                            sendMsg(p, 'ATM', 'Interagissez avec un bloc ATM pour alimenter le Trésor de votre Nation.', '§7')
-                        }
-                        return 1
-                    })
-                )
-                .then(Commands.literal('deposer')
                     .executes(function(ctx) {
                         var p = getPlayer(ctx)
                         if (p) {
@@ -112,27 +93,8 @@ ServerEvents.commandRegistry(function(event) {
                         return 1
                     })
                 )
-                .then(Commands.literal('retirer')
-                    .executes(function(ctx) {
-                        var p = getPlayer(ctx)
-                        if (p) {
-                            sendMsg(p, 'Banque', 'Les retraits se font désormais exclusivement via les Distributeurs Automatiques (ATMs).', '§e')
-                            sendMsg(p, 'ATM', 'Interagissez avec un bloc ATM pour retirer des fonds (réservé aux Leaders et Ministres).', '§7')
-                        }
-                        return 1
-                    })
-                )
                 // /nation tax / /nation taxes
                 .then(Commands.literal('tax')
-                    .executes(function(ctx) {
-                        var p = getPlayer(ctx)
-                        if (!p) return 0
-                        if (typeof showNationTaxOverview === 'function') return showNationTaxOverview(p)
-                        sendMsg(p, 'Taxes', 'Module territory_tax indisponible.', '§c')
-                        return 0
-                    })
-                )
-                .then(Commands.literal('taxes')
                     .executes(function(ctx) {
                         var p = getPlayer(ctx)
                         if (!p) return 0
@@ -247,7 +209,6 @@ ServerEvents.commandRegistry(function(event) {
     }
 
     registerNationBranch('nation')
-    registerNationBranch('nations')
 
     // Raccourcis autonomes de confort
     event.register(
@@ -257,82 +218,6 @@ ServerEvents.commandRegistry(function(event) {
             if (typeof teleportToNationHome === 'function') return teleportToNationHome(p)
             return 0
         })
-    )
-    event.register(
-        Commands.literal('nationhome').executes(function(ctx) {
-            var p = getPlayer(ctx)
-            if (!p) return 0
-            if (typeof teleportToNationHome === 'function') return teleportToNationHome(p)
-            return 0
-        })
-    )
-    event.register(
-        Commands.literal('sethome').executes(function(ctx) {
-            var p = getPlayer(ctx)
-            if (!p) return 0
-            if (typeof setNationHome === 'function') return setNationHome(p)
-            return 0
-        })
-    )
-    event.register(
-        Commands.literal('delhome').executes(function(ctx) {
-            var p = getPlayer(ctx)
-            if (!p) return 0
-            if (typeof deleteNationHome === 'function') return deleteNationHome(p)
-            return 0
-        })
-    )
-    event.register(
-        Commands.literal('banque').executes(function(ctx) {
-            var p = getPlayer(ctx)
-            if (!p) return 0
-            if (typeof showNationBankStatus === 'function') return showNationBankStatus(p)
-            if (typeof showNationOverview === 'function') return showNationOverview(p)
-            return 0
-        })
-    )
-    event.register(
-        Commands.literal('bank').executes(function(ctx) {
-            var p = getPlayer(ctx)
-            if (!p) return 0
-            if (typeof showNationBankStatus === 'function') return showNationBankStatus(p)
-            if (typeof showNationOverview === 'function') return showNationOverview(p)
-            return 0
-        })
-    )
-    event.register(
-        Commands.literal('setallyhome').executes(function(ctx) {
-            var p = getPlayer(ctx)
-            if (!p) return 0
-            if (typeof setNationAllyHome === 'function') return setNationAllyHome(null, p)
-            return 0
-        })
-    )
-    event.register(
-        Commands.literal('delallyhome').executes(function(ctx) {
-            var p = getPlayer(ctx)
-            if (!p) return 0
-            if (typeof deleteNationAllyHome === 'function') return deleteNationAllyHome(null, p)
-            return 0
-        })
-    )
-    event.register(
-        Commands.literal('allyhome')
-            .then(Commands.argument('nation', StringArgumentType.string())
-                .executes(function(ctx) {
-                    var p = getPlayer(ctx)
-                    if (!p) return 0
-                    if (typeof teleportToAllyHome === 'function') {
-                        return teleportToAllyHome(p, StringArgumentType.getString(ctx, 'nation'))
-                    }
-                    return 0
-                })
-            )
-            .executes(function(ctx) {
-                var p = getPlayer(ctx)
-                if (p) sendMsg(p, 'Aide', 'Usage : §e/allyhome <nom_nation>', '§7')
-                return 0
-            })
     )
 
     // =========================================================================
@@ -616,7 +501,6 @@ ServerEvents.commandRegistry(function(event) {
     }
 
     registerWarBranch('war')
-    registerWarBranch('guerre')
 
     // =========================================================================
     // 3. COMMANDE PRINCIPALE : /onu
@@ -630,22 +514,6 @@ ServerEvents.commandRegistry(function(event) {
                     if (!p) return 0
                     if (typeof openMarketGUI === 'function') return openMarketGUI(p) ? 1 : 0
                     sendMsg(p, 'Bourse', 'Bourse indisponible.', '§c')
-                    return 0
-                })
-            )
-            .then(Commands.literal('bourse')
-                .executes(function(ctx) {
-                    var p = getPlayer(ctx)
-                    if (!p) return 0
-                    if (typeof openMarketGUI === 'function') return openMarketGUI(p) ? 1 : 0
-                    return 0
-                })
-            )
-            .then(Commands.literal('marche')
-                .executes(function(ctx) {
-                    var p = getPlayer(ctx)
-                    if (!p) return 0
-                    if (typeof openMarketGUI === 'function') return openMarketGUI(p) ? 1 : 0
                     return 0
                 })
             )
@@ -684,42 +552,8 @@ ServerEvents.commandRegistry(function(event) {
                     return 1
                 })
             )
-            .then(Commands.literal('contrat')
-                .executes(function(ctx) {
-                    var p = getPlayer(ctx)
-                    if (!p) return 0
-                    if (typeof showCurrentOnuContract === 'function') showCurrentOnuContract(p)
-                    if (typeof showWeeklyContractStatus === 'function') showWeeklyContractStatus(p)
-                    return 1
-                })
-            )
-            .then(Commands.literal('contrats')
-                .executes(function(ctx) {
-                    var p = getPlayer(ctx)
-                    if (!p) return 0
-                    if (typeof showCurrentOnuContract === 'function') showCurrentOnuContract(p)
-                    if (typeof showWeeklyContractStatus === 'function') showWeeklyContractStatus(p)
-                    return 1
-                })
-            )
             // /onu regular & /onu objectif (Appel d'offres régulier 3h uniquement)
             .then(Commands.literal('regular')
-                .then(Commands.literal('deliver')
-                    .executes(function(ctx) {
-                        var p = getPlayer(ctx)
-                        if (!p) return 0
-                        if (typeof deliverOnuContract === 'function') return deliverOnuContract(p)
-                        return 0
-                    })
-                )
-                .executes(function(ctx) {
-                    var p = getPlayer(ctx)
-                    if (!p) return 0
-                    if (typeof showCurrentOnuContract === 'function') return showCurrentOnuContract(p)
-                    return 0
-                })
-            )
-            .then(Commands.literal('objectif')
                 .then(Commands.literal('deliver')
                     .executes(function(ctx) {
                         var p = getPlayer(ctx)
@@ -754,14 +588,6 @@ ServerEvents.commandRegistry(function(event) {
                         return 0
                     })
                 )
-                .executes(function(ctx) {
-                    var p = getPlayer(ctx)
-                    if (!p) return 0
-                    if (typeof showWeeklyContractStatus === 'function') return showWeeklyContractStatus(p)
-                    return 1
-                })
-            )
-            .then(Commands.literal('hebdo')
                 .executes(function(ctx) {
                     var p = getPlayer(ctx)
                     if (!p) return 0
@@ -814,15 +640,7 @@ ServerEvents.commandRegistry(function(event) {
 
     // Alias Bourse / Marché autonomes
     event.register(
-        Commands.literal('bourse').executes(function(ctx) {
-            var p = getPlayer(ctx)
-            if (!p) return 0
-            if (typeof openMarketGUI === 'function') return openMarketGUI(p) ? 1 : 0
-            return 0
-        })
-    )
-    event.register(
-        Commands.literal('marche').executes(function(ctx) {
+        Commands.literal('market').executes(function(ctx) {
             var p = getPlayer(ctx)
             if (!p) return 0
             if (typeof openMarketGUI === 'function') return openMarketGUI(p) ? 1 : 0
@@ -1036,8 +854,6 @@ ServerEvents.commandRegistry(function(event) {
     }
 
     registerAllyBranch('ally')
-    registerAllyBranch('alliance')
-    registerAllyBranch('alliances')
 
     // =========================================================================
     // 5. CHAT RAPIDE DE NATION : /n, /nc
