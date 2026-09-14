@@ -143,7 +143,7 @@ var ThirdWorldUI = ThirdWorldUI || {};
                     return this.isMouseOver() ? WidgetTypeClass.MOUSE_OVER : WidgetTypeClass.NORMAL;
                 },
                 getCursor: function () {
-                    return inZone ? CursorTypeClass.HAND : CursorTypeClass.DEFAULT;
+                    return inZone ? CursorTypeClass.HAND : CursorTypeClass.ARROW;
                 },
                 addMouseOverText: function (tooltipList) {
                     tooltipList.add(ComponentClass.literal((isPrecious ? '§6§l' : '§f§l') + item.name));

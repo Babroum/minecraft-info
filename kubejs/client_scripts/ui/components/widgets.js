@@ -80,7 +80,7 @@ var ThirdWorldUI = ThirdWorldUI || {};
                 onClicked: function(mBtn) {},
                 mousePressed: function(mBtn) { return false; },
                 getWidgetType: function() { return WidgetTypeClass.DISABLED; },
-                getCursor: function() { return CursorTypeClass.DEFAULT; },
+                getCursor: function() { return CursorTypeClass.ARROW; },
                 draw: function(graphics, theme, x, y, w, h) {
                     // Fond sombre slate
                     ThirdWorldUI.Theme.Colors.BG_PANEL.draw(graphics, x, y, w, h);
@@ -126,7 +126,7 @@ var ThirdWorldUI = ThirdWorldUI || {};
                 onClicked: function(mBtn) {},
                 mousePressed: function(mBtn) { return false; },
                 getWidgetType: function() { return WidgetTypeClass.DISABLED; },
-                getCursor: function() { return CursorTypeClass.DEFAULT; },
+                getCursor: function() { return CursorTypeClass.ARROW; },
                 draw: function(graphics, theme, x, y, w, h) {
                     var midY = y + Math.floor(h / 2);
                     ThirdWorldUI.Theme.Colors.DIVIDER.draw(graphics, x, midY, w, 1);
