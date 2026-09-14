@@ -1,24 +1,24 @@
 {
-	"id": "CT-MECANIQUE-1-554",
-	"templateId": "CT-MECANIQUE-1",
-	"title": "Modernisation Industrielle & Automates",
-	"lore": "Fourniture de mécanismes de haute précision pour les centrales publiques.",
+	"id": "CT-METALLURGIE-2-380",
+	"templateId": "CT-METALLURGIE-2",
+	"title": "Développement Électronique & Réseaux",
+	"lore": "Achat de circuits électroniques et métaux rares.",
 	"items": [
 		{
-			"id": "create:precision_mechanism",
+			"id": "mekanism:basic_control_circuit",
 			"count": 32,
-			"name": "Mécanisme de Précision"
+			"name": "Circuit de Contrôle de Base"
 		},
 		{
-			"id": "create:brass_sheet",
+			"id": "mekanism:ingot_osmium",
 			"count": 64,
-			"name": "Plaque de Laiton"
+			"name": "Lingot d'Osmium"
 		}
 	],
-	"reward": 3800,
+	"reward": 4200,
 	"driverCutPercent": 10,
-	"openedAt": 1789355551490,
-	"expiresAt": 1789366351490,
+	"openedAt": 1789403075650,
+	"expiresAt": 1789413875650,
 	"status": "OPEN",
 	"completedByPlayer": null,
 	"completedByTeam": null,

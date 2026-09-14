@@ -78,6 +78,10 @@ server/local/
 server/.cache/
 server/.sable/
 
+# Data
+kubejs/data/
+
+
 # ==========================================
 # Temporary & Backup Files
 # ==========================================
